@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>冷藏货船 · Reefer Run</title>
+  <style>
+    body { margin: 0; background: #08141d; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; }
+    canvas { display: block; margin-top: 8px; border: 1px solid #2c3e50; }
+    #help { color: #9fb3c8; font-size: 13px; max-width: 1220px; line-height: 1.7; padding: 6px 4px; }
+    #help b { color: #dfe6e9; }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="1220" height="720"></canvas>
+  <div id="help">
+    <b>操作:</b> ↑/W 加速 ↓/S 减速 ←/A 右转 → 左转 |
+    <b>L</b> 靠港装卸(开门升温,注意压缩机) <b>C</b> 压缩机开关 <b>+/-</b> 功率 |
+    <b>R</b> 搁浅脱困 <b>F</b> 维修包 |
+    <b>P</b> 暂停 <b>N</b> 重开(同 seed 全量复位) <b>G</b> 失败后从检查点继续 |
+    <b>K</b> 保存 <b>O</b> 载入 <b>D</b> 调试层(路径/载重/风向) |
+    URL 加 <b>?seed=xxx&debug</b> 可复现指定场景
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

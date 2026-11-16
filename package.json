@@ -1,0 +1,10 @@
+{
+  "name": "reefer-run",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "冷藏货船码头装卸与温控航行游戏",
+  "scripts": {
+    "test": "node test/verify.js",
+    "serve": "python3 -m http.server 8080"
+  }
+}
