@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>可撕票根生成器</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>可撕票根生成器</h1>
+  <div class="toolbar">
+    <button id="btnUndo" title="撤销 (Ctrl+Z)">↩ 撤销</button>
+    <button id="btnRedo" title="重做 (Ctrl+Y)">↪ 重做</button>
+    <span class="sep"></span>
+    <button id="btnSave">💾 保存</button>
+    <button id="btnReload">📂 重新载入</button>
+    <button id="btnExportJSON">导出工程</button>
+    <label class="file-label">导入工程<input type="file" id="fileImport" accept=".json"></label>
+    <span class="sep"></span>
+    <button id="btnExportSVG">导出 SVG</button>
+    <button id="btnExportPNG">导出 PNG</button>
+  </div>
+</header>
+
+<main>
+  <aside id="panel">
+    <section>
+      <h2>票根内容</h2>
+      <label>活动名称 <input id="inTitle" type="text"></label>
+      <label>场次 <input id="inSession" type="text"></label>
+      <label>座位 <input id="inSeat" type="text"></label>
+      <label>日期 <input id="inDate" type="text"></label>
+      <label>编号 <input id="inSerial" type="text"></label>
+    </section>
+    <section>
+      <h2>版式</h2>
+      <label>字体
+        <select id="selFont">
+          <option value="sans-serif">无衬线 (sans-serif)</option>
+          <option value="serif">衬线 (serif)</option>
+          <option value="monospace">等宽 (monospace)</option>
+        </select>
+      </label>
+      <label>字号缩放 <input id="rngFontScale" type="range" min="0.5" max="2" step="0.05"><span id="lblFontScale"></span></label>
+      <label>撕线位置 <input id="rngTear" type="range" min="0.5" max="0.85" step="0.01"><span id="lblTear"></span></label>
+      <label>票宽 <input id="numW" type="number" min="200" max="2000" step="10"></label>
+      <label>票高 <input id="numH" type="number" min="80" max="600" step="5"></label>
+      <label>预览缩放 <input id="rngZoom" type="range" min="0.25" max="2" step="0.05"><span id="lblZoom"></span></label>
+    </section>
+    <section>
+      <h2>批量生成</h2>
+      <label>数量 <input id="numBatch" type="number" min="1" max="200" value="5"></label>
+      <button id="btnBatchSVG">批量导出 SVG</button>
+      <p class="hint">布局保持一致，仅编号递增。</p>
+    </section>
+    <section>
+      <h2>测试用例</h2>
+      <button id="btnCaseStandard">标准案例</button>
+      <button id="btnCaseLong">极端长文本</button>
+      <button id="btnCaseTiny">极小尺寸</button>
+    </section>
+    <div id="errors" role="alert"></div>
+  </aside>
+
+  <div id="stage">
+    <canvas id="cv"></canvas>
+  </div>
+</main>
+
+<script src="js/pattern.js"></script>
+<script src="js/model.js"></script>
+<script src="js/render.js"></script>
+<script src="js/svg.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
