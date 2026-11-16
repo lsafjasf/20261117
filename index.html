@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>低重力月球运输车 · 温室补给任务</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <aside id="panel">
+      <h1>月球运输车</h1>
+      <p class="sub">低重力 · 载荷制动 · 陨坑滑坡 · 电量返航</p>
+
+      <section>
+        <h2>任务进度</h2>
+        <div class="row"><span>目标</span><b id="goal">0 / 3 舱已补给</b></div>
+        <div class="row"><span>舱室</span><b id="podlist"></b></div>
+        <div class="row"><span>状态</span><b id="status">行驶中</b></div>
+      </section>
+
+      <section>
+        <h2>剩余资源</h2>
+        <div class="row"><span>载荷</span><b id="cargo"></b></div>
+        <div class="row"><span>电量</span><b id="battery"></b></div>
+        <div class="bar"><i id="batteryBar"></i></div>
+        <div class="row"><span>整车质量</span><b id="mass"></b></div>
+        <div class="row"><span>当前制动距离</span><b id="brake"></b></div>
+      </section>
+
+      <section>
+        <h2>环境</h2>
+        <div class="row"><span>当前风向</span><b id="wind"></b></div>
+      </section>
+
+      <section>
+        <h2>最近失败原因</h2>
+        <p id="failure">无</p>
+      </section>
+
+      <section>
+        <h2>控制</h2>
+        <div class="grid">
+          <button id="btnPause">暂停 (P)</button>
+          <button id="btnRestart">重开 (R)</button>
+          <button id="btnRecover">检查点继续 (C)</button>
+          <button id="btnSave">保存 (F5)</button>
+          <button id="btnLoad">载入 (F9)</button>
+          <button id="btnMute">静音</button>
+        </div>
+        <div class="seedline">
+          <label>固定 seed
+            <input id="seedInput" value="20261117" inputmode="numeric">
+          </label>
+          <button id="btnSeed">用此 seed 重开</button>
+        </div>
+        <p id="saveMsg" class="savemsg"></p>
+      </section>
+
+      <section>
+        <h2>可重复调试场景</h2>
+        <div class="grid">
+          <button id="btnRoute">演示：正常路线</button>
+          <button id="btnCrash">演示：高速碰撞</button>
+          <button id="debug" class="toggle">调试覆盖层：关</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>事件日志</h2>
+        <ul id="log"></ul>
+      </section>
+
+      <section class="help">
+        <h2>按键</h2>
+        <p>W/↑ 油门 · S/↓/空格 制动 · A D/← → 转向<br>
+           P 暂停 · R 重开 · C 失败后检查点继续<br>
+           F5 保存 · F9 载入</p>
+      </section>
+    </aside>
+    <main id="stage">
+      <canvas id="game" width="900" height="640"></canvas>
+      <div id="banner" class="hidden"></div>
+    </main>
+  </div>
+  <script src="src/prng.js"></script>
+  <script src="src/world.js"></script>
+  <script src="src/engine.js"></script>
+  <script src="src/render.js"></script>
+  <script src="src/audio.js"></script>
+  <script src="src/main.js"></script>
+</body>
+</html>
