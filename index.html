@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>山景光影 · Canvas 几何投影</title>
+<style>
+  @font-face {
+    font-family: 'Noto Sans SC';
+    src: url('assets/fonts/NotoSansSC.ttf') format('opentype');
+  }
+  * { box-sizing: border-box; }
+  button, input { font-family: inherit; }
+  body {
+    margin: 0; font-family: 'Noto Sans SC', sans-serif;
+    background: #10151f; color: #dfe6f0; display: flex; min-height: 100vh;
+  }
+  #stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  canvas { max-width: 100%; max-height: calc(100vh - 32px); border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.5); background: #223; }
+  #panel {
+    width: 300px; padding: 16px; background: #171e2c; overflow-y: auto;
+    max-height: 100vh; font-size: 13px;
+  }
+  #panel h1 { font-size: 16px; margin: 0 0 12px; }
+  #panel h2 { font-size: 13px; margin: 16px 0 6px; color: #8fb4e8; }
+  .row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  .row label { flex: 0 0 76px; color: #aab6c8; }
+  .row input[type=range] { flex: 1; }
+  .row input[type=number] {
+    width: 64px; background: #0f1420; color: #dfe6f0;
+    border: 1px solid #2c3a50; border-radius: 4px; padding: 2px 6px;
+  }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  button {
+    background: #243149; color: #dfe6f0; border: 1px solid #35476b;
+    border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px;
+  }
+  button:hover { background: #2e3f60; }
+  button.active { background: #3a5b94; border-color: #5c82c4; }
+  .layers label { display: inline-flex; align-items: center; gap: 4px; margin: 3px 8px 3px 0; }
+  #error {
+    display: none; background: #4a1d24; border: 1px solid #8a3444; color: #ffc9d2;
+    border-radius: 6px; padding: 8px 10px; margin: 10px 0; white-space: pre-line;
+    font-size: 12px;
+  }
+  #status { color: #7c8aa0; font-size: 12px; margin-top: 8px; white-space: pre-line; }
+</style>
+</head>
+<body>
+  <div id="stage"><canvas id="scene" width="1000" height="700"></canvas></div>
+  <div id="panel">
+    <h1>山景光影控制台</h1>
+    <div id="error"></div>
+    <h2>太阳</h2>
+    <div class="row"><label>方位角</label>
+      <input type="range" id="azimuth" min="-85" max="85" step="1">
+      <input type="number" id="azimuthNum" step="1"></div>
+    <div class="row"><label>高度角</label>
+      <input type="range" id="elevation" min="5" max="80" step="1">
+      <input type="number" id="elevationNum" step="1"></div>
+    <h2>阴影</h2>
+    <div class="row"><label>柔和度</label>
+      <input type="range" id="softness" min="0" max="1" step="0.01">
+      <input type="number" id="softnessNum" step="0.01"></div>
+    <div class="row"><label>强度</label>
+      <input type="range" id="strength" min="0" max="1" step="0.01">
+      <input type="number" id="strengthNum" step="0.01"></div>
+    <div class="row"><label>影长倍率</label>
+      <input type="range" id="length" min="0.2" max="2.5" step="0.05">
+      <input type="number" id="lengthNum" step="0.05"></div>
+    <h2>视角</h2>
+    <div class="btns" id="presets">
+      <button data-preset="wide">广角</button>
+      <button data-preset="close">特写</button>
+      <button data-preset="peak">主峰</button>
+    </div>
+    <div class="row"><label>缩放</label>
+      <input type="range" id="zoom" min="0.65" max="2.6" step="0.01">
+      <input type="number" id="zoomNum" step="0.01"></div>
+    <div class="row"><label>平移 X</label>
+      <input type="range" id="panX" min="-200" max="200" step="1">
+      <input type="number" id="panXNum" step="1"></div>
+    <div class="row"><label>平移 Y</label>
+      <input type="range" id="panY" min="-120" max="120" step="1">
+      <input type="number" id="panYNum" step="1"></div>
+    <h2>图层</h2>
+    <div class="layers" id="layers"></div>
+    <h2>操作</h2>
+    <div class="btns">
+      <button id="pauseBtn">暂停</button>
+      <button id="saveBtn">保存参数</button>
+      <button id="exportBtn">导出 PNG</button>
+      <button id="resetBtn">重置默认</button>
+    </div>
+    <div id="status"></div>
+  </div>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

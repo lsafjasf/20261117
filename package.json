@@ -1,0 +1,30 @@
+{
+  "name": "mountain-shadow-scene",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u00002\u00000\u00002\u00006\u00001\u00001\u00001\u00007\u0000\r\u0000 \u0000",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/run-tests.mjs",
+    "export": "node tools/export.mjs",
+    "serve": "node tools/serve.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsafjasf/20261117.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/lsafjasf/20261117/issues"
+  },
+  "homepage": "https://github.com/lsafjasf/20261117#readme",
+  "dependencies": {
+    "@napi-rs/canvas": "^1.1.1"
+  },
+  "private": true,
+  "devDependencies": {
+    "playwright": "^1.65.1"
+  }
+}
