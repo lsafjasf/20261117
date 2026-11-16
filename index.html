@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>蜂箱转场运输模拟 · Beehive Relocation</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">
+      <h1>蜂箱转场运输模拟</h1>
+      <span class="subtitle">花期迁移 · 过热 / 颠簸 / 花期窗口三重约束</span>
+    </div>
+    <div class="top-controls">
+      <label>Seed
+        <input id="seedInput" type="number" value="42" min="1" max="999999" />
+      </label>
+      <button id="btnRun" class="primary">连续运行</button>
+      <button id="btnPause">暂停</button>
+      <button id="btnReset">重置</button>
+      <button id="btnMute">🔊 声音</button>
+      <button id="btnValidate">运行验证</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="stage">
+      <canvas id="scene" width="960" height="540"></canvas>
+      <div id="phaseBanner" class="phase-banner">待机：在果园完成装车安排后出发</div>
+    </section>
+
+    <aside class="side">
+      <div class="panel">
+        <h2>干预措施</h2>
+        <div class="ctrl-group">
+          <span class="ctrl-label">路线（出发前）</span>
+          <div class="seg" id="segRoute">
+            <button data-route="A" class="on">A 平缓主路</button>
+            <button data-route="B">B 颠簸近路</button>
+          </div>
+        </div>
+        <div class="ctrl-group">
+          <span class="ctrl-label">装车方式（出发前）</span>
+          <div class="seg" id="segArrangement">
+            <button data-arr="loose" class="on">松装·散热好</button>
+            <button data-arr="tight">紧装·颠簸小</button>
+          </div>
+        </div>
+        <div class="ctrl-group">
+          <span class="ctrl-label">车速</span>
+          <div class="seg" id="segSpeed">
+            <button data-speed="slow">低速</button>
+            <button data-speed="normal" class="on">正常</button>
+            <button data-speed="fast">加速</button>
+          </div>
+        </div>
+        <div class="ctrl-group">
+          <button id="btnVent" class="intervention off">强通风：关</button>
+          <button id="btnSpray" class="intervention off">水箱喷淋：关</button>
+          <button id="btnDepart" class="intervention primary">▶ 出发</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>环境与蜂群指标</h2>
+        <div id="metrics" class="metrics"></div>
+        <p class="hint">观测值来自带噪声传感器；实际值为仿真真值；告警为迟滞判定状态。</p>
+      </div>
+
+      <div class="panel">
+        <h2>目标与窗口</h2>
+        <div id="targets" class="targets"></div>
+      </div>
+    </aside>
+
+    <section class="bottom">
+      <div class="panel log-panel">
+        <h2>事件日志（含触发时刻）</h2>
+        <div id="log" class="log"></div>
+      </div>
+      <div class="panel validate-panel">
+        <h2>自动化验证报告</h2>
+        <div id="validateReport" class="validate-report">
+          <p class="hint">点击右上角「运行验证」：稳态 / 临界事件 / 处置失败 / seed 复现 / 恢复后残留。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/rng.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/sim.js"></script>
+  <script src="js/validate.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

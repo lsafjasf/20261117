@@ -1,0 +1,17 @@
+{
+  "name": "beehive-relocation-sim",
+  "version": "1.0.0",
+  "description": "蜂箱转场运输模拟：Canvas + WebAudio + 确定性仿真内核",
+  "main": "index.html",
+  "scripts": {
+    "test:node": "node test/run-node-validation.js",
+    "test:browser": "node test/smoke.mjs",
+    "test": "npm run test:node && npm run test:browser"
+  },
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "puppeteer": "^25.17.0",
+    "yauzl": "^3.4.0"
+  }
+}
