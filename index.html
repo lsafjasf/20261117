@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>河口赤潮处置模拟</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <h1>河口赤潮处置模拟</h1>
+    <span class="sub">曝气 · 引水 · 监测浮标 — 四天达标挑战</span>
+  </div>
+  <div class="seed-box">
+    <label>Seed
+      <input id="seedInput" type="text" value="estuary-2026" spellcheck="false">
+    </label>
+    <button id="btnReset" class="btn">重置重开</button>
+    <button id="btnRun" class="btn primary">连续运行</button>
+    <button id="btnStep" class="btn">单步</button>
+    <select id="speedSel" class="btn">
+      <option value="250">慢速</option>
+      <option value="100" selected>常速</option>
+      <option value="30">快速</option>
+    </select>
+    <button id="btnSound" class="btn">声音：开</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="panel canvas-panel">
+    <div class="panel-head">
+      <h2>河口水文与藻华态势</h2>
+      <div id="weatherBadge" class="badge">天气：—</div>
+      <div id="tideBadge" class="badge">水位：—</div>
+      <div id="statusBadge" class="badge">状态：运行中</div>
+    </div>
+    <canvas id="map" width="720" height="450"></canvas>
+    <div class="legend">
+      <span><i class="sw" style="background:#1f6f8b"></i>实际藻密度水色</span>
+      <span><i class="mk buoy"></i>监测浮标/覆盖</span>
+      <span><i class="mk hot"></i>赤潮热点目标</span>
+      <span><i class="mk alarm"></i>告警网格</span>
+      <span><i class="mk nodata"></i>无观测区</span>
+      <span><i class="mk fish"></i>鱼群</span>
+    </div>
+    <p class="hint">点击网格部署/撤离浮标（上限 <b id="buoyCap">6</b> 个）。未覆盖区域不产生观测与告警。</p>
+  </section>
+
+  <aside class="panel side-panel">
+    <div class="panel-head"><h2>干预措施</h2></div>
+    <div class="control">
+      <div class="control-label"><span>曝气强度</span><b id="aerVal">0.30</b></div>
+      <input id="aerSlider" type="range" min="0" max="1" step="0.01" value="0.3">
+      <div class="scale"><span>0</span><span class="warn-zone">扰动区 &gt;0.75</span><span>1</span></div>
+    </div>
+    <div class="control">
+      <div class="control-label"><span>引水流量</span><b id="divVal">0.20</b></div>
+      <input id="divSlider" type="range" min="0" max="1" step="0.01" value="0.2">
+      <div class="scale"><span>关</span><span>稀释冲刷</span><span>满</span></div>
+    </div>
+    <div class="control">
+      <div class="control-label"><span>监测浮标</span><b id="buoyVal">0/6</b></div>
+      <div class="scale"><span>覆盖本格+四邻</span><span id="missVal">漏报热点 0</span></div>
+    </div>
+
+    <div class="panel-head"><h2>预设场景</h2></div>
+    <div class="scenarios">
+      <button class="btn scenario" data-sc="steady">稳态处置</button>
+      <button class="btn scenario" data-sc="critical">临界事件应对</button>
+      <button class="btn scenario danger" data-sc="failure">处置失败演示</button>
+    </div>
+    <p class="hint">场景会自动布放浮标并按策略连续调节，可随时手动接管滑块。</p>
+
+    <div class="panel-head"><h2>达标阈值</h2></div>
+    <ul class="thresholds">
+      <li>藻密度 &lt; <b>15</b> µg Chl-a/L</li>
+      <li>溶氧 <b>5–9</b> mg/L</li>
+      <li>鱼类存活率 ≥ <b>75%</b></li>
+      <li>浊度 &lt; <b>30</b> NTU</li>
+    </ul>
+  </aside>
+
+  <section class="panel metrics-panel">
+    <div class="panel-head"><h2>环境指标（实际值 / 观测值 / 告警）</h2>
+      <div id="simClock" class="badge">D1 00:00 · 步 0/576</div>
+    </div>
+    <div id="metricGrid" class="metric-grid"></div>
+    <div class="panel-head"><h2>趋势曲线</h2></div>
+    <canvas id="chart" width="900" height="180"></canvas>
+  </section>
+
+  <section class="panel log-panel">
+    <div class="panel-head">
+      <h2>事件记录（含触发时刻）</h2>
+      <button id="btnExport" class="btn">导出 JSON</button>
+    </div>
+    <table id="logTable">
+      <thead><tr><th>模拟时刻</th><th>步</th><th>类型</th><th>事件（含墙钟时间）</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</main>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-card">
+    <h2 id="modalTitle">结果</h2>
+    <p id="modalBody"></p>
+    <div class="modal-actions">
+      <button id="btnRecovery" class="btn primary hidden">进入 24h 恢复观察</button>
+      <button id="btnModalReset" class="btn">同 seed 重开</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/model.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/scenarios.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

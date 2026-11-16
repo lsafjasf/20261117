@@ -1,0 +1,29 @@
+{
+  "name": "uid823",
+  "version": "1.0.0",
+  "description": "河口赤潮处置模拟：曝气/引水/监测浮标干预的四天 Canvas 仿真",
+  "main": "index.html",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node tests/selftest.js",
+    "test:e2e": "node tests/browser.e2e.js",
+    "verify": "node tests/selftest.js && node tests/browser.e2e.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsafjasf/20261117.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lsafjasf/20261117/issues"
+  },
+  "homepage": "https://github.com/lsafjasf/20261117#readme",
+  "devDependencies": {
+    "playwright": "^1.65.1"
+  }
+}

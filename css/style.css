@@ -1,0 +1,148 @@
+@font-face {
+  font-family: "Noto Sans SC Local";
+  src: url("../fonts/NotoSansSC.otf") format("opentype");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans SC Local";
+  src: url("../fonts/NotoSansSC-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-display: swap;
+}
+:root {
+  --bg: #0e1b24;
+  --panel: #152a36;
+  --panel2: #1c3848;
+  --line: #274f63;
+  --text: #dcebf2;
+  --muted: #8fb4c4;
+  --accent: #35c2e0;
+  --good: #4cd07f;
+  --warn: #f2b94b;
+  --bad: #f2635f;
+  --hot: #ff5a4e;
+  --font-cjk: "Noto Sans SC Local", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 var(--font-cjk);
+  font-family: var(--font-cjk);
+}
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 20px; background: linear-gradient(120deg, #10303f, #0e1b24);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap; gap: 10px;
+}
+.brand h1 { margin: 0; font-size: 20px; letter-spacing: 1px; }
+.brand .sub { color: var(--muted); font-size: 12px; }
+.seed-box { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.seed-box label { color: var(--muted); font-size: 12px; }
+.seed-box input {
+  width: 130px; padding: 6px 8px; border-radius: 6px;
+  border: 1px solid var(--line); background: #0c1922; color: var(--text);
+}
+.btn {
+  padding: 7px 12px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel2); color: var(--text);
+  font: 13px/1.4 var(--font-cjk);
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: #14617a; border-color: var(--accent); }
+.btn.danger { border-color: var(--bad); color: #ffb3b0; }
+.btn.running { background: #7a4a14; border-color: var(--warn); }
+.layout {
+  display: grid; gap: 14px; padding: 16px 20px;
+  grid-template-columns: minmax(420px, 1.5fr) minmax(280px, 1fr);
+}
+.panel {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px;
+}
+.panel-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.panel-head h2 { margin: 0; font-size: 15px; color: var(--accent); }
+.badge {
+  font-size: 12px; padding: 3px 9px; border-radius: 20px;
+  background: var(--panel2); border: 1px solid var(--line); color: var(--muted);
+}
+.badge.good { color: var(--good); border-color: var(--good); }
+.badge.warn { color: var(--warn); border-color: var(--warn); }
+.badge.bad { color: var(--bad); border-color: var(--bad); }
+.canvas-panel { grid-column: 1; }
+.side-panel { grid-column: 2; grid-row: 1 / span 2; }
+.metrics-panel { grid-column: 1; }
+.log-panel { grid-column: 1 / span 2; }
+canvas { width: 100%; border-radius: 8px; background: #0a161d; display: block; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+.mk.buoy { background: #ffe08a; border-radius: 50%; }
+.mk.hot { background: var(--hot); transform: rotate(45deg); }
+.mk.alarm { background: var(--bad); }
+.mk.nodata { background: repeating-linear-gradient(45deg,#334b57 0 4px,#1c3848 4px 8px); }
+.mk.fish { background: #7fd6ff; clip-path: polygon(0 50%, 30% 0, 100% 50%, 30% 100%); }
+.hint { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
+
+.control { margin-bottom: 16px; }
+.control-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.control-label b { color: var(--accent); }
+.control input[type=range] { width: 100%; accent-color: var(--accent); }
+.scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+.scale .warn-zone { color: var(--warn); }
+.scenarios { display: flex; flex-direction: column; gap: 8px; }
+.scenarios .btn { text-align: left; }
+.thresholds { margin: 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.thresholds b { color: var(--text); }
+
+.metric-grid {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.metric {
+  background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 12px;
+}
+.metric .name { font-size: 12px; color: var(--muted); }
+.metric .row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 2px; }
+.metric .actual { font-size: 20px; font-weight: 700; }
+.metric .obs { font-size: 12px; color: var(--muted); }
+.metric .flag { font-size: 11px; padding: 2px 8px; border-radius: 12px; }
+.flag.ok { color: var(--good); border: 1px solid var(--good); }
+.flag.alarm { color: #fff; background: var(--bad); border: 1px solid var(--bad); }
+.flag.na { color: var(--muted); border: 1px solid var(--line); }
+.metric.violation { border-color: var(--bad); box-shadow: 0 0 0 1px var(--bad) inset; }
+
+#logTable { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+#logTable th, #logTable td {
+  text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line);
+}
+#logTable th { color: var(--muted); font-weight: 600; }
+#logTable tr.ev-critical td { color: #ffb0ac; }
+#logTable tr.ev-alarm td { color: var(--warn); }
+#logTable tr.ev-fail td { color: var(--bad); font-weight: 700; }
+#logTable tr.ev-success td, #logTable tr.ev-recovery td { color: var(--good); }
+.log-panel { max-height: 320px; overflow-y: auto; }
+
+.modal {
+  position: fixed; inset: 0; background: rgba(4, 12, 17, 0.78);
+  display: flex; align-items: center; justify-content: center; z-index: 20;
+}
+.modal.hidden { display: none; }
+.modal-card {
+  width: min(520px, 92vw); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 12px; padding: 22px;
+}
+.modal-card h2 { margin-top: 0; color: var(--accent); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+.hidden { display: none !important; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .canvas-panel, .side-panel, .metrics-panel, .log-panel { grid-column: 1; grid-row: auto; }
+}
