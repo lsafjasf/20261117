@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三源热校准台 · Thermal Calibration</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 36 36"><path d="M11 5v16.2a7.5 7.5 0 1 0 6 0V5a3 3 0 0 0-6 0Z"/><path d="M14 10v14"/><circle cx="25.5" cy="10.5" r="2.5"/><circle cx="28.5" cy="19" r="1.7"/></svg>
+        </div>
+        <div>
+          <div class="eyebrow">THERMAL CALIBRATION / 03</div>
+          <h1>三源热校准台</h1>
+        </div>
+      </div>
+      <div class="top-meta">
+        <span class="live-dot"></span>
+        <span>READY</span>
+        <span class="meta-divider"></span>
+        <span id="headerVersion">版本 —</span>
+        <span class="meta-divider"></span>
+        <span id="clock">--:--:--</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-ghost" id="backBtn" type="button" title="恢复上一次数据条件">
+          <svg viewBox="0 0 20 20"><path d="M8 5 3 10l5 5M4 10h9a4 4 0 0 1 0 8"/></svg>
+          返回上一视图
+        </button>
+        <button class="btn btn-primary" id="exportBtn" type="button">
+          <svg viewBox="0 0 20 20"><path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5M4 14v2h12v-2"/></svg>
+          导出对比图
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="control-deck" aria-label="筛选控制">
+        <div class="dataset-tabs" id="datasetTabs" role="tablist" aria-label="数据场景">
+          <button class="dataset-tab active" data-dataset="normal" role="tab" aria-selected="true" type="button">
+            <span class="tab-icon normal"></span>
+            <span><strong>正常</strong><small>NORMAL</small></span>
+          </button>
+          <button class="dataset-tab" data-dataset="missing" role="tab" aria-selected="false" type="button">
+            <span class="tab-icon missing"></span>
+            <span><strong>缺失</strong><small>GAPS</small></span>
+          </button>
+          <button class="dataset-tab" data-dataset="abnormal" role="tab" aria-selected="false" type="button">
+            <span class="tab-icon abnormal"></span>
+            <span><strong>异常</strong><small>OUTLIERS</small></span>
+          </button>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="windowSelect">时间窗口</label>
+          <div class="select-wrap">
+            <select id="windowSelect" aria-label="时间窗口">
+              <option value="full">10:00–10:11 · 全程 12 分钟</option>
+              <option value="first">10:00–10:05 · 前段 6 分钟</option>
+              <option value="second">10:06–10:11 · 后段 6 分钟</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control-group status-control">
+          <span class="control-label">数据状态</span>
+          <div class="segmented compact" id="statusFilter">
+            <button class="active" data-status="all" type="button">全部</button>
+            <button data-status="valid" type="button">有效</button>
+            <button data-status="imputed" type="button">补缺</button>
+            <button data-status="anomaly" type="button">异常</button>
+          </div>
+        </div>
+
+        <button class="btn btn-quiet" id="resetBtn" type="button">重置条件</button>
+      </section>
+
+      <section class="filter-strip" aria-label="当前筛选摘要">
+        <span class="filter-title">当前筛选</span>
+        <div class="filter-chips" id="filterChips"></div>
+        <span class="sync-state"><span class="sync-icon">↔</span> 地图 · 曲线 · 列表 · 导出已同步</span>
+      </section>
+
+      <section class="summary-grid" aria-label="数据摘要">
+        <article class="summary-card">
+          <div class="summary-top"><span>采样数量</span><span class="summary-badge">去重后</span></div>
+          <div class="summary-value" id="sampleCount">0</div>
+          <div class="summary-foot" id="sampleFoot">—</div>
+          <div class="mini-bars" id="sampleBars" aria-hidden="true"></div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-top"><span>数据完整度</span><span class="trend up" id="qualityTrend">● 稳定</span></div>
+          <div class="summary-value" id="completeness">0<span>%</span></div>
+          <div class="summary-foot" id="qualityFoot">—</div>
+          <div class="quality-track"><i id="qualityBar"></i></div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-top"><span>校准误差</span><span class="trend good">RMSE</span></div>
+          <div class="summary-value" id="rmse">0.00<span>°C</span></div>
+          <div class="summary-foot" id="errorFoot">—</div>
+          <div class="sparkline" id="rmseSpark" aria-hidden="true"></div>
+        </article>
+        <article class="summary-card alert-card" id="anomalyCard">
+          <div class="summary-top"><span>待核查点</span><span class="trend warn" id="anomalyTrend">异常 + 补缺</span></div>
+          <div class="summary-value" id="anomalyCount">0</div>
+          <div class="summary-foot" id="anomalyFoot">—</div>
+          <div class="anomaly-strip" id="anomalyStrip" aria-hidden="true"></div>
+        </article>
+      </section>
+
+      <section class="workspace-grid">
+        <article class="panel map-panel">
+          <header class="panel-header">
+            <div>
+              <div class="panel-kicker">SITE MAP / SYNCED</div>
+              <h2>热源与测点</h2>
+            </div>
+            <span class="panel-note" id="mapVersion">—</span>
+          </header>
+          <div class="map-wrap">
+            <svg id="siteMap" class="site-map" viewBox="0 0 440 340" role="img" aria-label="热源站地图，三个可筛选温度测点">
+              <defs>
+                <radialGradient id="heatGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#ffb259" stop-opacity=".5"/>
+                  <stop offset="45%" stop-color="#ff8a34" stop-opacity=".16"/>
+                  <stop offset="100%" stop-color="#ff8a34" stop-opacity="0"/>
+                </radialGradient>
+                <linearGradient id="mapFloor" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#13262d"/>
+                  <stop offset="100%" stop-color="#0a151b"/>
+                </linearGradient>
+                <filter id="softGlow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+                  <path d="M28 0H0V28" fill="none" stroke="#27404a" stroke-width=".65" stroke-opacity=".5"/>
+                </pattern>
+              </defs>
+              <rect x="10" y="8" width="420" height="316" rx="20" fill="url(#mapFloor)" stroke="#203a44"/>
+              <rect x="10" y="8" width="420" height="316" rx="20" fill="url(#grid)"/>
+              <path d="M42 94h58v62H42zm298-28h60v76h-60zM64 250h72v42H64zm254-18h62v48h-62z" fill="#0d1c23" stroke="#294650" stroke-width="1.2"/>
+              <path d="M42 94h58M42 126h58M340 66h60M340 104h60M64 272h72M372 232h62" stroke="#294650" stroke-width=".7"/>
+              <circle cx="220" cy="170" r="112" fill="none" stroke="#324c55" stroke-dasharray="3 7"/>
+              <circle cx="220" cy="170" r="78" fill="none" stroke="#385761" stroke-dasharray="2 6"/>
+              <circle cx="220" cy="170" r="54" fill="url(#heatGlow)"/>
+              <circle cx="220" cy="170" r="20" fill="#1d1711" stroke="#ffae5b" stroke-width="2"/>
+              <path d="M211 172c0-8 5-10 5-17 6 5 11 11 7 20 4-2 6-5 7-9 4 11-2 21-12 21s-15-8-13-17c1 4 4 6 6 2Z" fill="#ffb25c" filter="url(#softGlow)"/>
+              <text x="220" y="207" text-anchor="middle" class="map-source-label">HEAT SOURCE · HX-01</text>
+              <g id="mapConnections"></g>
+              <g id="mapNodes"></g>
+              <g class="map-compass" transform="translate(402 296)">
+                <circle r="14" fill="#0d1c23" stroke="#2c4852"/>
+                <path d="M0-8 4 4 0 1-4 4Z" fill="#8aa3ad"/>
+                <text y="-18" text-anchor="middle">N</text>
+              </g>
+            </svg>
+            <div class="map-legend">
+              <span><i class="legend-dot heat"></i>热源 HX-01</span>
+              <span><i class="legend-dot active"></i>已选测点</span>
+              <span><i class="legend-dot muted"></i>未选测点</span>
+            </div>
+          </div>
+          <div class="sensor-switches" id="sensorSwitches" aria-label="测点筛选"></div>
+          <div class="map-foot">
+            <span>点击测点或上方按钮筛选</span>
+            <span class="version-lock" id="mapLock">同版本快照 · #—</span>
+          </div>
+        </article>
+
+        <article class="panel chart-panel">
+          <header class="panel-header chart-header">
+            <div>
+              <div class="panel-kicker">CALIBRATED COMPARISON / CANVAS</div>
+              <h2>温度校准与误差带</h2>
+            </div>
+            <div class="chart-tools">
+              <div class="segmented view-tabs" id="viewTabs">
+                <button class="active" data-view="compare" type="button">对比</button>
+                <button data-view="raw" type="button">原始</button>
+                <button data-view="error" type="button">误差</button>
+              </div>
+            </div>
+          </header>
+          <div class="chart-meta">
+            <div class="chart-legend" id="chartLegend"></div>
+            <div class="chart-readout">
+              <span>参考 <strong id="refReadout">—</strong></span>
+              <span>校准窗 <strong id="calReadout">—</strong></span>
+            </div>
+          </div>
+          <div class="canvas-wrap" id="canvasWrap">
+            <canvas id="curveCanvas" aria-label="三组温度传感器原始、校准和误差曲线"></canvas>
+            <div class="canvas-empty" id="canvasEmpty" hidden>
+              <div class="empty-orbit"></div>
+              <strong>当前条件下没有采样点</strong>
+              <span>请重新选择测点、时间窗口或数据状态</span>
+              <button class="btn btn-ghost small" data-action="reset" type="button">恢复默认条件</button>
+            </div>
+          </div>
+          <div class="canvas-hint">
+            <span><i class="hint-line band"></i>拖拽阴影边缘调整校准窗口</span>
+            <span><i class="hint-line ref"></i>上下拖动参考线设置目标温度</span>
+            <span class="hint-note">调整仅改变校准模型，不改变采样数</span>
+          </div>
+          <div class="equation-strip">
+            <span class="equation-label">校准模型</span>
+            <code>T̂ᵢ(t) = Tᵢ(t) − [μ(Tᵢ − Tref)₍w₎ + kᵢ(t − t̄)]</code>
+            <span id="countInvariant" class="invariant">样本数锁定 · 0 → 0</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="panel records-panel">
+          <header class="panel-header">
+            <div>
+              <div class="panel-kicker">AUDIT QUEUE / FILTERED</div>
+              <h2>核查列表</h2>
+            </div>
+            <div class="records-tools">
+              <span class="result-count" id="resultCount">0 条</span>
+              <span class="panel-note" id="listScope">—</span>
+            </div>
+          </header>
+          <div class="records-table-wrap">
+            <table class="records-table">
+              <thead>
+                <tr>
+                  <th>测点 / 时刻</th>
+                  <th>原始值</th>
+                  <th>校准值</th>
+                  <th>偏差</th>
+                  <th>状态</th>
+                  <th>数据版本</th>
+                </tr>
+              </thead>
+              <tbody id="recordsBody"></tbody>
+            </table>
+            <div class="table-empty" id="tableEmpty" hidden>
+              <span>∅</span>
+              <strong>空结果</strong>
+              <p>没有记录同时满足当前测点、时间窗口与状态条件。</p>
+              <button class="btn btn-ghost small" data-action="reset" type="button">恢复默认条件</button>
+            </div>
+          </div>
+          <footer class="records-foot">
+            <span id="filterFooter">筛选口径加载中…</span>
+            <span>统计口径：校准温度对参考温度的均值 / RMSE，窗口内逐点计算</span>
+          </footer>
+        </article>
+
+        <aside class="right-stack">
+          <article class="panel digest-panel">
+            <header class="panel-header compact-header">
+              <div>
+                <div class="panel-kicker">DATA DIGEST</div>
+                <h2>数据摘要</h2>
+              </div>
+              <span class="digest-version" id="digestVersion">#—</span>
+            </header>
+            <div class="digest-grid">
+              <div><span>原始记录</span><strong id="digestRaw">—</strong></div>
+              <div><span>去重移除</span><strong id="digestDedup">—</strong></div>
+              <div><span>线性补缺</span><strong id="digestFilled">—</strong></div>
+              <div><span>注入/检出异常</span><strong id="digestOutlier">—</strong></div>
+            </div>
+            <div class="digest-note" id="digestNote">—</div>
+          </article>
+
+          <article class="panel export-panel">
+            <header class="panel-header compact-header">
+              <div>
+                <div class="panel-kicker">EXPORT LEDGER</div>
+                <h2>导出日志</h2>
+              </div>
+              <button class="icon-btn" id="clearLogBtn" type="button" title="清空日志" aria-label="清空导出日志">↺</button>
+            </header>
+            <div class="export-sync">
+              <span class="check">✓</span>
+              <span>导出画布与屏幕共享同一数据版本</span>
+              <strong>一致性校验</strong>
+            </div>
+            <div class="export-log" id="exportLog">
+              <div class="log-empty">
+                <span>⇩</span>
+                <p>尚未导出。生成对比图后将在此记录筛选条件、统计值与版本指纹。</p>
+              </div>
+            </div>
+            <div class="export-foot">
+              <span id="exportFoot">PNG · 1600 × 1120</span>
+              <span>屏幕值 = 导出值</span>
+            </div>
+          </article>
+        </aside>
+      </section>
+    </main>
+    <footer class="page-footer">
+      <span>THERMAL CALIBRATION WORKBENCH · LOCAL SNAPSHOT PIPELINE</span>
+      <span id="footerState">3 sensors · 10 s cadence · UTC+8</span>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="modal" id="exportModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="exportTitle">
+      <header class="modal-head">
+        <div>
+          <div class="panel-kicker">EXPORT PREVIEW / VERIFIED</div>
+          <h2 id="exportTitle">对比图已生成</h2>
+        </div>
+        <button class="icon-btn modal-close" type="button" data-close-modal aria-label="关闭">×</button>
+      </header>
+      <div class="export-preview-wrap">
+        <img id="exportPreview" alt="当前筛选条件下的传感器校准对比图">
+      </div>
+      <div class="modal-meta" id="exportMeta"></div>
+      <footer class="modal-actions">
+        <span class="modal-check"><i>✓</i> 数值已与屏幕快照逐项核对</span>
+        <button class="btn btn-ghost" type="button" data-close-modal>关闭</button>
+        <button class="btn btn-primary" id="downloadBtn" type="button">下载 PNG</button>
+      </footer>
+    </div>
+  </div>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

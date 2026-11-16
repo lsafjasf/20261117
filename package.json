@@ -1,0 +1,10 @@
+{
+  "name": "thermal-calibration-workbench",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Three-sensor thermal calibration workbench with synchronized map, Canvas charts, audit list, and PNG export.",
+  "scripts": {
+    "start": "python3 -m http.server 4173",
+    "test": "node --test tests/*.test.js"
+  }
+}
