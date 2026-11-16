@@ -1,0 +1,140 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  background: #1c1a18;
+  color: #e8e2da;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #292522;
+  border-bottom: 1px solid #3d3733;
+}
+
+header h1 { font-size: 18px; margin: 0; }
+
+.badge {
+  font-size: 12px;
+  background: #4a3f2f;
+  color: #f0c987;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.header-actions { margin-left: auto; display: flex; gap: 8px; }
+
+button {
+  background: #3d3733;
+  color: #e8e2da;
+  border: 1px solid #554d47;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+button:hover { background: #4c4540; }
+button.active { background: #6b5a3e; border-color: #f0c987; }
+
+.error-bar {
+  background: #5a2626;
+  color: #ffd9d9;
+  padding: 8px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid #7a3535;
+}
+
+main {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.viewport { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.canvas-wrap { position: relative; }
+
+#mainCanvas {
+  display: block;
+  width: 512px;
+  height: 512px;
+  background: #111;
+  border: 1px solid #3d3733;
+  border-radius: 4px;
+  cursor: crosshair;
+  image-rendering: pixelated;
+}
+
+.hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #9a9089;
+}
+
+.preview-wrap h2 { font-size: 13px; margin: 0 0 6px; color: #b8aea4; }
+
+#tilePreview {
+  display: block;
+  width: 288px;
+  height: 288px;
+  border: 1px solid #3d3733;
+  border-radius: 4px;
+  image-rendering: pixelated;
+}
+
+.panel {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+fieldset {
+  border: 1px solid #3d3733;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 0;
+}
+
+legend { font-size: 12px; color: #b8aea4; padding: 0 6px; }
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin: 6px 0;
+}
+
+label input[type="range"] { flex: 1; }
+label input[type="number"] {
+  width: 110px;
+  background: #111;
+  color: #e8e2da;
+  border: 1px solid #554d47;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+label.check { gap: 6px; }
+
+select {
+  background: #111;
+  color: #e8e2da;
+  border: 1px solid #554d47;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+output { min-width: 36px; text-align: right; color: #f0c987; font-size: 12px; }
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.status { font-size: 12px; color: #9a9089; margin: 0; }

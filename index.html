@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>岩盐材质生成器 · 可平铺</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>岩盐材质生成器</h1>
+    <span class="badge">四边连续 · 可平铺</span>
+    <div class="header-actions">
+      <button id="btnPause" title="暂停/恢复动态光照">暂停</button>
+      <button id="btnShot" title="保存当前主视图为 PNG">截图</button>
+      <button id="btnSave" title="立即保存参数到本地">保存参数</button>
+    </div>
+  </header>
+
+  <div id="errorBar" class="error-bar" hidden></div>
+
+  <main>
+    <section class="viewport">
+      <div class="canvas-wrap">
+        <canvas id="mainCanvas" width="512" height="512"></canvas>
+        <div class="hint">滚轮缩放 · 拖动平移 / 笔刷涂抹（跨边自动同步到对侧）</div>
+      </div>
+      <div class="preview-wrap">
+        <h2>平铺预览 3×3</h2>
+        <canvas id="tilePreview" width="288" height="288"></canvas>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <fieldset>
+        <legend>预设</legend>
+        <div class="row">
+          <button id="btnPresetDefault">默认</button>
+          <button id="btnPresetExtreme">极端</button>
+          <button id="btnResetBrush">清空笔刷</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>参数</legend>
+        <label>种子 <input type="number" id="pSeed" min="0" max="99999999" step="1"></label>
+        <label>晶体尺度 <input type="range" id="pCrystal" min="2" max="48" step="1"><output id="oCrystal"></output></label>
+        <label>孔隙 <input type="range" id="pPore" min="0" max="1" step="0.01"><output id="oPore"></output></label>
+        <label>湿润度 <input type="range" id="pWet" min="0" max="1" step="0.01"><output id="oWet"></output></label>
+        <label>颗粒感 <input type="range" id="pGrain" min="0" max="1" step="0.01"><output id="oGrain"></output></label>
+        <label>起伏 <input type="range" id="pRelief" min="0" max="1" step="0.01"><output id="oRelief"></output></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>笔刷</legend>
+        <label>模式
+          <select id="brushMode">
+            <option value="wet">润湿</option>
+            <option value="pit">蚀坑</option>
+            <option value="heal">修复</option>
+          </select>
+        </label>
+        <label>大小 <input type="range" id="pBrushSize" min="4" max="128" step="1"><output id="oBrushSize"></output></label>
+        <label>强度 <input type="range" id="pBrushStr" min="0.05" max="1" step="0.05"><output id="oBrushStr"></output></label>
+        <label class="check"><input type="checkbox" id="panMode"> 平移模式（拖动=移动视角）</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>图层（合成顺序固定）</legend>
+        <label class="check"><input type="checkbox" id="lBase" checked> 1 基色</label>
+        <label class="check"><input type="checkbox" id="lRelief" checked> 2 起伏光照</label>
+        <label class="check"><input type="checkbox" id="lPores" checked> 3 孔隙</label>
+        <label class="check"><input type="checkbox" id="lWet" checked> 4 湿润高光</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>导出</legend>
+        <div class="row">
+          <button id="btnExport512">导出 512 PNG</button>
+          <button id="btnExport1024">导出 1024 PNG</button>
+        </div>
+        <label class="check"><input type="checkbox" id="animate"> 动态光照</label>
+      </fieldset>
+
+      <p class="status" id="statusLine">就绪</p>
+    </aside>
+  </main>
+
+  <script src="js/noise.js"></script>
+  <script src="js/params.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
