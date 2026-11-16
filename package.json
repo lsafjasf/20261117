@@ -1,0 +1,14 @@
+{
+  "name": "buoy-cable-repair",
+  "version": "1.0.0",
+  "description": "确定性 Canvas 浅海光缆检修游戏：浮标定位、海流风向、检查点与固定 seed 复现",
+  "private": true,
+  "scripts": {
+    "test": "node src/selftest.js && node test/smoke-dom.js",
+    "selftest": "node src/selftest.js",
+    "smoke": "node test/smoke-dom.js",
+    "serve": "node test/serve.js"
+  },
+  "keywords": ["canvas", "deterministic", "game", "seed"],
+  "license": "UNLICENSED"
+}

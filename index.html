@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>浅海光缆检修 · 浮标跟随</title>
+  <style>
+    :root {
+      --panel: #0e2740;
+      --panel2: #14344f;
+      --line: #24506f;
+      --text: #dcecfa;
+      --muted: #8fb4d2;
+      --ok: #7cfc9b;
+      --bad: #ff8a8f;
+      --warn: #ffd166;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      background: #06182a;
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+    .stage {
+      flex: 1 1 auto;
+      padding: 14px;
+      min-width: 0;
+    }
+    canvas {
+      width: 100%;
+      max-width: 1000px;
+      aspect-ratio: 10 / 7;
+      background: #082a47;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      display: block;
+    }
+    .side {
+      flex: 0 0 340px;
+      background: var(--panel);
+      border-left: 1px solid var(--line);
+      padding: 14px;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+    h1 { font-size: 17px; margin: 0 0 10px; }
+    h2 {
+      font-size: 13px;
+      margin: 16px 0 6px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+    .card {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      padding: 3px 0;
+    }
+    .row span:first-child { color: var(--muted); }
+    .row span:last-child { text-align: right; }
+    .ok { color: var(--ok); }
+    .bad { color: var(--bad); }
+    .warn { color: var(--warn); }
+    button {
+      background: #1d4f76;
+      color: var(--text);
+      border: 1px solid #2f6f9c;
+      border-radius: 6px;
+      padding: 7px 9px;
+      font-size: 13px;
+      cursor: pointer;
+      margin: 3px 0;
+      width: 100%;
+    }
+    button:hover { background: #26628f; }
+    button.secondary { background: #183c59; }
+    button.danger { background: #6e2a31; border-color: #96404a; }
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    input[type="number"], select {
+      width: 100%;
+      background: #0a1f33;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px;
+      font-size: 13px;
+    }
+    label.inline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      margin: 6px 0;
+      color: var(--muted);
+    }
+    ul#event-log {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      font-size: 12px;
+    }
+    ul#event-log li {
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    li.success { color: var(--ok); }
+    li.fail { color: var(--bad); }
+    li.warn { color: var(--warn); }
+    li.info { color: var(--text); }
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    kbd {
+      background: #0a1f33;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <canvas id="canvas" width="1000" height="700"></canvas>
+    <p class="hint">
+      操控：<kbd>W/↑</kbd> 推进，<kbd>A D/←→</kbd> 转向，<kbd>Shift</kbd> 全速，
+      <kbd>空格</kbd> 投放标记，<kbd>P</kbd> 暂停，<kbd>R</kbd> 重开，<kbd>C</kbd> 检查点恢复。
+      虚线黄色为海底缆线影子，红色浮标定位缆线；浅水区自动限制推力，暗礁碰撞与搁浅会导致失败。
+    </p>
+  </main>
+  <aside class="side">
+    <h1>浅海光缆检修任务</h1>
+
+    <h2>复现控制</h2>
+    <div class="card">
+      <div class="row"><span>固定 Seed</span><span id="hud-seed">-</span></div>
+      <input id="seed-input" type="number" min="0" max="4294967295" value="20261117">
+      <div class="grid2" style="margin-top:6px">
+        <button id="btn-start">按 Seed 开局</button>
+        <button id="btn-restart" class="secondary">重开（全量重置）</button>
+      </div>
+      <div class="grid2">
+        <button id="btn-pause" class="secondary">⏸ 暂停</button>
+        <button id="btn-mute" class="secondary">🔊 声音</button>
+      </div>
+      <label class="inline">
+        <input id="debug-toggle" type="checkbox" checked>
+        调试视图（路径 / 浅水 / 水流 / 投放范围）
+      </label>
+      <div class="row">
+        <span>演示倍速</span>
+        <select id="speed-select" style="width:120px">
+          <option value="1">1x</option>
+          <option value="4" selected>4x</option>
+          <option value="12">12x</option>
+        </select>
+      </div>
+      <div class="grid2">
+        <button id="btn-demo">▶ 自动演示场景</button>
+        <button id="btn-ground" class="danger">搁浅调试</button>
+      </div>
+    </div>
+
+    <h2>任务与资源</h2>
+    <div class="card">
+      <div class="row"><span>目标进度</span><span id="hud-progress" class="ok">0 / 3</span></div>
+      <div class="row"><span>剩余资源</span><span id="hud-resources">-</span></div>
+      <div class="row"><span>当前载重</span><span id="hud-load">-</span></div>
+      <div class="row"><span>当前状态</span><span id="hud-status">-</span></div>
+      <div class="row"><span>运行时间</span><span id="hud-time">0.0s</span></div>
+      <div class="row"><span>当前阶段</span><span id="hud-phase">-</span></div>
+    </div>
+
+    <h2>海况</h2>
+    <div class="card">
+      <div class="row"><span>风向/风力</span><span id="hud-wind">-</span></div>
+      <div class="row"><span>流速/水深</span><span id="hud-current">-</span></div>
+    </div>
+
+    <h2>检查点与失败</h2>
+    <div class="card">
+      <div class="row"><span>最近检查点</span><span id="hud-checkpoint">-</span></div>
+      <div class="row"><span>最近失败原因</span><span id="hud-failure">-</span></div>
+      <div class="grid2" style="margin-top:6px">
+        <button id="btn-drop">投放标记（空格）</button>
+        <button id="btn-recover" class="danger">检查点继续（C）</button>
+      </div>
+    </div>
+
+    <h2>存档</h2>
+    <div class="card">
+      <div class="grid2">
+        <button id="btn-save" class="secondary">保存状态</button>
+        <button id="btn-load" class="secondary">重新载入</button>
+      </div>
+      <div class="grid2">
+        <button id="btn-export" class="secondary">导出 JSON</button>
+        <button id="btn-import" class="secondary">导入 JSON</button>
+      </div>
+      <input id="file-import" type="file" accept="application/json" hidden>
+    </div>
+
+    <h2>事件日志</h2>
+    <div class="card"><ul id="event-log"></ul></div>
+  </aside>
+
+  <script src="src/game.js"></script>
+  <script src="src/nav.js"></script>
+  <script src="src/demo.js"></script>
+  <script src="src/render.js"></script>
+  <script src="src/audio.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
