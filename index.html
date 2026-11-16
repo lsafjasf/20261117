@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>线材包胶机仿真</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Microsoft YaHei", system-ui, sans-serif; background: #14181f; color: #dfe6ef; padding: 12px; }
+  h1 { font-size: 18px; margin-bottom: 8px; }
+  .layout { display: flex; gap: 12px; flex-wrap: wrap; }
+  .panel { background: #1d232e; border: 1px solid #2c3542; border-radius: 8px; padding: 10px; }
+  #stage { width: 100%; }
+  canvas { width: 100%; height: 340px; display: block; background: #10141b; border-radius: 6px; }
+  .controls { flex: 1 1 300px; min-width: 280px; }
+  .side { flex: 1 1 300px; min-width: 280px; display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+  .row label { width: 76px; font-size: 13px; color: #9fb0c3; }
+  .row output { width: 90px; font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+  input[type=range] { flex: 1; accent-color: #4da3ff; }
+  button { background: #2a3442; color: #dfe6ef; border: 1px solid #3b4a5e; border-radius: 6px;
+           padding: 6px 10px; font-size: 13px; cursor: pointer; }
+  button:hover { background: #35425a; }
+  button.primary { background: #2f6fdb; border-color: #2f6fdb; }
+  button.warn { background: #8a5a1d; border-color: #a06a24; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; font-size: 13px; }
+  .stats b { color: #8fd0ff; font-variant-numeric: tabular-nums; }
+  #log { height: 220px; overflow-y: auto; font-size: 12px; font-family: Consolas, monospace;
+         background: #10141b; border-radius: 6px; padding: 6px; }
+  #log div { padding: 1px 4px; border-left: 3px solid #3b4a5e; margin-bottom: 2px; }
+  #log .quality { border-color: #d9a13b; }
+  #log .shutdown { border-color: #e05252; color: #ffb3b3; }
+  #log .batch { border-color: #4fbf67; }
+  #log .param { border-color: #4da3ff; }
+  .statusbar { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; margin-top: 8px; }
+  .badge { padding: 2px 8px; border-radius: 10px; background: #2a3442; }
+  .badge.ok { background: #1f5c33; } .badge.bad { background: #6e2626; } .badge.idle { background: #4a4226; }
+</style>
+</head>
+<body>
+<h1>线材包胶机仿真 <span style="font-size:12px;color:#8fa0b5">生产 / 能耗 / 缓存共用同一仿真时钟</span></h1>
+<div class="layout">
+  <div class="panel" id="stage">
+    <canvas id="cv" width="960" height="340"></canvas>
+    <div class="statusbar">
+      <span>仿真时钟 <b id="stClock">0.0s</b></span>
+      <span>状态 <span class="badge idle" id="stRun">待机</span></span>
+      <span>当前规格 <b id="stSpec">A</b></span>
+      <span>段进度 <b id="stSeg">0/3</b></span>
+      <span>良品 <b id="stGood">0</b></span>
+      <span>能耗 <b id="stEnergy">0.000 kWh</b></span>
+      <span>熔料缓存 <b id="stPool">40</b></span>
+    </div>
+  </div>
+  <div class="panel controls">
+    <div class="row"><label>挤出速度</label><input type="range" id="inSpeed" min="0" max="120" value="0"><output id="outSpeed">0 rpm</output></div>
+    <div class="row"><label>模头温度</label><input type="range" id="inTemp" min="120" max="280" value="180"><output id="outTemp">180 °C</output></div>
+    <div class="row"><label>收线张力</label><input type="range" id="inTension" min="0" max="100" value="40"><output id="outTension">40 %</output></div>
+    <div class="btn-group">
+      <button data-spec="A">规格A 1.8mm</button>
+      <button data-spec="B">规格B 2.4mm</button>
+      <button data-spec="C">规格C 3.0mm</button>
+      <button id="btnPurge" class="warn">清料</button>
+    </div>
+    <div class="btn-group">
+      <button id="btnStart" class="primary">启动</button>
+      <button id="btnStop">停机</button>
+      <button id="btnResetFault">故障复位</button>
+    </div>
+    <div class="btn-group">
+      <button id="btnPause">暂停</button>
+      <button id="btnStep">单步</button>
+      <button id="btnReset" class="warn">批次重置</button>
+      <button id="btnInspect" class="primary">末端检查</button>
+      <button id="btnExport">导出报告</button>
+    </div>
+    <div class="row"><label>声音</label><input type="checkbox" id="inSound" checked><label style="width:auto">仿真倍速</label>
+      <select id="inWarp"><option>1</option><option selected>4</option><option>10</option></select></div>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="side">
+    <div class="panel"><b style="font-size:13px">事件日志（设备启停 / 参数变化 / 批次结果）</b><div id="log"></div></div>
+  </div>
+</div>
+<script src="src/sim.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
