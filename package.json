@@ -1,0 +1,12 @@
+{
+  "name": "mine-ventilation-coop",
+  "version": "1.0.0",
+  "description": "双人矿井通风协同任务：Canvas 巷道模拟、职责隔离输入、回放与保护状态",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/engine.test.js",
+    "serve": "python3 -m http.server 8765 --bind 127.0.0.1",
+    "test:browser": "node test/browser.smoke.mjs"
+  },
+  "license": "MIT"
+}

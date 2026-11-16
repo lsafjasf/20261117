@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>矿井通风协同 · 双人任务</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>矿井通风协同任务</h1>
+      <p class="muted">两区域同时保持安全 10 分钟即成功 · 两侧键位互不通用</p>
+    </div>
+    <div class="topbar-stats">
+      <span id="status-pill" class="pill ready">待开始</span>
+      <div class="stat"><span class="muted">剩余倒计时</span><strong id="timer">10:00</strong></div>
+      <div class="stat"><span class="muted">安全累计</span><strong id="safe-elapsed">00:00</strong></div>
+      <div class="stat"><span class="muted">任务时间</span><strong id="sim-time">00:00</strong></div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panels">
+      <article id="panel-up" class="station-panel">
+        <h2>玩家 1 · 上游风机（调风量）</h2>
+        <p class="scope">可操作范围：仅风机转速，不能控制风门</p>
+        <div class="key-hint">按键 <kbd id="up-keys">W / S</kbd> &nbsp; W 加速 · S 减速</div>
+        <div class="meter-row">
+          <span>转速</span>
+          <div class="meter"><div id="up-meter" class="meter-fill fan"></div></div>
+          <strong id="up-value">50</strong>
+        </div>
+        <p class="role-tag" id="up-role">人工操控</p>
+        <button id="sim-disconnect-up" class="small">模拟该侧断开/重连</button>
+      </article>
+
+      <article id="panel-down" class="station-panel">
+        <h2>玩家 2 · 下游风门（改分配）</h2>
+        <p class="scope">可操作范围：仅 A/B 风门分配，不能控制风机</p>
+        <div class="key-hint">按键 <kbd id="down-keys">← / →</kbd> &nbsp; ← 偏 A · → 偏 B</div>
+        <div class="meter-row">
+          <span>开度</span>
+          <div class="meter"><div id="down-meter" class="meter-fill door"></div></div>
+          <strong id="down-value">50</strong>
+        </div>
+        <p class="role-tag" id="down-role">人工操控</p>
+        <button id="sim-disconnect-down" class="small">模拟该侧断开/重连</button>
+      </article>
+    </section>
+
+    <section class="canvas-wrap">
+      <canvas id="mine"></canvas>
+      <div class="energy">
+        <span>共享能量</span>
+        <div class="meter energy-meter"><div id="energy-bar" class="meter-fill energy-fill"></div></div>
+        <strong id="energy-text">100%</strong>
+      </div>
+    </section>
+
+    <section class="side-col">
+      <div class="card">
+        <h3>任务控制</h3>
+        <div class="btn-grid">
+          <button id="btn-pause">暂停 (P)</button>
+          <button id="btn-restart">重开 (R)</button>
+          <button id="btn-debug">单人调试 (D)</button>
+        </div>
+        <div class="debug-row">
+          <label>人类负责
+            <select id="debug-station">
+              <option value="upstream">上游风机</option>
+              <option value="downstream">下游风门</option>
+            </select>
+          </label>
+          <label>加速
+            <select id="debug-scale">
+              <option>5</option>
+              <option selected>10</option>
+              <option>20</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>两工作面仪表（双方共享）</h3>
+        <table class="zone-table">
+          <thead><tr><th>区域</th><th>风量</th><th>压力</th><th>瓦斯</th><th>状态</th></tr></thead>
+          <tbody id="zone-table"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>任务记录</h3>
+        <ul id="event-log" class="event-log"></ul>
+      </div>
+    </section>
+  </main>
+
+  <section class="replay-bar card">
+    <h3>回放（输入 · 共享资源 · 冲突时刻）</h3>
+    <div class="row">
+      <button id="btn-save-replay">保存本局回放</button>
+      <button id="btn-replay-list">刷新列表</button>
+      <button id="btn-clear-replays">清空存档</button>
+    </div>
+    <div id="replay-list"></div>
+    <div id="replay-panel" hidden class="replay-panel">
+      <strong id="replay-title"></strong>
+      <input id="replay-progress" type="range" min="0" max="100" value="0" disabled />
+      <span id="replay-time">00:00</span>
+      <button id="btn-stop-replay">退出回放</button>
+    </div>
+  </section>
+
+  <div id="toast"></div>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
