@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>FOLD//LINE 04 · 纸盒成型仿真</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23f2b84b' d='M2 8 16 2l14 6v16l-14 6L2 24Z'/%3E%3Cpath fill='none' stroke='%23151a1c' d='M2 8l14 7 14-7M16 15v15'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div>
+            <p class="eyebrow">PACKAGING CELL / 04</p>
+            <h1>FOLD<span>//</span>LINE</h1>
+          </div>
+        </div>
+        <div class="topbar-center">
+          <span class="live-dot" id="liveDot"></span>
+          <span id="machineState">待机</span>
+          <span class="topbar-separator"></span>
+          <span>批次 <b id="batchCode">B-0417</b></span>
+        </div>
+        <div class="topbar-right">
+          <div class="clock-block"><span>统一仿真时钟</span><strong id="clock">T+ 00:00.0</strong></div>
+          <button class="icon-button" id="soundButton" type="button" aria-pressed="false" title="开启机械节拍声">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9v6h4l5 4V5L9 9H5Zm12.5 3a4.5 4.5 0 0 0-2-3.7v7.4a4.5 4.5 0 0 0 2-3.7Z"/></svg>
+            <span>声音</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="metrics" aria-label="批次指标">
+        <article class="metric metric-primary">
+          <span class="metric-label">合格盒</span>
+          <div><strong id="goodCount">0</strong><span class="metric-total">/ 12</span></div>
+          <div class="mini-progress"><i id="goodProgress"></i></div>
+        </article>
+        <article class="metric">
+          <span class="metric-label">批次良率</span>
+          <strong id="yieldRate">—</strong>
+          <span class="metric-note" id="attemptNote">等待生产</span>
+        </article>
+        <article class="metric">
+          <span class="metric-label">累计能耗</span>
+          <strong id="energy">0.000 <small>kWh</small></strong>
+          <span class="metric-note">当前 <b id="power">0.0</b> kW</span>
+        </article>
+        <article class="metric">
+          <span class="metric-label">功率峰值</span>
+          <strong id="peakPower">0.0 <small>kW</small></strong>
+          <span class="metric-note">本批采样</span>
+        </article>
+        <article class="metric">
+          <span class="metric-label">成型缓存</span>
+          <strong id="bufferCount">0 <small>/ 6</small></strong>
+          <span class="metric-note" id="bufferNote">进料缓存空闲</span>
+        </article>
+        <article class="metric metric-state">
+          <span class="metric-label">机械节拍</span>
+          <strong id="beatRate">86 <small>SPM</small></strong>
+          <span class="metric-note" id="beatNote">输送同步</span>
+        </article>
+      </section>
+
+      <main class="workspace">
+        <section class="left-column">
+          <article class="panel canvas-panel">
+            <div class="panel-heading">
+              <div><p class="eyebrow">FORMING STATION</p><h2>盒坯 · 上胶 · 压合</h2></div>
+              <div class="phase-rail" id="phaseRail">
+                <span data-phase="feed">送料</span><span data-phase="glue">上胶</span>
+                <span data-phase="press">压合</span><span data-phase="eject">出料</span>
+              </div>
+            </div>
+            <div class="canvas-wrap">
+              <canvas id="machineCanvas" aria-label="纸盒成型机实时画面"></canvas>
+              <div class="canvas-badge" id="sizeBadge">
+                <span>当前盒型</span><strong>S · 小盒</strong><small>140 × 100 × 45 mm</small>
+              </div>
+              <div class="canvas-readout"><span id="cycleReadout">CY 00.0s</span><span id="phaseReadout">待机</span></div>
+              <div class="start-overlay" id="startOverlay">
+                <div class="start-card">
+                  <span class="eyebrow">READY FOR BATCH</span>
+                  <h3>校准参数，开始成型</h3>
+                  <p>本批 12 个合格盒：S × 4 → M × 4 → L × 4</p>
+                  <button class="primary-button large" id="overlayStart" type="button"><span>开始生产</span><kbd>Enter</kbd></button>
+                </div>
+              </div>
+            </div>
+            <div class="machine-strip">
+              <div class="device" data-device="conveyor"><i></i><span>输送带</span><b id="deviceConveyor">待机</b></div>
+              <div class="device" data-device="glue"><i></i><span>上胶头</span><b id="deviceGlue">待机</b></div>
+              <div class="device" data-device="press"><i></i><span>压轮组</span><b id="devicePress">待机</b></div>
+              <div class="device" data-device="stacker"><i></i><span>堆垛</span><b id="deviceStacker">待机</b></div>
+              <div class="sync-flag"><span class="sync-icon"></span>生产 / 能耗 / 缓存同步采样</div>
+            </div>
+          </article>
+
+          <section class="lower-grid">
+            <article class="panel log-panel">
+              <div class="panel-heading compact">
+                <div><p class="eyebrow">AUDIT TRAIL</p><h2>设备与批次记录</h2></div>
+                <div class="log-actions"><span id="logCount">0 条</span><button class="text-button" id="clearFilter" type="button">全部记录</button></div>
+              </div>
+              <div class="log-head"><span>时刻</span><span>类型</span><span>事件</span><span>详情</span></div>
+              <div class="log-list" id="logList" role="log" aria-live="polite"></div>
+            </article>
+
+            <article class="panel sample-panel">
+              <div class="panel-heading compact">
+                <div><p class="eyebrow">SHARED CLOCK</p><h2>同步遥测</h2></div>
+                <span class="sample-rate"><i></i> 1 Hz</span>
+              </div>
+              <div class="chart-wrap">
+                <canvas id="telemetryCanvas" aria-label="生产、能耗和缓存同步遥测曲线"></canvas>
+                <div class="chart-legend"><span class="production">产量</span><span class="energy-line">能耗</span><span class="buffer-line">缓存</span></div>
+              </div>
+              <div class="sample-stats">
+                <div><span>时钟</span><b id="sampleClock">0.0s</b></div><div><span>已产</span><b id="sampleProduced">0</b></div>
+                <div><span>缓存</span><b id="sampleBuffer">0</b></div><div><span>能耗</span><b id="sampleEnergy">0.000</b></div>
+              </div>
+            </article>
+          </section>
+        </section>
+
+        <aside class="right-column">
+          <article class="panel recipe-panel">
+            <div class="panel-heading compact">
+              <div><p class="eyebrow">BATCH ROUTE</p><h2>盒型与配方</h2></div>
+              <span class="recipe-index" id="recipeIndex">01 / 03</span>
+            </div>
+            <div class="size-route" id="sizeRoute">
+              <div class="size-stop active" data-size="S"><b>S</b><span>小盒</span><i>0/4</i></div>
+              <div class="route-line"></div>
+              <div class="size-stop" data-size="M"><b>M</b><span>中盒</span><i>0/4</i></div>
+              <div class="route-line"></div>
+              <div class="size-stop" data-size="L"><b>L</b><span>大盒</span><i>0/4</i></div>
+            </div>
+            <div class="recipe-summary">
+              <div><span>成型尺寸</span><b id="recipeDims">140 × 100 × 45</b></div>
+              <div><span>目标良品</span><b id="recipeTarget">4 件</b></div>
+              <button class="text-button" id="applyRecipe" type="button">套用推荐值</button>
+            </div>
+          </article>
+
+          <article class="panel controls-panel">
+            <div class="panel-heading compact">
+              <div><p class="eyebrow">PROCESS CONTROL</p><h2>工艺参数</h2></div>
+              <span class="window-key"><i></i> 绿色 = 工艺窗口</span>
+            </div>
+
+            <div class="control" data-control="glue">
+              <div class="control-head">
+                <label for="glueRange">胶量</label>
+                <div class="control-value"><input id="glueInput" type="number" min="0.2" max="3" step="0.01" value="1.05" /><span>g / 件</span></div>
+              </div>
+              <input id="glueRange" type="range" min="0.2" max="3" step="0.01" value="1.05" />
+              <div class="range-labels"><span>0.2 少胶</span><span id="glueWindow">窗口 0.92–1.18</span><span>3.0 过量</span></div>
+              <p class="control-hint" id="glueHint">胶线连续，折边接缝闭合</p>
+            </div>
+
+            <div class="control" data-control="press">
+              <div class="control-head">
+                <label for="pressRange">压合时间</label>
+                <div class="control-value"><input id="pressInput" type="number" min="0.2" max="2.4" step="0.01" value="0.86" /><span>s</span></div>
+              </div>
+              <input id="pressRange" type="range" min="0.2" max="2.4" step="0.01" value="0.86" />
+              <div class="range-labels"><span>0.2 短压</span><span id="pressWindow">窗口 0.74–0.98</span><span>2.4 深压</span></div>
+              <p class="control-hint" id="pressHint">底角压合稳定，面纸无压痕</p>
+            </div>
+
+            <div class="control" data-control="speed">
+              <div class="control-head">
+                <label for="speedRange">输送速度</label>
+                <div class="control-value"><input id="speedInput" type="number" min="25" max="120" step="1" value="86" /><span>m/min</span></div>
+              </div>
+              <input id="speedRange" type="range" min="25" max="120" step="1" value="86" />
+              <div class="range-labels"><span>25 滞后</span><span id="speedWindow">窗口 77–95</span><span>120 飞车</span></div>
+              <p class="control-hint" id="speedHint">来料节拍与折边同步</p>
+            </div>
+          </article>
+
+          <article class="panel action-panel">
+            <div class="transport-actions">
+              <button class="primary-button" id="startButton" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>开始批次
+              </button>
+              <button class="secondary-button" id="pauseButton" type="button" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7V5Zm6 0h4v14h-4V5Z"/></svg>暂停
+              </button>
+              <button class="secondary-button" id="stepButton" type="button" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 5 10 7-10 7V5Zm11 0h3v14h-3V5Z"/></svg>单步
+              </button>
+              <button class="secondary-button danger-outline" id="stopButton" type="button" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6V6Z"/></svg>停机
+              </button>
+            </div>
+            <div class="action-foot">
+              <button class="text-button" id="resetButton" type="button">批次重置 / 清空缓存</button>
+              <span><kbd>Space</kbd> 暂停 · <kbd>→</kbd> 单步 · <kbd>R</kbd> 重置</span>
+            </div>
+            <div class="fault-banner" id="faultBanner" hidden>
+              <div><span>设备停机</span><b id="faultReason">—</b></div>
+              <button class="secondary-button" id="restartButton" type="button">复位并恢复批次</button>
+            </div>
+          </article>
+
+          <article class="panel validation-panel">
+            <div class="panel-heading compact">
+              <div><p class="eyebrow">PROCESS VALIDATION</p><h2>三流程验证</h2></div>
+              <span class="validation-state" id="validationState">未运行</span>
+            </div>
+            <p class="panel-copy">独立沙盒运行，不改变当前批次。每次验证都经过引擎的实际生产、质量判定与停机逻辑。</p>
+            <div class="validation-grid">
+              <button class="validation-button" data-validation="normal" type="button"><i>01</i><span>正常生产</span><b>12 / 12</b></button>
+              <button class="validation-button" data-validation="extreme" type="button"><i>02</i><span>参数越限</span><b>质量 + 恢复</b></button>
+              <button class="validation-button" data-validation="fault" type="button"><i>03</i><span>设备停机</span><b>停机 + 恢复</b></button>
+            </div>
+            <button class="wide-button" id="runValidations" type="button">运行全部流程验证 <span>↗</span></button>
+            <div class="validation-results" id="validationResults">
+              <div class="validation-empty">尚未验证。运行后输出良品率、触发时刻与异常位置。</div>
+            </div>
+          </article>
+
+          <article class="panel export-panel">
+            <div>
+              <p class="eyebrow">BATCH REPORT</p><h2>结果导出</h2>
+              <p id="exportSummary">良品 0 / 峰值 0.0 kW / 停机 —</p>
+            </div>
+            <button class="export-button" id="exportButton" type="button" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>导出 JSON
+            </button>
+          </article>
+        </aside>
+      </main>
+    </div>
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
