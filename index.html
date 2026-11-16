@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>风塔轨道检修 · 吊篮模拟</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>风塔轨道检修模拟</h1>
+    <div class="seed-row">
+      <label>Seed
+        <input id="seedInput" type="number" value="20261117" min="0" max="4294967295" />
+      </label>
+      <label>调试场景
+        <select id="scenarioSelect">
+          <option value="normal">正常路线</option>
+          <option value="collision">碰撞演示</option>
+          <option value="strand">搁浅演示</option>
+        </select>
+      </label>
+      <button id="newGameBtn">新开一局</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="stage">
+      <canvas id="canvas" width="520" height="720"></canvas>
+      <div id="overlay" class="overlay hidden"></div>
+    </section>
+
+    <aside class="panel">
+      <h2>任务与资源</h2>
+      <div id="progress" class="progress"></div>
+      <div id="resources" class="resources"></div>
+      <div id="physics" class="physics"></div>
+      <div id="failureBox" class="failure-box hidden"></div>
+
+      <h2>控制</h2>
+      <div class="buttons">
+        <button id="pauseBtn">暂停 (P)</button>
+        <button id="restartBtn">重开 (R)</button>
+        <button id="resumeBtn" disabled>检查点继续 (C)</button>
+        <button id="saveBtn">保存状态</button>
+        <button id="loadBtn">载入状态</button>
+        <button id="autoBtn">自动驾驶</button>
+        <button id="soundBtn">声音：开</button>
+      </div>
+      <ul class="keys">
+        <li><b>W / ↑</b> 上升，<b>S / ↓</b> 下降</li>
+        <li><b>空格</b> 制动，<b>E</b> 检修叶片根部</li>
+        <li><b>Q</b> 地面装工具，<b>Z</b> 地面卸工具</li>
+        <li><b>P</b> 暂停，<b>R</b> 重开，<b>C</b> 检查点继续</li>
+      </ul>
+
+      <h2>事件日志</h2>
+      <ol id="log" class="log"></ol>
+    </aside>
+  </main>
+
+  <script src="engine.js"></script>
+  <script src="render.js"></script>
+  <script src="audio.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

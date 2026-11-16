@@ -1,0 +1,16 @@
+{
+  "name": "windmill-gondola",
+  "version": "1.0.0",
+  "description": "风塔轨道检修吊篮确定性模拟（Canvas + WebAudio，固定 seed 可复现）",
+  "main": "engine.js",
+  "scripts": {
+    "test": "node tests.js && node dom-tests.js",
+    "test:engine": "node tests.js",
+    "test:dom": "node dom-tests.js"
+  },
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "jsdom": "^31.0.1"
+  }
+}
