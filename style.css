@@ -1,0 +1,63 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+  background: #10151c;
+  color: #dce3ec;
+}
+header { padding: 10px 16px; background: #18202b; border-bottom: 1px solid #2a3646; }
+header h1 { font-size: 17px; margin: 0 0 6px 0; }
+#status-bar { display: flex; gap: 18px; font-size: 13px; align-items: center; }
+.badge { padding: 2px 10px; border-radius: 10px; background: #2a3646; }
+.badge.running { background: #1d5c34; }
+.badge.paused { background: #7a5b16; }
+.badge.fault { background: #8c2222; }
+.badge.done { background: #1d4e7a; }
+
+main { display: flex; gap: 12px; padding: 12px; }
+#left-panel, #right-panel { display: flex; flex-direction: column; gap: 10px; }
+canvas { background: #0b0f14; border: 1px solid #2a3646; border-radius: 6px; }
+
+#controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+button {
+  background: #243244; color: #dce3ec; border: 1px solid #3a4c64;
+  border-radius: 5px; padding: 5px 14px; cursor: pointer; font-size: 13px;
+}
+button:hover:not(:disabled) { background: #2f4159; }
+button:disabled { opacity: 0.4; cursor: default; }
+select, input[type=number] {
+  background: #1a2330; color: #dce3ec; border: 1px solid #3a4c64;
+  border-radius: 4px; padding: 3px 6px; width: 90px;
+}
+select { width: auto; }
+
+#replay-bar { display: flex; gap: 10px; align-items: center; font-size: 13px; }
+#replay-slider { flex: 1; }
+.hidden { display: none !important; }
+
+#turbine-cards { display: flex; gap: 10px; }
+.tcard {
+  flex: 1; background: #18202b; border: 1px solid #2a3646; border-radius: 6px;
+  padding: 8px 10px; font-size: 12px; line-height: 1.55;
+}
+.tcard h3 { margin: 0 0 4px 0; font-size: 13px; }
+.tcard .val { font-family: Consolas, monospace; }
+.tcard .warn { color: #f0b429; }
+.tcard .over { color: #f0544f; font-weight: bold; }
+.tcard.faulted { border-color: #f0544f; }
+
+#report-panel { background: #18202b; border: 1px solid #2a3646; border-radius: 6px; padding: 8px 12px; font-size: 12.5px; }
+#report-panel h2 { font-size: 14px; margin: 2px 0 6px 0; }
+#report-content table { border-collapse: collapse; width: 100%; }
+#report-content td, #report-content th { border: 1px solid #2a3646; padding: 3px 8px; text-align: left; }
+
+#fault-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center; z-index: 10;
+}
+#fault-box {
+  background: #241416; border: 2px solid #f0544f; border-radius: 8px;
+  padding: 20px 28px; max-width: 480px;
+}
+#fault-box h2 { margin-top: 0; color: #f0544f; }
+#fault-box button { margin-right: 10px; margin-top: 10px; }
