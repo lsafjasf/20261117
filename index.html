@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1118">
+  <title>叠片防线 · 电池叠片机仿真</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div>
+          <p class="eyebrow">STACKGUARD / CELL ASSEMBLY</p>
+          <h1>叠片防线</h1>
+        </div>
+      </div>
+
+      <div class="clock-block" title="生产、能耗与缓存共用此仿真时钟">
+        <div class="clock-label"><span class="live-dot"></span> 共用仿真时钟</div>
+        <strong id="simClock">00:00.0</strong>
+      </div>
+
+      <div id="globalStatus" class="status-pill is-idle">
+        <span class="status-orb"></span>
+        <span id="globalStatusText">待机</span>
+      </div>
+
+      <div class="header-actions">
+        <button id="soundToggle" class="icon-button" type="button" aria-pressed="false" title="启用机械臂声音">
+          <span id="soundIcon">◌</span><span id="soundLabel">声音关</span>
+        </button>
+        <button id="exportJson" class="icon-button" type="button" title="导出完整批次与验证数据">
+          <span>↓</span><span>JSON</span>
+        </button>
+        <button id="exportCsv" class="icon-button" type="button" title="导出表格数据">
+          <span>↓</span><span>CSV</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="panel control-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">PROCESS SETTINGS</p>
+            <h2>工艺参数</h2>
+          </div>
+          <span id="paramHealth" class="tiny-badge">安全</span>
+        </div>
+
+        <div class="parameter-list">
+          <label class="parameter" for="pressureRange">
+            <span class="parameter-title">
+              <span>吸盘压力</span>
+              <output id="pressureValue">52 kPa</output>
+            </span>
+            <input id="pressureRange" type="range" min="20" max="90" step="1" value="52">
+            <span class="range-labels"><span>20</span><span class="safe-zone">安全 38–60</span><span>90</span></span>
+            <span class="parameter-hint">过高会压伤隔膜；超过 65 kPa 触发停机。</span>
+          </label>
+
+          <label class="parameter" for="offsetRange">
+            <span class="parameter-title">
+              <span>对位偏移</span>
+              <output id="offsetValue">0.00 mm</output>
+            </span>
+            <input id="offsetRange" type="range" min="-1" max="1" step="0.05" value="0">
+            <span class="range-labels"><span>−1.00</span><span class="safe-zone">安全 ±0.30</span><span>+1.00</span></span>
+            <span class="parameter-hint">超过安全区会增加薄片错位与短路判废风险。</span>
+          </label>
+
+          <label class="parameter" for="speedRange">
+            <span class="parameter-title">
+              <span>节拍速度</span>
+              <output id="speedValue">78%</output>
+            </span>
+            <input id="speedRange" type="range" min="40" max="130" step="1" value="78">
+            <span class="range-labels"><span>40</span><span class="safe-zone">安全 55–95</span><span>130</span></span>
+            <span class="parameter-hint">过快会推高缓存占用；超过 108% 易发生堵塞。</span>
+          </label>
+        </div>
+
+        <div class="action-grid">
+          <button id="startBtn" class="action primary" type="button"><span>▶</span> 启动</button>
+          <button id="pauseBtn" class="action" type="button"><span>Ⅱ</span> 暂停</button>
+          <button id="stepBtn" class="action" type="button"><span>›|</span> 单步</button>
+          <button id="recoverBtn" class="action recover" type="button" disabled><span>↻</span> 复位续产</button>
+          <button id="estopBtn" class="action danger" type="button"><span>■</span> 急停</button>
+          <button id="resetBtn" class="action reset" type="button"><span>⌁</span> 批次重置</button>
+        </div>
+        <p class="control-note">单步固定推进 0.25 仿真秒。暂停或故障时会冻结时钟、能耗与缓存。</p>
+
+        <div class="risk-card" id="riskCard">
+          <div class="risk-icon">!</div>
+          <div>
+            <strong id="riskTitle">参数处于安全区</strong>
+            <p id="riskText">压力、对位与节拍均在推荐范围内。</p>
+          </div>
+        </div>
+      </aside>
+
+      <section class="stage-card">
+        <div class="stage-heading">
+          <div>
+            <p class="eyebrow">LIVE CELL STACKER</p>
+            <h2 id="batchTitle">批次 B-001 <span>· 十组目标</span></h2>
+          </div>
+          <div class="stage-progress">
+            <span id="groupProgressText">0 / 10 组</span>
+            <div class="progress-track"><i id="groupProgressBar"></i></div>
+          </div>
+        </div>
+
+        <div class="canvas-wrap">
+          <canvas id="machineCanvas" aria-label="电池叠片机实时仿真画面"></canvas>
+          <div class="canvas-legend">
+            <span><i class="legend-positive"></i>正极</span>
+            <span><i class="legend-separator"></i>隔膜</span>
+            <span><i class="legend-negative"></i>负极</span>
+            <span><i class="legend-cache"></i>缓存</span>
+          </div>
+          <div id="faultOverlay" class="fault-overlay" hidden>
+            <span>STOP</span>
+            <strong id="faultOverlayReason">设备停机</strong>
+          </div>
+          <div class="canvas-caption">
+            <span id="armStateText">机械臂待机</span>
+            <span id="layerStateText">叠层 0 / 30</span>
+          </div>
+        </div>
+
+        <div class="stage-footer">
+          <div><span>良品</span><strong id="goodCount">0</strong></div>
+          <div><span>短路风险</span><strong id="defectCount">0</strong></div>
+          <div><span>缓存占用</span><strong id="cacheValue">0.0%</strong></div>
+          <div><span>实时功率</span><strong id="powerValue">0.0 kW</strong></div>
+          <div><span>批次能耗</span><strong id="energyValue">0.000 kWh</strong></div>
+        </div>
+      </section>
+
+      <aside class="panel telemetry-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">SHARED TELEMETRY</p>
+            <h2>实时状态</h2>
+          </div>
+          <span id="clockSyncBadge" class="tiny-badge sync">同钟采样</span>
+        </div>
+
+        <div class="yield-ring-wrap">
+          <div id="yieldRing" class="yield-ring" style="--yield: 0deg">
+            <div><strong id="yieldValue">—</strong><span>良品率</span></div>
+          </div>
+          <div class="yield-copy">
+            <span>已完成</span>
+            <strong><span id="yieldGood">0</span> / <span id="yieldTotal">0</span> 组</strong>
+            <p id="yieldHint">完成组数达到 10 组后自动判定批次。</p>
+          </div>
+        </div>
+
+        <div class="meter-block">
+          <div class="meter-title"><span>缓存线负载</span><strong id="cacheMeterText">0.0%</strong></div>
+          <div class="meter-track"><i id="cacheMeterBar"></i></div>
+          <p>瓶颈线目标占用 <span id="cacheTargetText">35%</span>，与生产同一时钟推进。</p>
+        </div>
+
+        <div class="equipment-list">
+          <div class="equipment-row"><span><i class="equip-dot" id="equip-feeder"></i>送料机构</span><strong id="state-feeder">待机</strong></div>
+          <div class="equipment-row"><span><i class="equip-dot" id="equip-robot"></i>机械臂</span><strong id="state-robot">待机</strong></div>
+          <div class="equipment-row"><span><i class="equip-dot" id="equip-stacker"></i>叠片台</span><strong id="state-stacker">待机</strong></div>
+          <div class="equipment-row"><span><i class="equip-dot" id="equip-cache"></i>缓存线</span><strong id="state-cache">待机</strong></div>
+        </div>
+
+        <div class="peak-grid">
+          <div><span>峰值压力</span><strong id="peakPressure">0 kPa</strong></div>
+          <div><span>峰值缓存</span><strong id="peakCache">0.0%</strong></div>
+          <div><span>峰值功率</span><strong id="peakPower">0.0 kW</strong></div>
+          <div><span>峰值速度</span><strong id="peakSpeed">0%</strong></div>
+        </div>
+
+        <div class="stop-box" id="stopBox">
+          <span>停机记录</span>
+          <strong id="stopReason">无停机</strong>
+          <p id="stopLocation">设备状态正常</p>
+        </div>
+      </aside>
+    </main>
+
+    <section class="analysis-grid">
+      <div class="panel validation-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">SCENARIO PROOF</p>
+            <h2>三类流程实测</h2>
+          </div>
+          <button id="runValidationBtn" class="run-button" type="button">
+            <span class="run-icon">⌁</span><span id="runValidationLabel">运行实测</span>
+          </button>
+        </div>
+        <div id="validationSummary" class="validation-summary">
+          <span class="summary-orb pending"></span>
+          <div>
+            <strong>尚未运行场景验证</strong>
+            <p>验证器会新建独立仿真，实际推进正常、极限与故障流程，不使用静态结果。</p>
+          </div>
+          <span id="validationStamp" class="validation-stamp">等待实测</span>
+        </div>
+        <div class="table-wrap">
+          <table class="validation-table">
+            <thead>
+              <tr>
+                <th>流程</th>
+                <th>触发时刻</th>
+                <th>当前数值</th>
+                <th>恢复结果</th>
+                <th>异常位置</th>
+                <th>结果</th>
+              </tr>
+            </thead>
+            <tbody id="validationBody">
+              <tr class="placeholder-row">
+                <td>正常生产</td><td>—</td><td>—</td><td>—</td><td>—</td>
+                <td><span class="result-badge pending">待测</span></td>
+              </tr>
+              <tr class="placeholder-row">
+                <td>参数越限</td><td>—</td><td>—</td><td>—</td><td>—</td>
+                <td><span class="result-badge pending">待测</span></td>
+              </tr>
+              <tr class="placeholder-row">
+                <td>设备停机</td><td>—</td><td>—</td><td>—</td><td>—</td>
+                <td><span class="result-badge pending">待测</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="validation-foot">
+          <span id="validationEvidence">证据：0 个仿真步 · 0 条事件</span>
+          <span>正常 / 极限 / 故障</span>
+        </div>
+      </div>
+
+      <div class="panel log-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">AUDIT TRAIL</p>
+            <h2>设备事件日志</h2>
+          </div>
+          <span id="logCount" class="tiny-badge">0 条</span>
+        </div>
+        <div class="log-head">
+          <span>时刻</span><span>类型</span><span>工位</span><span>记录</span>
+        </div>
+        <div id="eventLog" class="event-log" aria-live="polite">
+          <div class="empty-log">启动设备后，这里会记录每次启停、参数变化与批次结果。</div>
+        </div>
+        <div class="log-footer">
+          <span>日志与共享仿真钟逐条对齐</span>
+          <span>最多保留 600 条</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div><span class="footer-mark"></span> 批次重置会清空叠层、缓存和当前数值；刷新页面同样从零开始。</div>
+      <div>导出包含良品数、峰值、停机原因、事件日志与三类验证证据。</div>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="simulation.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
