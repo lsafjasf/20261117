@@ -1,0 +1,11 @@
+{
+  "name": "timeline-editor-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "可滚动缩略图时间线编辑器示例：共享时钟、异步代次控制、片段移动/分割/转场、工程持久化与无黑帧导出",
+  "scripts": {
+    "test": "node test/run.js && node test/browser-smoke.mjs",
+    "serve": "node server.mjs"
+  }
+}

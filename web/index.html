@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>时间线编辑器示例 · 可滚动缩略图</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="toolbar">
+    <strong>时间线编辑器示例</strong>
+    <button id="play">播放</button>
+    <button id="pause">暂停</button>
+    <label>循环 <input id="loop" type="checkbox" /></label>
+    <label>缩放
+      <input id="zoom" type="range" min="8" max="120" value="20" />
+    </label>
+    <label>裁切比例
+      <select id="crop">
+        <option>16:9</option>
+        <option>4:3</option>
+        <option>1:1</option>
+        <option>9:16</option>
+      </select>
+    </label>
+    <button id="retry">重试失败缩略图</button>
+    <button id="save">保存工程</button>
+    <button id="load">重新载入</button>
+    <button id="export-png">导出选帧 PNG</button>
+    <button id="export-program">导出节目(APNG+WAV)</button>
+  </header>
+
+  <section class="stage">
+    <canvas id="preview" width="384" height="216"></canvas>
+    <div class="meta">
+      <div id="clock-readout">0.00 s</div>
+      <div id="status" class="status">就绪</div>
+      <div id="conflicts" class="conflicts"></div>
+      <div id="duration-report" class="report"></div>
+      <div class="hint">
+        操作：点击片段选中 → 拖动移动；在片段上双击分割；选中两个相邻片段后点“加转场”。
+      </div>
+      <div class="row">
+        <button id="split">在播放头分割选中片段</button>
+        <button id="transition">为相邻片段加 1.5s 转场</button>
+        <button id="break">注入非法重叠(验证拦截)</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="timeline-scroll" id="scroller">
+    <canvas id="timeline" height="320"></canvas>
+  </section>
+
+  <section class="thumbs" id="thumb-log" aria-label="缩略图任务日志"></section>
+
+  <a id="download" style="display:none"></a>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
