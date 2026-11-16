@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>三路噪声门实验台 · Web Audio</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>三路噪声门实验台</h1>
+      <p class="sub">持续音 + 呼吸噪声 + 瞬态干扰 · 门限/保持时间调节 · 全部声音由 Web Audio 实时合成</p>
+    </div>
+    <div class="status-cluster">
+      <div class="status-pill" id="ctxState">AudioContext：未启动</div>
+      <div class="status-pill" id="transportState">停止</div>
+      <div class="status-pill" id="nodeCount">活动节点 0</div>
+    </div>
+  </header>
+
+  <section class="panel transport-panel">
+    <div class="btn-row">
+      <button id="btnPlay" class="primary">▶ 播放</button>
+      <button id="btnPause">⏸ 暂停</button>
+      <button id="btnReplay">↺ 重播</button>
+      <button id="btnStep">⏭ 单步</button>
+      <button id="btnStop">■ 停止</button>
+    </div>
+    <div class="btn-row">
+      <label class="mode-label">试听状态
+        <select id="modeSelect">
+          <option value="main">主输出</option>
+          <option value="bypass">旁路（门限旁通）</option>
+          <option value="mute">静音</option>
+        </select>
+      </label>
+      <label class="mode-label">BPM
+        <input type="number" id="bpmInput" min="60" max="180" step="1" value="96" />
+      </label>
+      <label class="mode-label">节拍漂移
+        <span id="driftValue" class="mono">—</span>
+      </label>
+    </div>
+    <div class="btn-row">
+      <button id="btnSave">💾 保存参数</button>
+      <button id="btnReload">📂 重载参数</button>
+      <button id="btnExport">⬇ 导出 WAV（未达标时拦截）</button>
+      <button id="btnVerify" class="accent">🧪 一键完整验证</button>
+      <button id="btnRebuild">🔧 重建音频图（泄漏自检）</button>
+    </div>
+  </section>
+
+  <section class="panel master-panel">
+    <div class="master-title">主输出电平</div>
+    <div class="meter-stack">
+      <div class="meter-line"><span class="ch-tag">L</span><div class="meter"><div class="meter-fill" id="meterL"></div></div><span class="mono db" id="dbL">-∞ dB</span></div>
+      <div class="meter-line"><span class="ch-tag">R</span><div class="meter"><div class="meter" id="meterRWrap"><div class="meter-fill" id="meterR"></div></div></div><span class="mono db" id="dbR">-∞ dB</span></div>
+    </div>
+    <div class="step-strip" id="stepStrip" title="节拍步序"></div>
+  </section>
+
+  <main class="channels" id="channels"></main>
+
+  <section class="panel io-panel">
+    <h2>导出比较（时长 / 声道 / 关键峰值）</h2>
+    <div class="table-wrap">
+      <table id="compareTable">
+        <thead>
+          <tr><th>导出批次</th><th>时长(s)</th><th>声道</th><th>采样率</th><th>L 峰值(dB)</th><th>R 峰值(dB)</th><th>L/R 能量比</th><th>参数指纹</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel verify-panel">
+    <h2>验证日志（声道 / 频段 / 节拍三维度 + 节点泄漏 + 尾音 + 重载再导出）</h2>
+    <ul id="verifyLog" class="verify-log"></ul>
+  </section>
+
+  <footer class="foot">
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
