@@ -1,0 +1,53 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #0e1b22;
+  color: #dfe9ee;
+}
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 18px; background: #13262f; flex-wrap: wrap; gap: 8px;
+}
+h1 { font-size: 18px; margin: 0; }
+h2 { font-size: 14px; margin: 14px 0 6px; color: #8fd0c2; }
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+button, select, input {
+  background: #1d3a46; color: #dfe9ee; border: 1px solid #2f5563;
+  border-radius: 6px; padding: 5px 10px; font-size: 13px; cursor: pointer;
+}
+input { width: 130px; cursor: text; }
+button:hover { background: #27505f; }
+main { display: flex; gap: 14px; padding: 14px; flex-wrap: wrap; }
+.left { flex: 1 1 960px; min-width: 320px; }
+.right { flex: 0 1 340px; min-width: 280px; }
+canvas {
+  width: 100%; border-radius: 8px; background: #0a1418;
+  border: 1px solid #23404c; display: block;
+}
+.phasebar { display: flex; gap: 12px; align-items: center; margin-top: 8px; font-size: 14px; }
+.badge {
+  padding: 2px 10px; border-radius: 10px; background: #1d3a46; font-size: 12px;
+}
+.badge.storm { background: #7a2e2e; }
+.badge.recovery { background: #6b5a1e; }
+.badge.ok { background: #1e5c3f; }
+.hidden { display: none; }
+.interventions { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; font-size: 13px; }
+#curIv { color: #f0c674; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { border: 1px solid #23404c; padding: 4px 8px; text-align: left; }
+th { background: #16303a; }
+.alarm-OK { color: #7fd08f; }
+.alarm-WARN { color: #f0c674; }
+.alarm-CRITICAL { color: #ff7a7a; font-weight: bold; }
+#logList {
+  list-style: none; margin: 0; padding: 0; max-height: 260px; overflow-y: auto;
+  font-size: 12px; background: #0a1418; border: 1px solid #23404c; border-radius: 6px;
+}
+#logList li { padding: 4px 8px; border-bottom: 1px solid #16303a; }
+#logList li .d { color: #8fd0c2; margin-right: 6px; }
+#logList li.critical { color: #ff9a9a; }
+#logList li.failure { color: #ffb27a; }
+#logList li.eval { color: #a8e6a1; }
+#logList li.recovery { color: #a1c8e6; }

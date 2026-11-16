@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>红树林修复区模拟</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>红树林修复区模拟</h1>
+    <div class="controls">
+      <label>Seed <input id="seedInput" value="mangrove-42"></label>
+      <button id="runBtn">▶ 连续运行</button>
+      <button id="resetBtn">↺ 重置</button>
+      <label>速度
+        <select id="speedSel">
+          <option value="1">1×</option>
+          <option value="4" selected>4×</option>
+          <option value="16">16×</option>
+        </select>
+      </label>
+      <button id="soundBtn">🔇 声音关</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="left">
+      <canvas id="cv" width="960" height="540"></canvas>
+      <div class="phasebar">
+        <span id="dayLabel">第 0.0 天 / 100</span>
+        <span id="phaseLabel" class="badge">稳态</span>
+        <span id="evalLabel" class="badge hidden"></span>
+      </div>
+      <div class="interventions">
+        <span>干预措施:</span>
+        <button data-iv="plant">🌱 补植幼苗</button>
+        <button data-iv="channel">⛏ 收窄潮沟</button>
+        <button data-iv="boom">🟠 布设拦污带</button>
+        <span id="curIv">当前:无</span>
+      </div>
+    </section>
+
+    <section class="right">
+      <h2>环境指标</h2>
+      <table id="metrics">
+        <thead>
+          <tr><th>指标</th><th>观测值</th><th>实际值</th><th>告警</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>水位 (m)</td><td id="mWObs">-</td><td id="mWAct">-</td><td id="mWAlarm">-</td></tr>
+          <tr><td>浊度 (NTU)</td><td id="mTObs">-</td><td id="mTAct">-</td><td id="mTAlarm">-</td></tr>
+          <tr><td>风速 (m/s)</td><td id="mWind" colspan="2">-</td><td>-</td></tr>
+          <tr><td>潮沟均宽 (m)</td><td id="mChan" colspan="2">-</td><td>-</td></tr>
+        </tbody>
+      </table>
+
+      <h2>目标数量</h2>
+      <table>
+        <tbody>
+          <tr><td>幼苗存活 / 总数</td><td id="mAlive">-</td></tr>
+          <tr><td>存活率(目标 ≥70%)</td><td id="mSurv">-</td></tr>
+          <tr><td>漂浮物(水中 / 已拦截)</td><td id="mDebris">-</td></tr>
+          <tr><td>拦污带完整度</td><td id="mBoom">-</td></tr>
+        </tbody>
+      </table>
+
+      <h2>事件日志(含触发时刻)</h2>
+      <ul id="logList"></ul>
+    </section>
+  </main>
+
+  <script src="sim.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
