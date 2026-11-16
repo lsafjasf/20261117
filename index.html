@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>浮雕地图 · 方向光渲染</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #1c2330; color: #dfe6f0; display: flex; height: 100vh; overflow: hidden; }
+  #panel { width: 280px; min-width: 280px; background: #242e3f; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+  #panel h1 { font-size: 16px; margin-bottom: 4px; }
+  .row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .row label { width: 76px; flex-shrink: 0; color: #9fb0c8; }
+  .row input[type=range] { flex: 1; }
+  .row input[type=number] { width: 64px; background: #1a2230; color: #dfe6f0; border: 1px solid #3a4a63; border-radius: 4px; padding: 2px 6px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  button { background: #3563c4; color: #fff; border: none; border-radius: 5px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
+  button:hover { background: #4278e0; }
+  button.secondary { background: #3a4a63; }
+  button.active { background: #c47a35; }
+  fieldset { border: 1px solid #3a4a63; border-radius: 6px; padding: 8px; }
+  legend { font-size: 12px; color: #9fb0c8; padding: 0 4px; }
+  #errorBox { display: none; background: #5a2430; border: 1px solid #a04455; border-radius: 6px; padding: 8px; font-size: 12px; color: #ffc9d2; white-space: pre-line; }
+  #status { font-size: 12px; color: #8fa0ba; }
+  #stage { position: relative; flex: 1; }
+  #map { width: 100%; height: 100%; display: block; cursor: crosshair; image-rendering: pixelated; }
+  #tooltip { position: absolute; display: none; pointer-events: none; background: rgba(15,20,30,.88); border: 1px solid #4a5c7a; border-radius: 4px; padding: 4px 8px; font-size: 12px; color: #eaf1ff; z-index: 5; }
+  #presetList { display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; font-size: 12px; }
+  #presetList .preset { display: flex; justify-content: space-between; gap: 6px; align-items: center; background: #1a2230; border-radius: 4px; padding: 4px 6px; }
+  #presetList .preset button { padding: 2px 6px; font-size: 11px; }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <h1>浮雕地图控制台</h1>
+    <div id="errorBox"></div>
+    <fieldset>
+      <legend>光源与地形</legend>
+      <div class="row"><label>方位角 °</label><input type="range" id="azimuth" min="0" max="360" step="1"><input type="number" id="azimuthNum" step="1"></div>
+      <div class="row"><label>高度角 °</label><input type="range" id="altitude" min="1" max="90" step="1"><input type="number" id="altitudeNum" step="1"></div>
+      <div class="row"><label>夸张系数</label><input type="range" id="exaggeration" min="0.1" max="10" step="0.1"><input type="number" id="exaggerationNum" step="0.1"></div>
+      <div class="row"><label>阴影柔度</label><input type="range" id="softness" min="0" max="12" step="1"><input type="number" id="softnessNum" step="1"></div>
+    </fieldset>
+    <fieldset>
+      <legend>图层（底色层在下 / 阴影层在上）</legend>
+      <div class="row"><label><input type="checkbox" id="layerTint"> 分层设色</label><label><input type="checkbox" id="layerShade"> 山体阴影</label></div>
+    </fieldset>
+    <fieldset>
+      <legend>视角</legend>
+      <div class="row"><label>缩放</label><input type="range" id="zoom" min="0.25" max="8" step="0.05"><input type="number" id="zoomNum" step="0.05"></div>
+      <div class="row"><label>平移 X</label><input type="range" id="panX" min="-1024" max="1024" step="1"><input type="number" id="panXNum" step="1"></div>
+      <div class="row"><label>平移 Y</label><input type="range" id="panY" min="-1024" max="1024" step="1"><input type="number" id="panYNum" step="1"></div>
+      <div class="btns"><button class="secondary" id="resetView">重置视角</button></div>
+    </fieldset>
+    <fieldset>
+      <legend>预设与参数</legend>
+      <div class="btns">
+        <button class="secondary" id="presetDefault">默认画面</button>
+        <button class="secondary" id="presetExtreme">极端画面</button>
+        <button id="savePreset">保存当前参数</button>
+      </div>
+      <div id="presetList"></div>
+    </fieldset>
+    <fieldset>
+      <legend>播放与导出</legend>
+      <div class="btns">
+        <button id="pauseBtn">暂停</button>
+        <button class="secondary" id="rotateBtn">光源旋转</button>
+        <button id="exportBtn">导出 PNG</button>
+      </div>
+    </fieldset>
+    <div id="status">就绪</div>
+  </div>
+  <div id="stage">
+    <canvas id="map"></canvas>
+    <div id="tooltip"></div>
+  </div>
+  <script src="hillshade.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
