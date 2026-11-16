@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>弹簧轨道门 · 三球收集挑战</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>弹簧轨道门 · 三球收集挑战</h1>
+    <div id="banner" class="banner idle">调整参数后点击「发射」，让小球依次落入三个收集区</div>
+  </header>
+
+  <main>
+    <section class="stage">
+      <canvas id="world" width="1240" height="520"></canvas>
+      <canvas id="chart" width="1240" height="150"></canvas>
+    </section>
+
+    <aside class="panel">
+      <h2>参数调节</h2>
+      <div class="slider-row">
+        <label for="inK">弹力 k <span id="valK"></span> N/m</label>
+        <input type="range" id="inK">
+      </div>
+      <div class="slider-row">
+        <label for="inC">阻尼 c <span id="valC"></span> N·s/m</label>
+        <input type="range" id="inC">
+      </div>
+      <div class="slider-row">
+        <label for="inA">门角度 <span id="valA"></span> °</label>
+        <input type="range" id="inA">
+      </div>
+
+      <h2>控制</h2>
+      <div class="btns">
+        <button id="btnLaunch">发射</button>
+        <button id="btnPause" disabled>暂停</button>
+        <button id="btnStep" disabled>单步</button>
+        <button id="btnResume" disabled>恢复</button>
+        <button id="btnReplay" disabled>回放</button>
+        <button id="btnReset">重置本球</button>
+        <button id="btnNew">新游戏</button>
+      </div>
+
+      <h2>实时物理量 <span class="limits-note">（上限）</span></h2>
+      <table class="gauge" id="gauge">
+        <tr><td>速度</td><td id="gSpeed">0.00</td><td>m/s</td><td class="lim" id="lSpeed"></td></tr>
+        <tr><td>弹簧负载</td><td id="gLoad">0.0</td><td>N</td><td class="lim" id="lLoad"></td></tr>
+        <tr><td>温度</td><td id="gTemp">25.0</td><td>°C</td><td class="lim" id="lTemp"></td></tr>
+        <tr><td>着陆压力</td><td id="gPress">0</td><td>Pa</td><td class="lim" id="lPress"></td></tr>
+      </table>
+
+      <h2>目标进度</h2>
+      <div id="zones" class="zones"></div>
+
+      <h2>运行报告</h2>
+      <div id="report" class="report">暂无记录</div>
+    </aside>
+  </main>
+
+  <script src="sim.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
