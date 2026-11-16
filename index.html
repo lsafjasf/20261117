@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>双人温室温控协作</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>🌿 双人温室温控协作</h1>
+  <div id="system-bar">
+    <button id="btn-pause" title="快捷键 P">⏸ 暂停</button>
+    <button id="btn-restart" title="快捷键 R">↻ 重开</button>
+    <button id="btn-debug" title="快捷键 T">🛠 单人调试: 关</button>
+    <button id="btn-replay" title="回放上一局">▶ 回放</button>
+    <button id="btn-export" title="导出回放 JSON">⬇ 导出回放</button>
+  </div>
+</header>
+
+<main>
+  <section id="stage">
+    <canvas id="game" width="960" height="480"></canvas>
+    <div id="banner" class="hidden"></div>
+  </section>
+
+  <aside id="hud">
+    <div class="panel" id="shared-panel">
+      <h2>共享状态</h2>
+      <div class="row"><span>倒计时</span><b id="hud-countdown">--</b></div>
+      <div class="row"><span>能源</span>
+        <div class="bar"><div id="hud-energy" class="fill energy"></div></div>
+        <b id="hud-energy-num">--</b>
+      </div>
+      <div class="row"><span>室外温度</span><b id="hud-outdoor">--</b></div>
+      <div class="row"><span>天气</span><b id="hud-weather">--</b></div>
+    </div>
+
+    <div class="panel player-a" id="panel-a">
+      <h2>玩家 A · 通风窗 <span id="status-a" class="status ok">在线</span></h2>
+      <div class="row"><span>左窗 <kbd>Q</kbd>开/<kbd>A</kbd>关</span>
+        <div class="bar"><div id="hud-winl" class="fill cool"></div></div><b id="hud-winl-num">0%</b></div>
+      <div class="row"><span>右窗 <kbd>E</kbd>开/<kbd>D</kbd>关</span>
+        <div class="bar"><div id="hud-winr" class="fill cool"></div></div><b id="hud-winr-num">0%</b></div>
+      <div class="hint">职责:散热降温。开窗会流失热量,无法升温。</div>
+    </div>
+
+    <div class="panel player-b" id="panel-b">
+      <h2>玩家 B · 加热带 <span id="status-b" class="status ok">在线</span></h2>
+      <div class="row"><span>左加热 <kbd>U</kbd>加/<kbd>J</kbd>减</span>
+        <div class="bar"><div id="hud-heatl" class="fill heat"></div></div><b id="hud-heatl-num">0%</b></div>
+      <div class="row"><span>右加热 <kbd>O</kbd>加/<kbd>L</kbd>减</span>
+        <div class="bar"><div id="hud-heatr" class="fill heat"></div></div><b id="hud-heatr-num">0%</b></div>
+      <div class="hint">职责:补热升温。消耗共享能源,无法降温。</div>
+    </div>
+
+    <div class="panel" id="zones-panel">
+      <h2>分区仪表</h2>
+      <div id="zone-gauges"></div>
+    </div>
+
+    <div class="panel" id="log-panel">
+      <h2>任务记录</h2>
+      <ul id="task-log"></ul>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  <span><kbd>P</kbd> 暂停</span><span><kbd>R</kbd> 重开</span><span><kbd>T</kbd> 单人调试</span>
+  <span>目标:在倒计时结束前保持三个分区都在安全温度内</span>
+</footer>
+
+<script src="js/sim.js"></script>
+<script src="js/replay.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
