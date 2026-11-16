@@ -1,0 +1,13 @@
+{
+  "name": "crosswind-rig",
+  "version": "1.0.0",
+  "private": true,
+  "description": "峡谷风场双人协作索道维修游戏",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/sim.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

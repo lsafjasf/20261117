@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="峡谷风场双人索道维修协作游戏：驱动吊篮与摆臂对位，更换三组滑轮。"
+    />
+    <title>峡风索修 · Crosswind Rig</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene" aria-label="峡谷索道维修现场"></canvas>
+      <div class="vignette" aria-hidden="true"></div>
+      <div class="grain" aria-hidden="true"></div>
+
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <div>
+            <p class="eyebrow">NORTH GORGE / UNIT 07</p>
+            <h1>峡风索修 <span>CROSSWIND RIG</span></h1>
+          </div>
+        </div>
+        <div class="top-status">
+          <span class="live-dot"></span>
+          <span id="missionStatus">作业中</span>
+          <span class="divider"></span>
+          <span id="missionCode">M-0717 / 三滑轮更换</span>
+        </div>
+        <nav class="utility" aria-label="全局操作">
+          <button type="button" data-action="pause" title="暂停 (P)">
+            <span class="key">P</span><span>暂停</span>
+          </button>
+          <button type="button" data-action="replay" title="回放 (Tab)">
+            <span class="key">TAB</span><span>回放</span>
+          </button>
+          <button type="button" data-action="debug" title="单人调试 (F1)">
+            <span class="key">F1</span><span>调试</span>
+          </button>
+          <button type="button" data-action="restart" title="重新开始 (R)">
+            <span class="key">R</span><span>重开</span>
+          </button>
+        </nav>
+      </header>
+
+      <main class="hud">
+        <section class="operator-card p1" id="p1Card" aria-label="左席吊篮驱动操作台">
+          <div class="operator-head">
+            <div class="operator-id"><span>01</span><small>LEFT SEAT</small></div>
+            <div class="role">
+              <p class="eyebrow">DRIVE OPERATOR</p>
+              <h2>吊篮驱动</h2>
+            </div>
+            <span class="link-badge" id="leftLink"><i></i>链路</span>
+          </div>
+          <div class="control-strip" aria-label="左席键位">
+            <span class="binding"><kbd>A</kbd>左移</span>
+            <span class="binding"><kbd>D</kbd>右移</span>
+            <span class="binding danger"><kbd>S</kbd>急停</span>
+          </div>
+          <div class="instrument-grid">
+            <div class="gauge-block">
+              <div class="gauge-label"><span>吊篮速度</span><strong id="leftSpeed">0.0</strong><em>m/s</em></div>
+              <div class="meter"><i id="leftSpeedBar"></i><b></b></div>
+            </div>
+            <div class="gauge-block">
+              <div class="gauge-label"><span>位置</span><strong id="leftPos">300</strong><em>m</em></div>
+              <div class="meter slim"><i id="leftPosBar"></i></div>
+            </div>
+          </div>
+          <div class="range-note">
+            <span class="range-icon">↔</span>
+            <span>驱动范围 <b>175—1425m</b> · 目标窗 <b>±66m</b></span>
+          </div>
+          <div class="shared-strip" aria-label="左席共享仪表">
+            <span><small>共享计时</small><b id="leftTime">02:30</b></span>
+            <span><small>风速</small><b id="leftWind">9.4</b></span>
+            <span><small>备件</small><b id="leftSpares">3/3</b></span>
+            <span><small>锁扣</small><b id="leftTool">在位</b></span>
+          </div>
+        </section>
+
+        <section class="mission-core" aria-label="共享任务状态">
+          <div class="mission-clock">
+            <p class="eyebrow">REMAINING WINDOW</p>
+            <strong id="missionClock">02:30</strong>
+            <span class="clock-state" id="clockState">倒计时进行中</span>
+          </div>
+          <div class="wind-dial">
+            <div class="wind-compass" id="windCompass">
+              <span class="north">N</span>
+              <i class="arrow" id="windArrow"></i>
+              <b id="windValue">9.4</b><small>m/s</small>
+            </div>
+            <div class="wind-copy">
+              <span>峡谷横风</span>
+              <b id="windLabel">侧风 · 稳定</b>
+            </div>
+          </div>
+          <div class="targets" id="targetList" aria-label="任务记录">
+            <article class="target active" data-index="0">
+              <span class="target-no">P-1</span>
+              <div><b>515m</b><small>待更换</small></div>
+              <i class="target-bar"><b></b></i>
+            </article>
+            <article class="target" data-index="1">
+              <span class="target-no">P-2</span>
+              <div><b>825m</b><small>待更换</small></div>
+              <i class="target-bar"><b></b></i>
+            </article>
+            <article class="target" data-index="2">
+              <span class="target-no">P-3</span>
+              <div><b>1175m</b><small>待更换</small></div>
+              <i class="target-bar"><b></b></i>
+            </article>
+          </div>
+          <div class="install-readout">
+            <div><span id="installLabel">等待双方对位</span><b id="installPct">0%</b></div>
+            <div class="install-track"><i id="installBar"></i></div>
+            <p id="syncHint">左席定位 · 右席 J/L 摆臂 · 对准后按住 K</p>
+          </div>
+        </section>
+
+        <section class="operator-card p2" id="p2Card" aria-label="右席摆臂操作台">
+          <div class="operator-head">
+            <div class="operator-id"><span>02</span><small>RIGHT SEAT</small></div>
+            <div class="role">
+              <p class="eyebrow">ARM OPERATOR</p>
+              <h2>摆臂对位</h2>
+            </div>
+            <span class="link-badge" id="rightLink"><i></i>链路</span>
+          </div>
+          <div class="control-strip" aria-label="右席键位">
+            <span class="binding"><kbd>J</kbd>逆摆</span>
+            <span class="binding"><kbd>L</kbd>顺摆</span>
+            <span class="binding hold"><kbd>K</kbd>夹持/回收</span>
+          </div>
+          <div class="instrument-grid">
+            <div class="gauge-block">
+              <div class="gauge-label"><span>摆臂角</span><strong id="rightAngle">0</strong><em>°</em></div>
+              <div class="angle-meter"><i id="rightAngleMarker"></i><b></b><span>-59°</span><span>+59°</span></div>
+            </div>
+            <div class="gauge-block">
+              <div class="gauge-label"><span>对位误差</span><strong id="rightError">--</strong><em>px</em></div>
+              <div class="meter slim"><i id="rightErrorBar"></i><b class="center"></b></div>
+            </div>
+          </div>
+          <div class="range-note">
+            <span class="range-icon">⌁</span>
+            <span>摆臂范围 <b>±59°</b> · 夹持窗 <b>±0.09rad</b></span>
+          </div>
+          <div class="shared-strip" aria-label="右席共享仪表">
+            <span><small>共享计时</small><b id="rightTime">02:30</b></span>
+            <span><small>风速</small><b id="rightWind">9.4</b></span>
+            <span><small>备件</small><b id="rightSpares">3/3</b></span>
+            <span><small>锁扣</small><b id="rightTool">在位</b></span>
+          </div>
+        </section>
+      </main>
+
+      <section class="lower-hud">
+        <article class="task-log">
+          <div class="log-head">
+            <span>共享任务记录</span>
+            <small id="logSync">双席同步 · LIVE</small>
+          </div>
+          <ol id="taskLog"></ol>
+        </article>
+        <div class="global-legend">
+          <span><kbd>P</kbd>暂停</span>
+          <span><kbd>R</kbd>重开</span>
+          <span><kbd>TAB</kbd>回放</span>
+          <span><kbd>F1</kbd>单人调试</span>
+          <span class="warning"><kbd>Y</kbd>恢复链路</span>
+        </div>
+        <aside class="canyon-readout">
+          <span class="eyebrow">CANYON LIVE</span>
+          <div><small>吊篮摆角</small><b id="swingReadout">0.0°</b></div>
+          <div><small>当前目标</small><b id="targetReadout">P-1 / 515m</b></div>
+          <div><small>输入流</small><b id="inputReadout">L 0 / R 0</b></div>
+        </aside>
+      </section>
+
+      <div class="toast-layer" id="toastLayer" aria-live="polite"></div>
+      <div class="protection-banner is-hidden" id="protectionBanner" role="alert">
+        <span class="alarm-icon">!</span>
+        <div><b>链路保护已启用</b><p id="protectionText">安全抱闸 · 计时冻结</p></div>
+        <button type="button" data-action="restore"><kbd>Y</kbd>恢复链路</button>
+      </div>
+
+      <section class="modal pause-modal is-hidden" id="pauseOverlay" role="dialog" aria-modal="true">
+        <div class="modal-card compact">
+          <p class="eyebrow">WINDOW HOLD</p>
+          <h2>维修暂停</h2>
+          <p>共享计时与物理状态已冻结。双方仪表保持同步，恢复后继续当前对位。</p>
+          <div class="modal-actions">
+            <button class="primary" type="button" data-action="pause">继续作业 <kbd>P</kbd></button>
+            <button type="button" data-action="restart">重新开始 <kbd>R</kbd></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="modal end-modal is-hidden" id="endOverlay" role="dialog" aria-modal="true">
+        <div class="modal-card end-card">
+          <p class="eyebrow" id="endEyebrow">MISSION COMPLETE</p>
+          <h2 id="endTitle">索道恢复</h2>
+          <p id="endText">三组滑轮更换完成，双方链路保持。</p>
+          <div class="end-stats">
+            <span><small>剩余时间</small><b id="endTime">--</b></span>
+            <span><small>冲突次数</small><b id="endConflicts">--</b></span>
+            <span><small>工具回收</small><b id="endRecoveries">--</b></span>
+          </div>
+          <div class="modal-actions">
+            <button class="primary" type="button" data-action="restart">再走一班 <kbd>R</kbd></button>
+            <button type="button" data-action="replay">查看回放 <kbd>TAB</kbd></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="replay-overlay is-hidden" id="replayOverlay" role="dialog" aria-modal="true">
+        <div class="replay-shell">
+          <header class="replay-head">
+            <div>
+              <p class="eyebrow">SHARED STATE RECORDER</p>
+              <h2>双通道回放</h2>
+            </div>
+            <div class="replay-meta">
+              <span><small>输入事件</small><b id="replayInputCount">0</b></span>
+              <span><small>冲突时刻</small><b id="replayConflictCount">0</b></span>
+              <button type="button" data-action="export">导出 JSON</button>
+              <button type="button" data-action="close-replay">关闭 <kbd>TAB</kbd></button>
+            </div>
+          </header>
+          <div class="replay-body">
+            <div class="replay-screen">
+              <canvas id="replayCanvas" aria-label="回放画面"></canvas>
+              <div class="replay-hud">
+                <span><small>计时</small><b id="replayTime">02:30</b></span>
+                <span><small>备件</small><b id="replaySpares">3/3</b></span>
+                <span><small>锁扣</small><b id="replayTool">在位</b></span>
+                <span><small>目标</small><b id="replayTarget">P-1</b></span>
+                <span><small>风</small><b id="replayWind">9.4</b></span>
+              </div>
+            </div>
+            <aside class="event-rail">
+              <div class="rail-tabs">
+                <button type="button" class="active" data-rail="all">全部事件</button>
+                <button type="button" data-rail="conflict">冲突</button>
+                <button type="button" data-rail="input">输入</button>
+              </div>
+              <ol id="replayEvents"></ol>
+            </aside>
+          </div>
+          <footer class="replay-controls">
+            <button class="play-button" type="button" data-action="replay-toggle" id="replayToggle">▶</button>
+            <span class="replay-clock" id="replayClock">00:00 / 00:00</span>
+            <input id="replayScrubber" type="range" min="0" max="100" value="0" step="0.05" />
+            <div class="replay-legend">
+              <i class="p1"></i>左席输入
+              <i class="p2"></i>右席输入
+              <i class="conflict"></i>冲突
+            </div>
+          </footer>
+        </div>
+      </section>
+
+      <section class="debug-panel is-hidden" id="debugPanel" aria-label="单人调试面板">
+        <div class="debug-head">
+          <b>SOLO DEBUG</b>
+          <button type="button" data-action="debug">关闭 F1</button>
+        </div>
+        <p>单人调试开启：同屏可操作两席键位，链路超时保护暂停。</p>
+        <div class="debug-grid">
+          <button type="button" data-action="freeze-wind">冻结/恢复风场</button>
+          <button type="button" data-action="drop-left">模拟左链断开</button>
+          <button type="button" data-action="drop-right">模拟右链断开</button>
+        </div>
+        <dl>
+          <div><dt>trolley.x</dt><dd id="debugX">300.0</dd></div>
+          <div><dt>trolley.vx</dt><dd id="debugVx">0.0</dd></div>
+          <div><dt>swing.theta</dt><dd id="debugTheta">0.000</dd></div>
+          <div><dt>align.error</dt><dd id="debugError">--</dd></div>
+          <div><dt>feed.length</dt><dd id="debugFeed">0</dd></div>
+        </dl>
+      </section>
+    </div>
+    <script src="sim.js"></script>
+    <script src="renderer.js"></script>
+    <script src="game.js"></script>
+  </body>
+</html>
