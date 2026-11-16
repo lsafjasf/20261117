@@ -1,0 +1,16 @@
+{
+  "name": "av-timeline-sync-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "二十秒动画 / 十二次闪光与鼓点：共用时钟的时间线、音画对齐、保存重载与导出校验示例",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "serve": "python3 -m http.server 38511",
+    "test:browser": "DEMO_URL=http://localhost:38511/index.html node test/browser-smoke.mjs",
+    "test:export": "DEMO_URL=http://localhost:38511/index.html node test/export-playback.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.1"
+  }
+}

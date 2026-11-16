@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>音画同步时间线示例 · 20 秒 / 12 闪光 / 12 鼓点</title>
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>共用时钟的音画时间线</h1>
+      <p>20 秒动画 · 12 次闪光 · 12 次鼓点 · 播放 / 逐帧 / 拖动播放头共用同一状态</p>
+    </header>
+
+    <main>
+      <section class="stage">
+        <canvas id="stage" width="720" height="405"></canvas>
+        <div class="readout">
+          <span id="clock-readout">0.000s</span>
+          <span id="frame-readout">帧 0 / 600</span>
+          <span id="delta-readout">音画差值 0ms</span>
+          <span id="state-readout">已暂停 · 循环开</span>
+        </div>
+      </section>
+
+      <section class="controls">
+        <div class="control-group">
+          <button id="play-btn">播放</button>
+          <button id="pause-btn">暂停</button>
+          <button id="prev-frame">上一帧</button>
+          <button id="next-frame">下一帧</button>
+          <label class="inline"><input type="checkbox" id="loop-toggle" checked /> 循环</label>
+        </div>
+        <div class="control-group">
+          <label>音频整体偏移
+            <input type="range" id="offset-range" min="-200" max="200" step="10" value="0" />
+            <span id="offset-value">0ms</span>
+          </label>
+          <button id="reset-offset">偏移归零（校正）</button>
+        </div>
+      </section>
+
+      <section class="timeline-panel">
+        <div class="panel-title">节目时间线（拖动蓝色片段移动，拖动空白处移动播放头）</div>
+        <canvas id="timeline" width="960" height="132"></canvas>
+        <div id="conflict-banner" class="banner hidden"></div>
+      </section>
+
+      <section class="edits">
+        <div class="control-group">
+          <button id="split-btn">在播放头处分割</button>
+          <label>转场时长
+            <select id="transition-select">
+              <option value="0">无转场</option>
+              <option value="0.4">0.4 秒交叉淡化</option>
+              <option value="0.8">0.8 秒交叉淡化</option>
+            </select>
+          </label>
+          <button id="transition-btn">对首个接缝应用转场</button>
+        </div>
+        <div class="control-group">
+          <button id="set-in">设入点</button>
+          <button id="set-out">设出点</button>
+          <button id="reset-inout">入出点复位</button>
+          <span id="inout-readout">入 0.000s / 出 20.000s</span>
+        </div>
+        <div class="control-group">
+          <button id="save-btn">保存工程（下载）</button>
+          <button id="load-btn">重新载入工程</button>
+          <input type="file" id="load-file" accept="application/json" hidden />
+          <button id="selftest-btn">运行页面自检</button>
+          <button id="replay-btn">失败回放（重放操作日志）</button>
+        </div>
+        <div class="control-group">
+          <button id="export-btn" class="primary">导出 WebM</button>
+          <span id="export-progress"></span>
+          <a id="export-download" class="hidden" download="program.webm">下载导出文件</a>
+        </div>
+      </section>
+
+      <section class="reports">
+        <div class="report-box">
+          <h2>每次闪光 / 鼓点差值</h2>
+          <table id="delta-table">
+            <thead><tr><th>#</th><th>源时间</th><th>画面时间</th><th>鼓点时间</th><th>差值</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="report-box">
+          <h2>裁切 / 转场时长比较</h2>
+          <table id="compare-table">
+            <thead><tr><th>变体</th><th>时长</th><th>片段数</th><th>事件数</th><th>相对基准</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="report-box">
+          <h2>自检与操作日志</h2>
+          <pre id="selftest-output">尚未运行自检。</pre>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
