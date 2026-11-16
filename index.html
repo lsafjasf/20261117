@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>滚动片尾工作室</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>滚动片尾工作室</h1>
+    <span id="program-dur"></span>
+    <span id="status" class="status"></span>
+  </header>
+
+  <main>
+    <section class="stage">
+      <canvas id="preview" width="960" height="540"></canvas>
+      <div class="transport">
+        <button id="btn-play">▶ 播放</button>
+        <button id="btn-pause">⏸ 暂停</button>
+        <label><input type="checkbox" id="chk-loop" checked> 循环</label>
+        <span id="timecode" class="timecode"></span>
+      </div>
+      <div class="edit-bar">
+        <button id="btn-split">✂ 在播放头分割</button>
+        <button id="btn-transition">⇄ 与下一段加转场</button>
+        <button id="btn-export" class="primary">⬇ 导出 WebM</button>
+      </div>
+      <div class="timeline-wrap">
+        <div id="timeline" class="timeline"></div>
+      </div>
+      <ul id="issues" class="issues"></ul>
+    </section>
+
+    <aside class="panel">
+      <h2>片尾设置</h2>
+      <label>行距 (px)
+        <input id="set-lineheight" type="number" min="0" step="1">
+      </label>
+      <label>滚动速度 (px/s)
+        <input id="set-speed" type="number" min="0" step="1">
+      </label>
+      <label>背景淡出 (s)
+        <input id="set-fade" type="number" min="0" step="0.1">
+      </label>
+
+      <h2>工程</h2>
+      <div class="btn-col">
+        <button id="btn-save">💾 保存工程</button>
+        <button id="btn-reload">↻ 重新载入</button>
+        <button id="btn-replay">⏮ 失败回放</button>
+        <button id="btn-export-json">导出工程 JSON</button>
+        <label class="file-label">导入工程 JSON
+          <input id="file-import" type="file" accept=".json">
+        </label>
+      </div>
+
+      <h2>操作日志</h2>
+      <ul id="oplog" class="oplog"></ul>
+    </aside>
+  </main>
+
+  <script src="js/model.js"></script>
+  <script src="js/clock.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/timeline.js"></script>
+  <script src="js/exporter.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

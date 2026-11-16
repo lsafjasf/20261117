@@ -1,0 +1,184 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #14161a;
+  color: #e8e6e1;
+}
+header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 12px 20px;
+  background: #1d2026;
+  border-bottom: 1px solid #2c3038;
+}
+header h1 { font-size: 18px; margin: 0; }
+.status { color: #9fd3a8; font-size: 13px; }
+main {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+  padding: 16px 20px;
+}
+.stage { min-width: 0; } /* 防止时间线固定宽度撑破栅格 */
+.stage canvas {
+  width: 100%;
+  max-width: 960px;
+  background: #000;
+  border-radius: 6px;
+  display: block;
+}
+.transport, .edit-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+button {
+  background: #2c3340;
+  color: #e8e6e1;
+  border: 1px solid #3d4453;
+  border-radius: 5px;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 13px;
+}
+button:hover { background: #38404f; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+button.primary { background: #2f6f4f; border-color: #3f8f67; }
+button.primary:hover { background: #3a8562; }
+.timecode { font-family: monospace; color: #8ab4f8; }
+
+.timeline-wrap {
+  margin-top: 14px;
+  overflow-x: auto;
+  background: #1a1d22;
+  border: 1px solid #2c3038;
+  border-radius: 6px;
+}
+.timeline { position: relative; padding-top: 20px; min-height: 150px; }
+.tl-ruler { position: absolute; top: 0; left: 0; right: 0; height: 20px; }
+.tl-tick {
+  position: absolute;
+  font-size: 10px;
+  color: #7a8194;
+  border-left: 1px solid #3a3f4b;
+  padding-left: 3px;
+  height: 20px;
+}
+.tl-lane { position: relative; height: 44px; margin: 4px 0; }
+.tl-audio { height: 26px; }
+.tl-credits { height: 26px; }
+.tl-clip {
+  position: absolute;
+  top: 2px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 11px;
+  padding: 3px 6px;
+  cursor: grab;
+  overflow: hidden;
+  white-space: nowrap;
+  user-select: none;
+}
+.tl-clip.selected { outline: 2px solid #8ab4f8; }
+.tl-transition {
+  position: absolute;
+  top: 2px;
+  height: 40px;
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0 6px, transparent 6px 12px);
+  border: 1px dashed #fff3;
+  border-radius: 4px;
+  pointer-events: none;
+}
+.tl-audio-event {
+  position: absolute;
+  top: 2px;
+  height: 22px;
+  background: #4a3a6b;
+  border-radius: 4px;
+  font-size: 10px;
+  padding: 3px 6px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.tl-credits-span {
+  position: absolute;
+  top: 2px;
+  height: 22px;
+  background: #6b5a3a;
+  border-radius: 4px;
+  font-size: 10px;
+  padding: 3px 6px;
+}
+.tl-conflict {
+  position: absolute;
+  top: 0;
+  height: 44px;
+  background: rgba(220, 60, 60, 0.45);
+  border: 2px solid #e5484d;
+  border-radius: 4px;
+  z-index: 5;
+  pointer-events: none;
+}
+.tl-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #ff5252;
+  z-index: 10;
+  pointer-events: none;
+}
+.issues { list-style: none; padding: 0; font-size: 13px; }
+.issues .issue { color: #ff8a8a; }
+.issues .ok { color: #9fd3a8; }
+
+.panel {
+  background: #1d2026;
+  border: 1px solid #2c3038;
+  border-radius: 8px;
+  padding: 14px;
+  align-self: start;
+}
+.panel h2 { font-size: 14px; margin: 14px 0 8px; color: #8ab4f8; }
+.panel h2:first-child { margin-top: 0; }
+.panel label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.panel input[type="number"] {
+  width: 90px;
+  background: #14161a;
+  color: #e8e6e1;
+  border: 1px solid #3d4453;
+  border-radius: 4px;
+  padding: 5px 8px;
+}
+.btn-col { display: flex; flex-direction: column; gap: 8px; }
+.file-label {
+  display: block;
+  text-align: center;
+  background: #2c3340;
+  border: 1px solid #3d4453;
+  border-radius: 5px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.file-label input { display: none; }
+.oplog {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  font-size: 12px;
+  color: #b7bcc9;
+}
+.oplog li { padding: 3px 0; border-bottom: 1px solid #262a31; }
