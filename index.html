@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>双场景转场时间线 · 统一时间基准</title>
+  <link rel="stylesheet" href="src/app/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>双场景转场时间线</h1>
+    <div class="badges">
+      <span id="timebaseBadge">时间基准: 毫秒 / 30fps</span>
+      <span id="durationBadge">节目时长: -</span>
+      <span id="stateBadge">已暂停</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="stage">
+      <canvas id="stage" width="720" height="405"></canvas>
+      <div class="transport">
+        <button id="playBtn">播放</button>
+        <button id="pauseBtn">暂停</button>
+        <label class="loop"><input type="checkbox" id="loopChk" checked /> 循环</label>
+        <span id="clock" class="clock">0.000s / 0.000s</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>转场与片段</h2>
+      <div class="row">
+        <label>类型
+          <select id="transitionType">
+            <option value="push">推移 Push</option>
+            <option value="dissolve">溶解 Dissolve</option>
+            <option value="mask">遮罩 Mask</option>
+          </select>
+        </label>
+        <label>转场时长(ms)
+          <input id="transitionDur" type="range" min="200" max="2400" step="50" value="1200" />
+          <span id="transitionDurVal">1200</span>
+        </label>
+        <button id="applyTransitionBtn">应用转场</button>
+        <button id="removeTransitionBtn">移除转场</button>
+      </div>
+      <div class="row">
+        <button id="splitBtn">在播放头分割场景 A</button>
+        <button id="moveBtn">把场景 B 右移 800ms</button>
+        <button id="overlapBtn">制造非法重叠</button>
+        <button id="resetBtn">重置工程</button>
+      </div>
+
+      <h2>工程</h2>
+      <div class="row">
+        <button id="saveBtn">保存工程(localStorage)</button>
+        <button id="loadBtn">重新载入工程</button>
+        <button id="downloadBtn">导出工程文件</button>
+        <input type="file" id="fileInput" accept="application/json" hidden />
+        <button id="importBtn">导入工程文件</button>
+      </div>
+      <div class="row">
+        <button id="exportBtn">导出视频 WebM</button>
+        <label class="loop"><input type="checkbox" id="realtimeChk" checked /> 实时录制</label>
+        <span id="exportProgress">未导出</span>
+        <a id="downloadVideo" hidden>下载视频</a>
+      </div>
+
+      <div id="conflictBox" class="conflict hidden"></div>
+      <div id="durationReport" class="report"></div>
+      <div id="journalBox" class="journal"></div>
+    </section>
+  </main>
+
+  <section class="timeline-wrap">
+    <div id="ruler" class="ruler"></div>
+    <div id="timeline" class="timeline">
+      <div id="videoTrack" class="track video-track"></div>
+      <div id="subTrack" class="track sub-track"></div>
+      <div id="audioTrack" class="track audio-track"></div>
+      <div id="playhead" class="playhead"></div>
+    </div>
+  </section>
+
+  <script type="module" src="src/app/main.js"></script>
+</body>
+</html>
