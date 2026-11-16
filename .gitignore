@@ -1,0 +1,4 @@
+node_modules/
+.DS_Store
+artifacts/current*.png
+artifacts/download-test*.png

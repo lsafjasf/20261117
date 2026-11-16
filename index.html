@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#e9e3d4" />
+    <meta name="description" content="可旋转、四季换色、可移动长椅并可导出 PNG 的等距小广场。" />
+    <title>小满广场 · 等距花园</title>
+    <link rel="preload" href="./assets/NotoSansSC-subset.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./assets/NotoSerifSC-subset.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="小满广场首页">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <span class="brand-copy">
+            <strong>小满广场</strong>
+            <small>ISOMETRIC COURTYARD</small>
+          </span>
+        </a>
+        <div class="topbar-center">
+          <span class="status-dot" id="save-dot"></span>
+          <span id="save-status" aria-live="polite">草稿自动保存</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="button button-ghost" id="save-preset" type="button" title="保存当前方案">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg>
+            <span>保存方案</span>
+          </button>
+          <button class="button button-ghost" id="pause-button" type="button" aria-pressed="false" title="暂停或继续环境动画">
+            <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+            <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg>
+            <span id="pause-label">暂停</span>
+          </button>
+          <button class="button button-primary" id="export-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
+            <span>导出 PNG</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="stage" aria-label="等距小广场画布">
+          <canvas id="scene" aria-label="由花坛、十字步道和长椅组成的等距小广场"></canvas>
+          <div class="stage-title">
+            <span class="eyebrow">第 01 号庭院</span>
+            <h1>一方可以<br />慢慢经过的花园</h1>
+            <p>拖动空白处旋转视角，拖动长椅沿步道移动。</p>
+          </div>
+          <div class="stage-tools">
+            <div class="zoom-readout">
+              <span>视距</span>
+              <strong id="zoom-hud">100%</strong>
+            </div>
+            <button class="round-tool" id="reset-view" type="button" aria-label="重置视角" title="重置视角">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v5h5"/></svg>
+            </button>
+          </div>
+          <div class="stage-caption" aria-hidden="true">
+            <span id="caption-season">春 · SPRING</span>
+            <span>N</span>
+            <span id="caption-seed">SEED 20261117</span>
+          </div>
+          <div class="paused-stamp" id="paused-stamp" hidden>
+            <span></span>环境动画已暂停
+          </div>
+          <div class="error-banner" id="error-banner" role="alert" hidden>
+            <div>
+              <strong>参数未应用</strong>
+              <p id="error-message"></p>
+              <small>画面已保留上一次有效结果。</small>
+            </div>
+            <button id="dismiss-error" type="button" aria-label="关闭错误提示">×</button>
+          </div>
+          <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+        </section>
+
+        <aside class="control-panel" aria-label="场景控制">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">SCENE CONTROL</span>
+              <h2>场景控制</h2>
+            </div>
+            <span class="panel-index">01 / 04</span>
+          </div>
+
+          <section class="control-section">
+            <div class="section-label">
+              <span>季节色彩</span>
+              <span id="season-note">新芽与初花</span>
+            </div>
+            <div class="season-switch" role="group" aria-label="选择季节">
+              <button class="season-button is-active" data-season="spring" type="button">
+                <span class="season-swatch swatch-spring"></span><span>春</span>
+              </button>
+              <button class="season-button" data-season="summer" type="button">
+                <span class="season-swatch swatch-summer"></span><span>夏</span>
+              </button>
+              <button class="season-button" data-season="autumn" type="button">
+                <span class="season-swatch swatch-autumn"></span><span>秋</span>
+              </button>
+              <button class="season-button" data-season="winter" type="button">
+                <span class="season-swatch swatch-winter"></span><span>冬</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="control-section">
+            <div class="section-label">
+              <span>视点与缩放</span>
+              <output id="angle-value">0°</output>
+            </div>
+            <label class="range-field">
+              <span class="range-name">旋转</span>
+              <input id="angle-range" type="range" min="-180" max="180" step="1" value="0" />
+              <span class="range-min">−180°</span>
+              <span class="range-max">180°</span>
+            </label>
+            <label class="range-field">
+              <span class="range-name">缩放</span>
+              <input id="zoom-range" type="range" min="0.65" max="1.45" step="0.01" value="1" />
+              <span class="range-min">65%</span>
+              <span class="range-max">145%</span>
+            </label>
+          </section>
+
+          <section class="control-section">
+            <div class="section-label">
+              <span>长椅位置</span>
+              <span class="hint">拖动长椅或沿步道移动</span>
+            </div>
+            <div class="bench-tabs" role="group" aria-label="选择长椅">
+              <button class="bench-tab is-active" data-bench="bench-a" type="button">长椅 A</button>
+              <button class="bench-tab" data-bench="bench-b" type="button">长椅 B</button>
+              <button class="bench-tab" data-bench="bench-c" type="button">长椅 C</button>
+            </div>
+            <div class="bench-coordinates">
+              <label>
+                <span>X</span>
+                <input id="bench-x" type="number" min="-5.75" max="5.75" step="0.1" value="0.8" />
+              </label>
+              <label>
+                <span>Z</span>
+                <input id="bench-z" type="number" min="-5.75" max="5.75" step="0.1" value="-3.7" />
+              </label>
+              <label>
+                <span>朝向</span>
+                <select id="bench-rotation">
+                  <option value="0">北</option>
+                  <option value="90">东</option>
+                  <option value="180">南</option>
+                  <option value="-90">西</option>
+                </select>
+              </label>
+            </div>
+            <p class="field-note" id="bench-note">长椅会自动吸附到最近的步道位置。</p>
+          </section>
+
+          <section class="control-section">
+            <div class="section-label">
+              <span>花坛种子</span>
+              <output id="plant-total">232 株</output>
+            </div>
+            <div class="seed-row">
+              <input id="seed-input" type="number" min="1" max="4294967295" step="1" value="20261117" aria-label="花坛种子" />
+              <button class="button button-compact" id="apply-seed" type="button">重新生成</button>
+            </div>
+            <p class="field-note">固定种子决定 4 个花坛的植物排布；植物与步道保持安全距离。</p>
+          </section>
+
+          <details class="layers-panel">
+            <summary>
+              <span>图层</span>
+              <span class="layer-summary" id="layer-summary">6 / 6 可见</span>
+            </summary>
+            <div class="layer-list">
+              <label><input type="checkbox" data-layer="ground" checked /><span class="layer-swatch layer-ground"></span>广场基座</label>
+              <label><input type="checkbox" data-layer="paths" checked /><span class="layer-swatch layer-path"></span>步道铺装</label>
+              <label><input type="checkbox" data-layer="beds" checked /><span class="layer-swatch layer-bed"></span>花坛石沿</label>
+              <label><input type="checkbox" data-layer="plants" checked /><span class="layer-swatch layer-plant"></span>植物</label>
+              <label><input type="checkbox" data-layer="benches" checked /><span class="layer-swatch layer-bench"></span>长椅</label>
+              <label><input type="checkbox" data-layer="decor" checked /><span class="layer-swatch layer-decor"></span>环境点缀</label>
+            </div>
+          </details>
+
+          <details class="advanced-panel">
+            <summary>
+              <span>参数与恢复</span>
+              <span>JSON</span>
+            </summary>
+            <p class="field-note">可粘贴完整参数进行校验。无效参数不会覆盖当前画面。</p>
+            <textarea id="json-editor" spellcheck="false" aria-label="场景参数 JSON"></textarea>
+            <div class="advanced-actions">
+              <button class="button button-compact" id="load-json" type="button">校验并应用</button>
+              <button class="text-button" id="reset-all" type="button">恢复默认</button>
+            </div>
+          </details>
+
+          <footer class="panel-footer">
+            <span><i class="footer-dot"></i>本地草稿</span>
+            <span id="object-count">4 花坛 · 3 长椅</span>
+          </footer>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
