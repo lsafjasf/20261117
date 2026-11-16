@@ -1,0 +1,11 @@
+{
+  "name": "road-congestion-heatmap",
+  "version": "1.0.0",
+  "description": "Canvas road congestion heatmap with synchronized filtering and export",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/*.test.js"
+  },
+  "type": "module",
+  "private": true
+}

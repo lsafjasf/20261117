@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f3f5f1" />
+    <title>路网拥堵热图 · 交通运行中心</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317201d'/%3E%3Cpath d='M14 25h36M20 40h30' stroke='%23b8d648' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>
+            <div class="brand-eyebrow">TRAFFIC OPERATIONS</div>
+            <div class="brand-name">交通运行中心 <span>/</span> 路网采样</div>
+          </div>
+        </div>
+
+        <div class="data-live" id="dataLive">
+          <span class="pulse-dot"></span>
+          <span>采样数据已载入</span>
+          <code id="headerVersion">QC-2026.11.17</code>
+        </div>
+
+        <div class="top-actions">
+          <button class="text-button" id="openMethodBtn" type="button">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15Zm0 3.1a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm-1 4.1h2v5h-2v-5Z"/></svg>
+            统计口径
+          </button>
+          <div class="operator" title="值班分析员">
+            <span>林</span>
+            <div><strong>值班分析</strong><small>道路运行组</small></div>
+          </div>
+          <button class="export-button" id="exportBtn" type="button">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5v9.2m0 0 3.2-3.2M10 11.7 6.8 8.5M3.5 12.3v3.2c0 .8.6 1.5 1.5 1.5h10c.8 0 1.5-.6 1.5-1.5v-3.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            导出当前视图
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="sidebar panel">
+          <div class="panel-title-row">
+            <div>
+              <div class="eyebrow">QUERY</div>
+              <h1>筛选条件</h1>
+            </div>
+            <button class="icon-text-button" id="resetBtn" type="button" title="恢复当前时间窗口的默认筛选">重置</button>
+          </div>
+
+          <section class="filter-section">
+            <div class="section-label">
+              <span>时间窗口</span>
+              <small id="sampleHint">5 分钟采样</small>
+            </div>
+            <div class="window-grid" id="windowOptions" role="tablist" aria-label="时间窗口"></div>
+          </section>
+
+          <section class="filter-section">
+            <div class="section-label">
+              <span>行驶方向</span>
+              <small>单选</small>
+            </div>
+            <div class="direction-grid" id="directionOptions"></div>
+          </section>
+
+          <section class="filter-section">
+            <div class="section-label">
+              <span>道路等级</span>
+              <small>多选</small>
+            </div>
+            <div class="grade-stack" id="gradeOptions"></div>
+          </section>
+
+          <div class="active-filter-box">
+            <div class="active-filter-title">
+              <span>生效筛选</span>
+              <strong id="activeFilterCount">14 条路段</strong>
+            </div>
+            <div class="active-chips" id="activeChips"></div>
+            <div class="state-note"><span class="mini-lock"></span>筛选与地图范围按窗口独立保存</div>
+          </div>
+
+          <section class="dataset-section">
+            <div class="section-label">
+              <span>样本数据</span>
+              <span class="qc-badge" id="qcBadge">QC 5/5</span>
+            </div>
+            <div class="segmented" id="datasetOptions" role="tablist" aria-label="样本数据"></div>
+            <div class="data-summary" id="dataSummary"></div>
+          </section>
+
+          <button class="method-card" id="methodCard" type="button">
+            <span class="method-icon">ƒ</span>
+            <span>
+              <strong>统计口径</strong>
+              <small>加权均值 · 去重键 · 补缺规则</small>
+            </span>
+            <span class="chevron">›</span>
+          </button>
+
+          <div class="version-line">
+            <span><i></i> DATA VERSION</span>
+            <code id="sideVersion">QC-2026.11.17</code>
+          </div>
+        </aside>
+
+        <main class="main-column">
+          <section class="context-bar panel">
+            <div class="context-main">
+              <div class="context-kicker">
+                <span class="context-dot"></span>
+                <span>当前筛选</span>
+                <span class="restore-flag" id="restoreFlag" hidden>已恢复上次状态</span>
+              </div>
+              <div class="context-time">
+                <strong id="contextTime">08:00 — 09:00</strong>
+                <span id="contextWindowName">早高峰</span>
+              </div>
+            </div>
+            <div class="context-filters" id="contextFilters"></div>
+            <div class="source-pill" title="地图、曲线、列表与导出共用同一份聚合快照">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15Zm-3.6 5.1a.8.8 0 0 1 1.1 0L10 10.1l2.5-2.5a.8.8 0 1 1 1.1 1.1l-3 3.1a.8.8 0 0 1-1.1 0l-3-3.1a.8.8 0 0 1 0-1.1Z"/></svg>
+              <span>同源快照</span>
+              <code id="contextVersion">QC-2026.11.17</code>
+            </div>
+          </section>
+
+          <section class="kpi-grid" aria-label="当前筛选统计">
+            <article class="kpi-card">
+              <div class="kpi-head"><span>平均速度</span><i class="kpi-dot speed"></i></div>
+              <div class="kpi-value"><strong id="kpiSpeed">—</strong><span>km/h</span></div>
+              <div class="kpi-foot" id="kpiSpeedFoot">较自由流</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-head"><span>平均排队</span><i class="kpi-dot queue"></i></div>
+              <div class="kpi-value"><strong id="kpiQueue">—</strong><span>m</span></div>
+              <div class="kpi-foot" id="kpiQueueFoot">采样路段均值</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-head"><span>拥堵热点</span><i class="kpi-dot hot"></i></div>
+              <div class="kpi-value"><strong id="kpiHotspots">—</strong><span>处</span></div>
+              <div class="kpi-foot" id="kpiHotspotFoot">指数 ≥ 50</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-head"><span>有效样本</span><i class="kpi-dot sample"></i></div>
+              <div class="kpi-value"><strong id="kpiSamples">—</strong><span>条</span></div>
+              <div class="kpi-foot" id="kpiSampleFoot">覆盖率 —</div>
+            </article>
+          </section>
+
+          <section class="map-card panel">
+            <div class="map-header">
+              <div>
+                <div class="card-kicker">LIVE ROAD NETWORK</div>
+                <h2>路网热力 <span id="mapSubtitle">08:00 — 09:00</span></h2>
+              </div>
+              <div class="map-actions">
+                <div class="zoom-group" role="group" aria-label="地图缩放">
+                  <button id="zoomOutBtn" type="button" aria-label="缩小地图">−</button>
+                  <span id="zoomLabel">100%</span>
+                  <button id="zoomInBtn" type="button" aria-label="放大地图">+</button>
+                </div>
+                <button class="map-action-button" id="resetViewBtn" type="button" title="重置地图范围">
+                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7a6.5 6.5 0 1 1-.2 5.4M4 7V3.8M4 7h3.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  范围
+                </button>
+                <button class="map-action-button route-toggle" id="routeToggleBtn" type="button">
+                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 16c0-4 3-4 5-4s5 0 5-4c0-1.1-.9-2-2-2s-2 .9-2 2c0 3 3 3 3 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="5" cy="16" r="1.5" fill="currentColor"/><circle cx="16" cy="4" r="1.5" fill="currentColor"/></svg>
+                  路线避障
+                </button>
+              </div>
+            </div>
+            <div class="map-wrap" id="mapWrap">
+              <canvas id="mapCanvas" aria-label="道路拥堵热力地图"></canvas>
+              <div class="map-coordinate">31.2304°N · 121.4737°E</div>
+              <div class="map-mode-hint" id="mapModeHint">单击路段查看速度与排队长度 · 滚轮缩放，拖动地图</div>
+              <div class="route-banner" id="routeBanner" hidden>
+                <span class="route-pulse"></span>
+                <strong id="routeInstruction">请在地图上点击起点路段</strong>
+                <button id="cancelRouteBtn" type="button">取消</button>
+              </div>
+              <div class="empty-map" id="emptyMap" hidden>
+                <div class="empty-icon">∅</div>
+                <strong>当前筛选无匹配路段</strong>
+                <span>请调整方向或道路等级，导出将显示空结果快照。</span>
+                <button id="emptyResetBtn" type="button">恢复道路等级</button>
+              </div>
+              <div class="map-legend" id="mapLegend">
+                <div class="legend-title"><span>拥堵指数</span><small id="legendTotal">0 条显示</small></div>
+                <div class="legend-items" id="legendItems"></div>
+              </div>
+              <div class="map-tooltip" id="mapTooltip" hidden></div>
+              <div class="map-scalebar"><span>1 km</span><i></i></div>
+            </div>
+          </section>
+
+          <section class="chart-card panel">
+            <div class="chart-header">
+              <div>
+                <div class="card-kicker">FILTERED TIME SERIES</div>
+                <h2>拥堵指数曲线</h2>
+              </div>
+              <span class="method-inline">口径：5min 采样 · 速度按流量加权 · 排队算术均值</span>
+              <div class="chart-legend">
+                <span><i class="line-hot"></i>拥堵指数</span>
+                <span><i class="line-avg"></i>窗口均值</span>
+              </div>
+              <div class="chart-summary" id="chartSummary"></div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="chartCanvas" aria-label="当前筛选下的拥堵指数时序曲线"></canvas>
+              <div class="chart-empty" id="chartEmpty" hidden>当前筛选无采样序列</div>
+            </div>
+          </section>
+        </main>
+
+        <aside class="inspector">
+          <section class="detail-card panel" id="detailCard">
+            <div class="inspector-header">
+              <div>
+                <div class="eyebrow">SEGMENT DETAIL</div>
+                <h2>路段详情</h2>
+              </div>
+              <span class="status-badge" id="detailStatus">重度拥堵</span>
+            </div>
+            <div class="detail-road">
+              <div>
+                <h3 id="detailName">中山大道</h3>
+                <p id="detailMeta">主干路 · 南→北</p>
+              </div>
+              <div class="detail-index"><strong id="detailIndex">68</strong><span>指数</span></div>
+            </div>
+            <div class="detail-metrics">
+              <div><span>平均速度</span><strong id="detailSpeed">24.6</strong><small>km/h</small></div>
+              <div><span>排队长度</span><strong id="detailQueue">86</strong><small>m</small></div>
+            </div>
+            <div class="index-track"><i id="detailIndexBar"></i></div>
+            <div class="detail-foot">
+              <span id="detailSamples">12 个采样</span>
+              <span id="detailUpdated">08:55 更新</span>
+            </div>
+          </section>
+
+          <section class="route-card panel">
+            <div class="inspector-header compact">
+              <div>
+                <div class="eyebrow">SAFE ROUTING</div>
+                <h2>路线避障</h2>
+              </div>
+              <button class="small-link" id="routePanelBtn" type="button">开始选择</button>
+            </div>
+            <div class="route-points">
+              <div class="route-point"><span class="point start"></span><small>起点</small><strong id="routeStart">未选择</strong></div>
+              <div class="route-link"></div>
+              <div class="route-point"><span class="point end"></span><small>终点</small><strong id="routeEnd">未选择</strong></div>
+            </div>
+            <div class="closure-line">
+              <span class="closure-mark">⊘</span>
+              <span id="closureText">当前窗口 1 条封闭路段</span>
+              <span id="routeStatus">规划将自动绕行</span>
+            </div>
+            <button class="clear-route" id="clearRouteBtn" type="button" hidden>清除路线</button>
+          </section>
+
+          <section class="hotspots-card panel">
+            <div class="inspector-header compact">
+              <div>
+                <div class="eyebrow">RANKING</div>
+                <h2>路段列表</h2>
+              </div>
+              <div class="ranking-tabs">
+                <button class="active" type="button" data-rank="index">拥堵</button>
+                <button type="button" data-rank="speed">低速</button>
+              </div>
+            </div>
+            <div class="ranking-head"><span>路段 / 方向</span><span>速度</span><span>排队</span></div>
+            <div class="hotspot-list" id="hotspotList"></div>
+            <div class="list-empty" id="listEmpty" hidden>没有符合当前筛选的路段</div>
+            <div class="list-foot"><span id="listFoot">按拥堵指数降序</span><button id="showAllBtn" type="button">查看全部</button></div>
+          </section>
+
+          <section class="export-card panel">
+            <div class="inspector-header compact">
+              <div>
+                <div class="eyebrow">EXPORT LOG</div>
+                <h2>导出记录</h2>
+              </div>
+              <button class="small-link" id="openLogsBtn" type="button">全部日志</button>
+            </div>
+            <div class="last-export" id="lastExport">
+              <div class="export-empty-icon">↧</div>
+              <div><strong>尚无导出记录</strong><span>导出时将写入当前筛选与数值快照</span></div>
+            </div>
+            <div class="export-consistency"><span class="check-dot"></span>导出值与屏幕使用同一聚合快照</div>
+          </section>
+        </aside>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="methodModal" hidden>
+      <div class="modal method-modal" role="dialog" aria-modal="true" aria-labelledby="methodTitle">
+        <div class="modal-header">
+          <div><div class="eyebrow">METHODOLOGY</div><h2 id="methodTitle">统计口径与数据质量</h2></div>
+          <button class="modal-close" data-close="methodModal" type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="method-grid">
+          <article><span>01</span><h3>去重</h3><p>以 <code>路段 ID + 采样时刻 + 方向</code> 为唯一键；同键保留时间戳合法且指标完整的首条记录。</p></article>
+          <article><span>02</span><h3>补缺</h3><p>速度与排队长度缺失或越界时，优先使用同路段相邻时刻中位数，其次回落至路段中位数与全局中位数。</p></article>
+          <article><span>03</span><h3>聚合</h3><p>窗口内按路段聚合，速度采用采样量加权均值；排队长度采用算术均值；指数统一由速度比、排队和流量计算。</p></article>
+          <article><span>04</span><h3>同步</h3><p>地图、曲线、列表、详情和 PNG 导出均读取同一个 <code>viewRevision</code> 快照，不读取预设图形数值。</p></article>
+        </div>
+        <div class="formula-box">
+          <div><small>拥堵指数</small><code>65 × (1 − 速度/自由流) + 25 × min(排队/150, 1) + 10 × min(流量/2500, 1)</code></div>
+          <div><small>热点判定</small><code>拥堵指数 ≥ 50，图例计数随当前筛选实时重算</code></div>
+          <div><small>路线约束</small><code>最短连通路径；封闭路段权重设为 ∞，不参与候选路径</code></div>
+        </div>
+        <div class="selfcheck-panel">
+          <div class="selfcheck-head"><strong>运行时自检</strong><span id="selfcheckSummary">—</span></div>
+          <div id="selfcheckList" class="selfcheck-list"></div>
+        </div>
+        <div class="modal-actions"><button class="primary-button" data-close="methodModal" type="button">知道了</button></div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="logsModal" hidden>
+      <div class="modal logs-modal" role="dialog" aria-modal="true" aria-labelledby="logsTitle">
+        <div class="modal-header">
+          <div><div class="eyebrow">EXPORT AUDIT</div><h2 id="logsTitle">导出日志</h2></div>
+          <button class="modal-close" data-close="logsModal" type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="log-note">每次导出记录筛选、时间窗口、数据版本与屏幕同源统计值；日志可随 PNG 一并审计。</div>
+        <div id="logEntries" class="log-entries"></div>
+        <div class="modal-actions">
+          <button class="secondary-button" id="downloadLogBtn" type="button">下载 JSON 日志</button>
+          <button class="primary-button" data-close="logsModal" type="button">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <canvas id="exportCanvas" width="1800" height="1220" hidden></canvas>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
