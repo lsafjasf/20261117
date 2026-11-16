@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>一周雨量数据可视化 · 地图 / 曲线 / 时间热区</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <strong>雨量观测台</strong>
+    <span class="sub">一周逐小时 · 地图 / 曲线 / 热区同步</span>
+  </div>
+  <div class="controls">
+    <label>数据集
+      <select id="sel-dataset">
+        <option value="normal">正常数据</option>
+        <option value="missing">缺失数据</option>
+        <option value="anomaly">异常数据</option>
+      </select>
+    </label>
+    <label>口径模式
+      <select id="sel-mode">
+        <option value="instant">瞬时雨强 (mm/h)</option>
+        <option value="cumulative">累计雨量 (mm)</option>
+      </select>
+    </label>
+    <label>雨强阈值 ≥
+      <input id="in-threshold" type="number" min="0" step="1" value="0" /> mm/h
+    </label>
+    <button id="btn-back" type="button">← 切回前一条件</button>
+    <button id="btn-reset" type="button">重置</button>
+    <button id="btn-export-png" type="button">导出 PNG</button>
+    <button id="btn-export-csv" type="button">导出 CSV</button>
+    <button id="btn-verify" type="button">重新验证</button>
+  </div>
+</header>
+
+<section id="summary" class="summary" aria-live="polite"></section>
+
+<main class="grid">
+  <section class="card card-map">
+    <h2>站点地图 <small>拖动框选 · 点选 · 空白处取消</small></h2>
+    <canvas id="cv-map"></canvas>
+  </section>
+  <section class="card card-chart">
+    <h2>雨量曲线 <small>拖动游标/窗口手柄 · 缺失与补缺分段标注</small></h2>
+    <canvas id="cv-chart"></canvas>
+  </section>
+  <section class="card card-heat">
+    <h2>时间热区 <small>行=站点 列=小时 · 点击定位游标</small></h2>
+    <canvas id="cv-heat"></canvas>
+  </section>
+  <section class="card card-list">
+    <h2>站点列表（当前窗口与筛选）</h2>
+    <div class="table-wrap">
+      <table id="station-table">
+        <thead>
+          <tr>
+            <th>站点</th>
+            <th>有效(h)</th>
+            <th>缺失(h)</th>
+            <th>补缺(h)</th>
+            <th>窗口累计(mm)</th>
+            <th>最大瞬时(mm/h)</th>
+            <th>均值(mm/h)</th>
+            <th>缺失率</th>
+            <th>标记</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="list-empty" class="empty-tip" hidden>当前筛选条件下没有匹配站点（空结果）</div>
+    </div>
+  </section>
+  <section class="card card-log">
+    <h2>数据摘要 / 验证 / 导出日志</h2>
+    <div id="verify-results" class="verify"></div>
+    <ul id="log" class="log"></ul>
+  </section>
+</main>
+
+<div id="tooltip" class="tooltip" hidden></div>
+
+<script src="js/util.js"></script>
+<script src="js/stations.js"></script>
+<script src="js/datasets.js"></script>
+<script src="js/pipeline.js"></script>
+<script src="js/state.js"></script>
+<script src="js/map.js"></script>
+<script src="js/chart.js"></script>
+<script src="js/heatmap.js"></script>
+<script src="js/export.js"></script>
+<script src="js/tests.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

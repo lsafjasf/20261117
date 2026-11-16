@@ -1,0 +1,10 @@
+{
+  "name": "rainfall-week-dashboard",
+  "version": "1.0.0",
+  "description": "一周逐小时雨量数据可视化：Canvas 地图 / 曲线 / 时间热区，含去重、补缺、聚合、同步筛选与导出",
+  "private": true,
+  "scripts": {
+    "test": "node test/node-smoke.js && node test/browser-stub.js",
+    "serve": "python3 -m http.server 8123"
+  }
+}
