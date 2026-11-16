@@ -1,0 +1,11 @@
+{
+  "name": "water-network-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "供水网络压力/流量/漏损监测：Canvas 地图、阀门关断模拟、筛选同步与报告导出",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/*.test.js"
+  }
+}

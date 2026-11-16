@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>供水网络监测平台</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">供水网络监测平台 <span class="sub">压力 · 流量 · 漏损</span></div>
+    <div class="top-controls">
+      <label>数据集
+        <select id="datasetSelect">
+          <option value="normal">正常数据</option>
+          <option value="missing">缺失数据</option>
+          <option value="anomaly">异常数据</option>
+        </select>
+      </label>
+      <label>时间窗口
+        <select id="windowSize">
+          <option value="3600000">近 1 小时</option>
+          <option value="21600000" selected>近 6 小时</option>
+          <option value="86400000">近 24 小时</option>
+        </select>
+      </label>
+      <button id="prevWindow" type="button">← 前一窗口</button>
+      <button id="nextWindow" type="button">后一窗口 →</button>
+      <button id="backWindow" type="button">↶ 回到上一窗口</button>
+    </div>
+  </header>
+
+  <section class="context-bar" id="contextBar">
+    <div class="ctx-item"><span class="ctx-label">当前筛选</span><span id="ctxFilters" class="ctx-value"></span></div>
+    <div class="ctx-item"><span class="ctx-label">时间窗口</span><span id="ctxWindow" class="ctx-value"></span></div>
+    <div class="ctx-item"><span class="ctx-label">统计口径</span><span id="ctxBasis" class="ctx-value"></span></div>
+    <div class="ctx-item"><span class="ctx-label">数据版本</span><span id="ctxVersion" class="ctx-value mono"></span></div>
+  </section>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <section class="panel">
+        <h2>筛选条件</h2>
+        <label class="field">分区
+          <select id="filterZone"><option value="">全部分区</option></select>
+        </label>
+        <label class="field">节点
+          <select id="filterNode"><option value="">全部节点</option></select>
+        </label>
+        <label class="field">指标
+          <select id="filterMetric">
+            <option value="">全部指标</option>
+            <option value="pressure">压力 (MPa)</option>
+            <option value="flow">流量 (m³/h)</option>
+            <option value="leakage">漏损 (m³/h)</option>
+          </select>
+        </label>
+        <div class="field range-field">
+          <span>数值区间</span>
+          <div class="range-inputs">
+            <input type="number" id="filterMin" placeholder="最小值" step="0.01" />
+            <i>～</i>
+            <input type="number" id="filterMax" placeholder="最大值" step="0.01" />
+          </div>
+        </div>
+        <label class="field check"><input type="checkbox" id="filterAnomalyOnly" /> 仅看异常点</label>
+        <label class="field">聚合粒度
+          <select id="intervalSelect">
+            <option value="300000">5 分钟</option>
+            <option value="900000" selected>15 分钟</option>
+            <option value="3600000">1 小时</option>
+          </select>
+        </label>
+        <label class="field">统计口径
+          <select id="statSelect">
+            <option value="avg" selected>平均值</option>
+            <option value="max">最大值</option>
+            <option value="min">最小值</option>
+            <option value="p95">P95 分位</option>
+          </select>
+        </label>
+        <div class="btn-row">
+          <button id="applyFilter" type="button" class="primary">应用筛选</button>
+          <button id="resetFilter" type="button">重置</button>
+        </div>
+        <div class="btn-row">
+          <button id="emptyDemo" type="button">空结果演示</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>数据摘要</h2>
+        <ul class="summary" id="summaryList"></ul>
+      </section>
+
+      <section class="panel">
+        <h2>导出日志</h2>
+        <ul class="export-log" id="exportLog">
+          <li class="muted">暂无导出记录</li>
+        </ul>
+      </section>
+    </aside>
+
+    <section class="content">
+      <div class="panel map-panel">
+        <div class="panel-head">
+          <h2>管网地图（Canvas）</h2>
+          <div class="hint">点击管线开关阀门 · 点击节点选中 · 滚轮缩放 / 拖拽平移</div>
+        </div>
+        <canvas id="mapCanvas" width="760" height="460"></canvas>
+        <div class="legend" id="mapLegend"></div>
+      </div>
+
+      <div class="panel chart-panel">
+        <div class="panel-head">
+          <h2>趋势曲线（Canvas）</h2>
+          <div class="hint" id="chartHint"></div>
+        </div>
+        <canvas id="chartCanvas" width="760" height="260"></canvas>
+      </div>
+
+      <div class="panel list-panel">
+        <div class="panel-head">
+          <h2>节点列表</h2>
+          <div class="hint" id="listCount"></div>
+        </div>
+        <div class="table-wrap">
+          <table id="nodeTable">
+            <thead>
+              <tr>
+                <th>节点</th><th>分区</th><th>状态</th>
+                <th>压力 MPa</th><th>流量 m³/h</th><th>漏损 m³/h</th><th>异常数</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div class="empty-state" id="emptyState" hidden>当前筛选条件下没有匹配数据（空结果）</div>
+        </div>
+      </div>
+
+      <div class="panel export-panel">
+        <h2>报告导出</h2>
+        <div class="btn-row">
+          <button id="exportHtml" type="button" class="primary">导出 HTML 报告（含屏幕截图）</button>
+          <button id="exportCsv" type="button">导出 CSV 数据</button>
+        </div>
+        <p class="hint">导出内容直接取自当前屏幕同一数据版本快照，地图/曲线图片为 Canvas 实时渲染结果。</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
