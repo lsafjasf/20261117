@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101d19" />
+    <meta
+      name="description"
+      content="微境实验田：安排采样、灌溉与遮阴，观察有机肥对土壤微生物的影响。"
+    />
+    <title>微境实验田 · 土壤微生物监测</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="微境实验田首页">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <span>
+            <strong>微境实验田</strong>
+            <small>MICROFIELD / SOIL TRIAL 03</small>
+          </span>
+        </a>
+
+        <div class="run-state" aria-live="polite">
+          <span class="live-dot" id="liveDot"></span>
+          <div>
+            <span id="phaseLabel">稳定培养</span>
+            <small id="phaseDetail">环境基线建立中</small>
+          </div>
+        </div>
+
+        <div class="clock-block" aria-label="实验计时">
+          <span class="clock-kicker">OBSERVATION</span>
+          <strong id="clock">00:00</strong>
+          <span id="duration">/ 02:00</span>
+        </div>
+
+        <div class="top-actions">
+          <label class="seed-control" title="相同 seed 会复现天气与目标点">
+            <span>SEED</span>
+            <input id="seedInput" type="text" value="MF-2407" maxlength="12" spellcheck="false" />
+          </label>
+          <button class="icon-button" id="soundButton" type="button" aria-label="关闭声音" title="声音计时">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 9v6h4l5 4V5L9 9H5Z" />
+              <path class="sound-wave" d="M17 8.5a5 5 0 0 1 0 7M19.5 6a8.5 8.5 0 0 1 0 12" />
+            </svg>
+          </button>
+          <button class="run-button" id="runButton" type="button">
+            <span class="run-icon" aria-hidden="true"></span>
+            <span id="runLabel">暂停</span>
+          </button>
+          <button class="icon-button reset-button" id="resetButton" type="button" aria-label="重置实验" title="重置实验">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 4v6h6M5.5 16a7.5 7.5 0 1 0-.9-6.2L4 10" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="left-rail">
+          <section class="panel telemetry-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">ENVIRONMENT</span>
+                <h2>环境遥测</h2>
+              </div>
+              <span class="sensor-state" id="sensorState">采样中</span>
+            </div>
+            <div class="metric-list" id="metricList">
+              <article class="metric-card" data-metric="temp">
+                <div class="metric-top">
+                  <span class="metric-name"><i class="metric-dot temp"></i>温度</span>
+                  <span class="metric-alert" data-alert></span>
+                </div>
+                <div class="metric-reading">
+                  <strong data-observed>--</strong><span>°C</span>
+                  <small>观测</small>
+                </div>
+                <div class="metric-foot">
+                  <span>实际 <b data-actual>--</b> °C</span>
+                  <span data-range>18–32</span>
+                </div>
+                <svg class="sparkline" viewBox="0 0 220 32" preserveAspectRatio="none" aria-hidden="true">
+                  <path class="spark-area" />
+                  <path class="spark-line" />
+                  <line class="spark-threshold" x1="0" x2="220" />
+                </svg>
+              </article>
+              <article class="metric-card" data-metric="humidity">
+                <div class="metric-top">
+                  <span class="metric-name"><i class="metric-dot humidity"></i>空气湿度</span>
+                  <span class="metric-alert" data-alert></span>
+                </div>
+                <div class="metric-reading">
+                  <strong data-observed>--</strong><span>%</span>
+                  <small>观测</small>
+                </div>
+                <div class="metric-foot">
+                  <span>实际 <b data-actual>--</b> %</span>
+                  <span data-range>55–78</span>
+                </div>
+                <svg class="sparkline" viewBox="0 0 220 32" preserveAspectRatio="none" aria-hidden="true">
+                  <path class="spark-area" />
+                  <path class="spark-line" />
+                  <line class="spark-threshold" x1="0" x2="220" />
+                </svg>
+              </article>
+              <article class="metric-card" data-metric="water">
+                <div class="metric-top">
+                  <span class="metric-name"><i class="metric-dot water"></i>土壤水位</span>
+                  <span class="metric-alert" data-alert></span>
+                </div>
+                <div class="metric-reading">
+                  <strong data-observed>--</strong><span>%</span>
+                  <small>观测</small>
+                </div>
+                <div class="metric-foot">
+                  <span>实际 <b data-actual>--</b> %</span>
+                  <span data-range>35–80</span>
+                </div>
+                <svg class="sparkline" viewBox="0 0 220 32" preserveAspectRatio="none" aria-hidden="true">
+                  <path class="spark-area" />
+                  <path class="spark-line" />
+                  <line class="spark-threshold" x1="0" x2="220" />
+                </svg>
+              </article>
+              <article class="metric-card" data-metric="contamination">
+                <div class="metric-top">
+                  <span class="metric-name"><i class="metric-dot contamination"></i>污染指数</span>
+                  <span class="metric-alert" data-alert></span>
+                </div>
+                <div class="metric-reading">
+                  <strong data-observed>--</strong><span>CFU</span>
+                  <small>观测</small>
+                </div>
+                <div class="metric-foot">
+                  <span>实际 <b data-actual>--</b> CFU</span>
+                  <span data-range>0–55</span>
+                </div>
+                <svg class="sparkline" viewBox="0 0 220 32" preserveAspectRatio="none" aria-hidden="true">
+                  <path class="spark-area" />
+                  <path class="spark-line" />
+                  <line class="spark-threshold" x1="0" x2="220" />
+                </svg>
+              </article>
+            </div>
+            <div class="threshold-note" id="thresholdNote">
+              <span class="threshold-icon">!</span>
+              <p>温度 34°C、污染 55 CFU 为临界阈值。实际值越过阈值立即记录。</p>
+            </div>
+          </section>
+
+          <section class="panel target-panel">
+            <div class="panel-heading compact">
+              <div>
+                <span class="eyebrow">TARGETS</span>
+                <h2>样本目标</h2>
+              </div>
+              <strong class="target-count"><span id="targetCount">0</span> / 9</strong>
+            </div>
+            <div class="target-progress"><span id="targetProgress"></span></div>
+            <div class="group-grid" id="groupGrid"></div>
+            <p class="hint" id="sampleHint">培养 12 秒后开放采样。点击田块中的脉冲靶点。</p>
+          </section>
+        </aside>
+
+        <section class="stage-column">
+          <div class="stage-toolbar">
+            <div class="stage-title">
+              <span class="eyebrow">FIELD / 01—03</span>
+              <h1>三种有机肥 · 微生物响应</h1>
+            </div>
+            <div class="stage-legend" aria-label="画面图例">
+              <span><i class="legend-target"></i>采样靶点</span>
+              <span><i class="legend-sample"></i>已采样</span>
+              <span><i class="legend-bias"></i>偏差样本</span>
+            </div>
+          </div>
+
+          <div class="canvas-wrap" id="canvasWrap">
+            <canvas id="fieldCanvas" aria-label="实验田块、采样点和培养皿"></canvas>
+            <div class="canvas-tip" id="canvasTip">
+              <span class="tip-crosshair" aria-hidden="true"></span>
+              <span id="canvasTipText">移动指针以检查采样距离</span>
+            </div>
+            <div class="canvas-toast" id="canvasToast" role="status" aria-live="polite"></div>
+            <div class="sampling-lock" id="samplingLock">
+              <span class="lock-icon"></span>
+              <div>
+                <strong>培养锁定</strong>
+                <small id="lockTime">还需 12 秒</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="intervention-bar">
+            <div class="intervention-heading">
+              <span class="eyebrow">INTERVENTIONS</span>
+              <strong>当前干预</strong>
+            </div>
+            <div class="active-interventions" id="activeInterventions">
+              <span class="empty-intervention">自动环境控制中</span>
+            </div>
+            <div class="intervention-actions">
+              <button class="action-button irrigation" data-action="irrigation" type="button">
+                <span class="action-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s5 5.5 5 10a5 5 0 0 1-10 0c0-4.5 5-10 5-10Z"/><path d="M9.5 14.2c.2 1 1.1 1.8 2.2 1.9"/></svg>
+                </span>
+                <span><strong>灌溉</strong><small>+水位 10s · 高湿有风险</small></span>
+                <kbd>1</kbd>
+              </button>
+              <button class="action-button shade" data-action="shade" type="button">
+                <span class="action-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15a8 8 0 0 1 16 0H4Z"/><path d="M12 3v2M4.5 6.5l1.4 1.4M19.5 6.5l-1.4 1.4M3 19h18"/></svg>
+                </span>
+                <span><strong>遮阴</strong><small>降温 12s · 抑制蒸散</small></span>
+                <kbd>2</kbd>
+              </button>
+              <button class="action-button ventilation" data-action="ventilation" type="button">
+                <span class="action-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7a2.5 2.5 0 1 1-2.5 2.5"/></svg>
+                </span>
+                <span><strong>通风</strong><small>除湿降污 8s · 恢复辅助</small></span>
+                <kbd>3</kbd>
+              </button>
+            </div>
+            <button class="recovery-button" id="recoveryButton" type="button" disabled>
+              <span class="recovery-ring" aria-hidden="true"></span>
+              <span>
+                <strong id="recoveryLabel">启动恢复观察</strong>
+                <small id="recoveryHint">告警后可用 · 固定 8 秒</small>
+              </span>
+            </button>
+          </div>
+
+          <div class="success-banner" id="successBanner" hidden>
+            <span class="success-mark">✓</span>
+            <div>
+              <strong>三组可比较数据已建立</strong>
+              <small id="successDetail">观测期内成功锁定 A / B / C 三组样本。</small>
+            </div>
+            <button type="button" id="dismissBanner">继续观察</button>
+          </div>
+        </section>
+
+        <aside class="right-rail">
+          <section class="panel analysis-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">COMPARISON</span>
+                <h2>组间可比性</h2>
+              </div>
+              <span class="comparison-badge" id="comparisonBadge">待采样</span>
+            </div>
+            <div class="comparison-bars" id="comparisonBars"></div>
+            <div class="comparison-note" id="comparisonNote">
+              每组需 3 个靶心样本，且采样时间跨度不超过 32 秒。
+            </div>
+          </section>
+
+          <section class="panel log-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">RUN LOG</span>
+                <h2>实验记录</h2>
+              </div>
+              <button class="text-button" id="clearLogButton" type="button">清空视图</button>
+            </div>
+            <div class="log-tabs" role="tablist" aria-label="记录类型">
+              <button class="active" data-log-tab="events" type="button" role="tab">事件 <span id="eventCount">0</span></button>
+              <button data-log-tab="operations" type="button" role="tab">操作前后 <span id="operationCount">0</span></button>
+              <button data-log-tab="verification" type="button" role="tab">复现校验</button>
+            </div>
+            <div class="log-body" id="eventLog" role="tabpanel"></div>
+            <div class="log-body" id="operationLog" role="tabpanel" hidden></div>
+            <div class="log-body verification-body" id="verificationLog" role="tabpanel" hidden>
+              <p class="verification-copy">
+                用同一 seed 重新生成天气序列与目标分布，逐项比对指纹。当前运行记录不会被覆盖。
+              </p>
+              <button class="verify-button" id="verifyButton" type="button">
+                <span>运行复现校验</span>
+                <small>天气 · 目标 · 临界记录</small>
+              </button>
+              <div class="verification-result" id="verificationResult"></div>
+            </div>
+          </section>
+        </aside>
+      </main>
+
+      <footer class="statusbar">
+        <span><i class="status-light"></i> SIMULATION LINKED</span>
+        <span>观测值经传感器滤波，实际值保留在事件记录中</span>
+        <span id="saveState">SEED MF-2407 · 自动保存</span>
+      </footer>
+    </div>
+    <script type="module" src="/src/app.js"></script>
+  </body>
+</html>
