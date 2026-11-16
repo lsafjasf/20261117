@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图标工作室 · 三枚功能图标设计</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>图标工作室</h1>
+    <div class="actions">
+      <button id="btnUndo" title="Ctrl+Z">撤销</button>
+      <button id="btnRedo" title="Ctrl+Shift+Z / Ctrl+Y">重做</button>
+      <button id="btnSave" title="Ctrl+S">保存</button>
+      <button id="btnReload">重新载入</button>
+      <span class="sep"></span>
+      <button id="btnExportSvg">导出 SVG + JSON</button>
+      <button id="btnExportPng">导出 PNG</button>
+      <span class="sep"></span>
+      <button id="btnSampleStandard">载入标准案例</button>
+      <button id="btnSampleExtreme">载入极端案例</button>
+    </div>
+  </header>
+
+  <div id="toasts" aria-live="polite"></div>
+
+  <main class="layout">
+    <aside class="panel left">
+      <section>
+        <h2>图标（三枚一组）</h2>
+        <div id="iconTabs" class="tabs"></div>
+        <label class="field">
+          <span>当前图标名称</span>
+          <input id="iconName" type="text" maxlength="12">
+        </label>
+      </section>
+      <section>
+        <h2>工具</h2>
+        <div class="tools">
+          <button data-tool="select" class="active">选择/移动</button>
+          <button data-tool="rect">矩形</button>
+          <button data-tool="circle">圆形</button>
+          <button data-tool="line">线条</button>
+          <button data-tool="text">文本</button>
+        </div>
+      </section>
+      <section>
+        <h2>统一视觉风格（作用于全部三枚）</h2>
+        <label class="field"><span>统一线宽 (0.5–8)</span>
+          <input id="styleStroke" type="number" min="0.5" max="8" step="0.5"></label>
+        <label class="field"><span>统一圆角 (0–16)</span>
+          <input id="styleRadius" type="number" min="0" max="16" step="1"></label>
+        <label class="field"><span>主色</span>
+          <input id="stylePrimary" type="color"></label>
+        <label class="field"><span>强调色</span>
+          <input id="styleAccent" type="color"></label>
+        <label class="field"><span>背景色</span>
+          <input id="styleBg" type="color"></label>
+      </section>
+      <section>
+        <h2>参考线</h2>
+        <label class="check"><input id="showGrid" type="checkbox" checked> 显示网格</label>
+        <label class="check"><input id="showSafe" type="checkbox" checked> 显示安全边距</label>
+      </section>
+    </aside>
+
+    <section class="stage">
+      <canvas id="board" width="480" height="480"></canvas>
+      <div class="preview-strip">
+        <h2>导出预览（48px 与 24px 实尺寸）</h2>
+        <div id="previews" class="previews"></div>
+      </div>
+    </section>
+
+    <aside class="panel right">
+      <section>
+        <h2>选中元素属性</h2>
+        <div id="props" class="props"><p class="hint">在画布中点击元素进行选择。</p></div>
+      </section>
+      <section>
+        <h2>排版规则检查</h2>
+        <ul id="issues" class="issues"></ul>
+      </section>
+    </aside>
+  </main>
+
+  <script src="js/icon-core.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
