@@ -1,0 +1,22 @@
+{
+  "name": "tape-repair",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node test/node-test.mjs && node test/browser-test.mjs",
+    "test:node": "node test/node-test.mjs",
+    "test:browser": "node test/browser-test.mjs",
+    "screenshot": "node test/screenshot.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "playwright": "^1.65.1"
+  }
+}
