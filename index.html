@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#081015" />
+    <title>VECTOR—09 双人测绘协同台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>
+            <p class="eyebrow">FIELD OPTICS / DUAL OPERATOR</p>
+            <h1>双人测绘协同台 <b>VECTOR—09</b></h1>
+          </div>
+        </div>
+
+        <div class="top-telemetry">
+          <div class="sync-chip" id="syncChip">
+            <span class="signal-dot"></span>
+            <div>
+              <small>双端共享状态</small>
+              <strong id="syncText">SYNC READY</strong>
+            </div>
+            <code id="syncRevision">REV 0000</code>
+          </div>
+          <div class="top-clock">
+            <span>任务倒计时</span>
+            <strong id="topCountdown">02:30.0</strong>
+          </div>
+        </div>
+
+        <nav class="toolbar" aria-label="任务控制">
+          <button class="btn btn-primary" id="startPauseBtn" type="button">
+            <span class="btn-led"></span><span id="startPauseLabel">开始任务</span><kbd>P</kbd>
+          </button>
+          <button class="btn" id="restartBtn" type="button">重新开始</button>
+          <button class="btn" id="debugBtn" type="button">单人调试</button>
+          <button class="btn" id="replayBtn" type="button">回放 <kbd>V</kbd></button>
+          <button class="btn btn-export" id="reportBtn" type="button" disabled>导出报告</button>
+        </nav>
+      </header>
+
+      <main class="workspace">
+        <section class="stage-panel" aria-label="测绘场景和取景框">
+          <div class="stage-head">
+            <div class="stage-status">
+              <span class="status-light" id="statusLight"></span>
+              <strong id="stageMode">STANDBY</strong>
+              <span id="stageSub">等待双方就位</span>
+            </div>
+            <div class="stage-legend">
+              <span><i class="legend-p1"></i>A 方位</span>
+              <span><i class="legend-p2"></i>B 仰角 / 焦距</span>
+              <span><i class="legend-shared"></i>共享记录</span>
+            </div>
+          </div>
+
+          <div class="canvas-wrap" id="canvasWrap">
+            <canvas id="sceneCanvas" aria-label="山区地形、测绘仪与动态取景框"></canvas>
+            <div class="scanline" aria-hidden="true"></div>
+            <div class="canvas-corner corner-tl"></div>
+            <div class="canvas-corner corner-br"></div>
+
+            <div class="canvas-hud hud-left">
+              <span>AZIMUTH</span>
+              <strong id="hudAz">000.0°</strong>
+              <small>A / D</small>
+            </div>
+            <div class="canvas-hud hud-right">
+              <span>TARGET WINDOW</span>
+              <strong id="hudWindow">10.0s</strong>
+              <small id="hudTargetVisible">SIGNAL ACTIVE</small>
+            </div>
+            <div class="target-tag" id="targetTag">
+              <span class="target-tag-id" id="targetTagId">K—01</span>
+              <div>
+                <strong id="targetTagName">北脊标桩</strong>
+                <small id="targetTagMeta">VISIBLE / UNRESOLVED</small>
+              </div>
+            </div>
+
+            <div class="mode-badge" id="modeBadge">STANDBY</div>
+            <div class="debug-badge" id="debugBadge" hidden>单人调试 · 协作约束旁路</div>
+
+            <div class="stage-overlay" id="readyOverlay">
+              <div class="overlay-card">
+                <p class="overlay-kicker">TWO-OPERATOR LINK / READY</p>
+                <h2 id="readyTitle">一人定方位，一人稳仰角</h2>
+                <p id="readyCopy">目标只在短暂窗口内可见。双方各自确认后，共享采样片才会写入任务记录。</p>
+                <div class="overlay-key-pair" id="readyKeyPair">
+                  <div><b class="p1-text">A 观测员</b><span><kbd>A</kbd><kbd>D</kbd> 方位 · <kbd>SPACE</kbd> 确认</span></div>
+                  <div><b class="p2-text">B 观测员</b><span><kbd>↑</kbd><kbd>↓</kbd> 仰角 · <kbd>W</kbd><kbd>S</kbd> 焦距 · <kbd>ENTER</kbd> 确认</span></div>
+                </div>
+                <button class="btn btn-primary btn-large" id="readyStartBtn" type="button">双人开始任务</button>
+                <small>键盘支持双方同时按住各自键位</small>
+              </div>
+            </div>
+
+            <div class="stage-overlay" id="pausedOverlay" hidden>
+              <div class="overlay-card compact">
+                <p class="overlay-kicker">MISSION PAUSED</p>
+                <h2>任务暂停</h2>
+                <p>倒计时、目标窗口和双方确认均已冻结。按 <kbd>P</kbd> 继续。</p>
+                <button class="btn btn-primary" id="pausedResumeBtn" type="button">继续任务</button>
+              </div>
+            </div>
+
+            <div class="stage-overlay protection-overlay" id="protectionOverlay" hidden>
+              <div class="overlay-card">
+                <p class="overlay-kicker">SINGLE-SIDE SAFE HOLD</p>
+                <h2 id="protectionTitle">单侧保护已启动</h2>
+                <p id="protectionCopy">共享任务已冻结，资源与计时不会继续消耗。</p>
+                <div class="protection-acks">
+                  <div id="protectAckP1"><b>A</b><span>SPACE</span><em>待确认</em></div>
+                  <div id="protectAckP2"><b>B</b><span>ENTER</span><em>待确认</em></div>
+                </div>
+                <div class="overlay-actions">
+                  <button class="btn btn-primary" id="protectionReconnectBtn" type="button">重连并进入握手</button>
+                  <button class="btn" id="protectionRestartBtn" type="button">放弃并重新开始</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="stage-overlay" id="completeOverlay" hidden>
+              <div class="overlay-card compact">
+                <p class="overlay-kicker">MISSION COMPLETE</p>
+                <h2 id="completeTitle">三个测点已完成</h2>
+                <p id="completeCopy">共享记录已锁定，可以导出本轮报告。</p>
+                <div class="overlay-actions">
+                  <button class="btn btn-primary" id="completeReportBtn" type="button">查看并导出报告</button>
+                  <button class="btn" id="completeRestartBtn" type="button">重新开始</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="live-notice" id="liveNotice" role="status">系统待命，等待双人开始</div>
+          </div>
+
+          <div class="stage-footer">
+            <div class="telemetry-strip">
+              <span><small>方位 AZ</small><b id="footAz">000.0°</b></span>
+              <span><small>仰角 EL</small><b id="footEl">00.0°</b></span>
+              <span><small>焦距 FOCUS</small><b id="footFocus">0.50</b></span>
+              <span><small>稳定保持</small><b id="footStable">0.0s</b></span>
+            </div>
+            <div class="scene-caption">
+              <span class="pulse-dot"></span>
+              <span id="sceneCaption">地形扫描待命</span>
+            </div>
+          </div>
+        </section>
+
+        <aside class="console" aria-label="共享与双人仪表">
+          <section class="shared-card panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">SHARED MISSION STATE</p>
+                <h2>共享任务状态</h2>
+              </div>
+              <div class="mirror-stamp" id="sharedStamp">REV 0000</div>
+            </div>
+
+            <div class="mission-metrics">
+              <div class="metric-time">
+                <span>剩余时间</span>
+                <strong id="missionCountdown">02:30.0</strong>
+                <div class="time-rail"><i id="timeRail"></i></div>
+              </div>
+              <div class="metric-points">
+                <span>测点</span>
+                <strong><em id="successCount">0</em><small>/3</small></strong>
+              </div>
+              <div class="metric-target">
+                <span>当前目标</span>
+                <strong id="currentTarget">K—01</strong>
+                <small id="targetVisibility">窗口可见</small>
+              </div>
+            </div>
+
+            <div class="stability-block">
+              <div class="stability-ring" id="stabilityRing" style="--quality: 0; --ring-color: #63dcff">
+                <div>
+                  <strong id="qualityValue">0</strong>
+                  <span>STABLE</span>
+                </div>
+              </div>
+              <div class="stability-copy">
+                <div class="stability-title">
+                  <strong>共享十字线稳定性</strong>
+                  <span id="stabilityState">未对准</span>
+                </div>
+                <div class="hold-bar"><i id="holdBar"></i></div>
+                <p>稳定度 ≥ 88 且保持 0.55s，双方才可同步落点。</p>
+                <div class="error-pills">
+                  <span>ΔAZ <b id="errorAz">0.0°</b></span>
+                  <span>ΔEL <b id="errorEl">0.0°</b></span>
+                  <span>ΔF <b id="errorFocus">0.00</b></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="confirm-lane">
+              <div class="confirm-side p1-side" id="confirmP1">
+                <span class="operator-dot"></span><b>A</b><small>SPACE</small><em>待确认</em>
+              </div>
+              <div class="confirm-bridge"><span></span><b>双人确认</b><span></span></div>
+              <div class="confirm-side p2-side" id="confirmP2">
+                <span class="operator-dot"></span><b>B</b><small>ENTER</small><em>待确认</em>
+              </div>
+            </div>
+
+            <div class="resource-line">
+              <div>
+                <span>共享采样片</span>
+                <strong><b id="shotsLeft">6</b> / 6</strong>
+              </div>
+              <div class="resource-pips" id="resourcePips" aria-label="共享采样资源剩余 6"></div>
+            </div>
+          </section>
+
+          <section class="player-card p1-card panel" data-player="P1">
+            <div class="player-head">
+              <div class="player-identity">
+                <span class="role-glyph">A</span>
+                <div><small>OPERATOR A / AZIMUTH</small><h2>观测员 A · 方位手</h2></div>
+              </div>
+              <div class="link-state" id="linkP1"><span></span>LINK</div>
+            </div>
+            <div class="player-body">
+              <div class="gauge-line">
+                <div class="gauge-label"><span>方位角</span><small>受控范围 −45° / +45°</small></div>
+                <strong id="p1AzValue">000.0°</strong>
+                <div class="mini-rail"><i id="p1AzRail"></i></div>
+              </div>
+              <div class="key-rack" aria-label="观测员 A 键位">
+                <button class="keycap hold-key" type="button" data-hold-code="KeyA"><kbd>A</kbd><span>方位 −</span></button>
+                <button class="keycap hold-key" type="button" data-hold-code="KeyD"><kbd>D</kbd><span>方位 +</span></button>
+                <button class="keycap confirm-key p1-key" type="button" data-hold-code="Space"><kbd>SPACE</kbd><span>记录确认</span></button>
+              </div>
+              <p class="scope-note">仅控制方位。仰角与焦距不在 A 的权限内。</p>
+              <div class="mirror-row">
+                <span>IDLE <b id="p1Idle">0.0s</b></span>
+                <span>RES <b id="p1Shots">6</b></span>
+                <span>TMR <b id="p1Timer">02:30</b></span>
+                <span>REV <b id="p1Revision">0000</b></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="player-card p2-card panel" data-player="P2">
+            <div class="player-head">
+              <div class="player-identity">
+                <span class="role-glyph">B</span>
+                <div><small>OPERATOR B / ELEVATION + OPTICS</small><h2>观测员 B · 仰角 / 焦距手</h2></div>
+              </div>
+              <div class="link-state" id="linkP2"><span></span>LINK</div>
+            </div>
+            <div class="player-body">
+              <div class="dual-gauge">
+                <div class="gauge-line">
+                  <div class="gauge-label"><span>仰角</span><small>−20° / +35°</small></div>
+                  <strong id="p2ElValue">00.0°</strong>
+                  <div class="mini-rail"><i id="p2ElRail"></i></div>
+                </div>
+                <div class="gauge-line">
+                  <div class="gauge-label"><span>焦距</span><small>0.12 / 0.92</small></div>
+                  <strong id="p2FocusValue">0.50</strong>
+                  <div class="mini-rail"><i id="p2FocusRail"></i></div>
+                </div>
+              </div>
+              <div class="key-rack" aria-label="观测员 B 键位">
+                <button class="keycap hold-key" type="button" data-hold-code="ArrowUp"><kbd>↑</kbd><span>仰角 +</span></button>
+                <button class="keycap hold-key" type="button" data-hold-code="ArrowDown"><kbd>↓</kbd><span>仰角 −</span></button>
+                <button class="keycap hold-key" type="button" data-hold-code="KeyW"><kbd>W</kbd><span>焦距 +</span></button>
+                <button class="keycap hold-key" type="button" data-hold-code="KeyS"><kbd>S</kbd><span>焦距 −</span></button>
+                <button class="keycap confirm-key p2-key" type="button" data-hold-code="Enter"><kbd>ENTER</kbd><span>记录确认</span></button>
+              </div>
+              <p class="scope-note">仅控制仰角与焦距。方位不在 B 的权限内。</p>
+              <div class="mirror-row">
+                <span>IDLE <b id="p2Idle">0.0s</b></span>
+                <span>RES <b id="p2Shots">6</b></span>
+                <span>TMR <b id="p2Timer">02:30</b></span>
+                <span>REV <b id="p2Revision">0000</b></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="activity-card panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">SHARED TASK LEDGER</p>
+                <h2>任务记录与验收</h2>
+              </div>
+              <button class="text-btn" id="acceptanceBtn" type="button">协同验收</button>
+            </div>
+            <div class="record-slots" id="recordSlots"></div>
+            <div class="ledger-line">
+              <span class="ledger-light" id="ledgerLight"></span>
+              <p id="latestLedger">尚无操作记录</p>
+              <time id="ledgerTime">00:00.0</time>
+            </div>
+            <div class="acceptance-row" id="acceptanceRow">
+              <span data-check="success"><i></i>成功落点</span>
+              <span data-check="failure"><i></i>单侧失误</span>
+              <span data-check="recovery"><i></i>保护恢复</span>
+              <b id="acceptanceState">本轮 0 / 3</b>
+            </div>
+            <div class="utility-row">
+              <button class="chip-btn" id="disconnectP1" type="button">模拟 A 断线</button>
+              <button class="chip-btn" id="disconnectP2" type="button">模拟 B 断线</button>
+              <button class="chip-btn" id="timeoutP1" type="button">A 输入超时</button>
+              <button class="chip-btn" id="timeoutP2" type="button">B 输入超时</button>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <div class="modal" id="replayModal" hidden>
+      <div class="modal-backdrop" data-close="replayModal"></div>
+      <section class="modal-panel replay-panel" role="dialog" aria-modal="true" aria-labelledby="replayTitle">
+        <header class="modal-head">
+          <div>
+            <p class="panel-kicker">INPUT / RESOURCE / CONFLICT ARCHIVE</p>
+            <h2 id="replayTitle">任务回放</h2>
+          </div>
+          <button class="icon-btn" type="button" data-close="replayModal" aria-label="关闭回放">×</button>
+        </header>
+        <div class="replay-toolbar">
+          <label>运行记录<select id="replayRunSelect"></select></label>
+          <div class="replay-badges">
+            <span><i class="legend-p1"></i>A 输入</span>
+            <span><i class="legend-p2"></i>B 输入</span>
+            <span><i class="legend-shared"></i>资源</span>
+            <span><i class="legend-conflict"></i>冲突</span>
+          </div>
+        </div>
+        <div class="timeline-wrap">
+          <canvas id="replayTimeline" aria-label="回放事件时间轴"></canvas>
+          <input id="replayScrubber" type="range" min="0" max="1" value="0" step="1" aria-label="回放进度" />
+        </div>
+        <div class="replay-transport">
+          <button class="btn btn-primary" id="replayPlayBtn" type="button">播放</button>
+          <button class="btn" id="replayBackBtn" type="button">回到开始</button>
+          <span id="replayTime">00:00.0 / 00:00.0</span>
+          <select id="replaySpeed" aria-label="回放速度">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+          </select>
+          <span class="replay-sync" id="replaySync">双端快照一致</span>
+        </div>
+        <div class="replay-content">
+          <div class="replay-state">
+            <p class="panel-kicker">FRAME STATE</p>
+            <div id="replayStateGrid"></div>
+          </div>
+          <div class="replay-events">
+            <div class="replay-events-head"><span>事件流</span><b id="replayEventCount">0 EVENTS</b></div>
+            <ol id="replayEventList"></ol>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal" id="reportModal" hidden>
+      <div class="modal-backdrop" data-close="reportModal"></div>
+      <section class="modal-panel report-panel" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+        <header class="modal-head">
+          <div>
+            <p class="panel-kicker">FIELD SURVEY / SIGNED REPORT</p>
+            <h2 id="reportTitle">测点成果报告</h2>
+          </div>
+          <button class="icon-btn" type="button" data-close="reportModal" aria-label="关闭报告">×</button>
+        </header>
+        <div class="report-body" id="reportBody"></div>
+        <footer class="modal-actions">
+          <button class="btn btn-primary" id="downloadReportBtn" type="button">下载 JSON 报告</button>
+          <button class="btn" id="downloadCsvBtn" type="button">下载测点 CSV</button>
+        </footer>
+      </section>
+    </div>
+
+    <div class="modal" id="acceptanceModal" hidden>
+      <div class="modal-backdrop" data-close="acceptanceModal"></div>
+      <section class="modal-panel acceptance-panel" role="dialog" aria-modal="true" aria-labelledby="acceptanceTitle">
+        <header class="modal-head">
+          <div>
+            <p class="panel-kicker">DUAL-OPERATOR REGRESSION PROBE</p>
+            <h2 id="acceptanceTitle">双人协同验收</h2>
+          </div>
+          <button class="icon-btn" type="button" data-close="acceptanceModal" aria-label="关闭验收">×</button>
+        </header>
+        <p class="acceptance-intro">探针会在隔离状态机中实际执行：双人成功、单侧确认失误、断线保护与双侧握手恢复，并核对双方共享字段。</p>
+        <div class="acceptance-results" id="acceptanceResults"></div>
+        <footer class="modal-actions">
+          <button class="btn btn-primary" id="runAcceptanceBtn" type="button">重新运行探针</button>
+          <button class="btn" type="button" data-close="acceptanceModal">关闭</button>
+        </footer>
+      </section>
+    </div>
+
+    <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+    <script type="module" src="./game.js"></script>
+  </body>
+</html>
