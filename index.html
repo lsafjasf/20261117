@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雪坡守望 · 保护区相机监测</title>
+<style>
+  :root {
+    --bg: #0e1522; --panel: #16202f; --line: #2a3a52;
+    --txt: #d7e3f2; --dim: #7f93ab; --accent: #5ec1ff;
+    --ok: #4ade80; --warn: #fbbf24; --bad: #f87171; --info: #93c5fd;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--txt);
+    font: 13px/1.5 "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  header {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--line);
+  }
+  header h1 { font-size: 15px; margin: 0 12px 0 0; color: var(--accent); }
+  button, select, input {
+    background: #0f1826; color: var(--txt); border: 1px solid var(--line);
+    border-radius: 4px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.active { background: var(--accent); color: #06283f; }
+  input[type=number] { width: 90px; }
+  .stat { padding: 2px 8px; border: 1px solid var(--line); border-radius: 4px; }
+  .stat b { color: var(--accent); }
+  #successBanner {
+    display: none; padding: 2px 10px; border-radius: 4px;
+    background: var(--ok); color: #052e12; font-weight: bold;
+  }
+  main { display: flex; gap: 10px; padding: 10px; align-items: flex-start; flex-wrap: wrap; }
+  .col { display: flex; flex-direction: column; gap: 10px; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 6px; padding: 8px 10px;
+  }
+  .panel h2 {
+    font-size: 12px; margin: 0 0 6px; color: var(--dim);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  canvas { border-radius: 6px; display: block; background: #101a2b; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 2px 6px; text-align: right; border-bottom: 1px solid #1d2a3d; }
+  th { color: var(--dim); font-weight: normal; }
+  td:first-child, th:first-child { text-align: left; }
+  .alarmOn { color: var(--bad); font-weight: bold; }
+  .alarmOff { color: var(--dim); }
+  .camcard { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; }
+  .camcard h3 { margin: 0 0 4px; font-size: 13px; display: flex; justify-content: space-between; }
+  .bar { height: 6px; background: #0b1320; border-radius: 3px; overflow: hidden; margin: 2px 0 6px; }
+  .bar > i { display: block; height: 100%; background: var(--ok); }
+  .bar.warn > i { background: var(--warn); }
+  .bar.bad > i { background: var(--bad); }
+  .camcard label { color: var(--dim); font-size: 11px; }
+  .camcard .row { display: flex; gap: 6px; align-items: center; margin: 2px 0; flex-wrap: wrap; }
+  input[type=range] { width: 110px; padding: 0; }
+  #log {
+    height: 220px; overflow-y: auto; font-family: ui-monospace, monospace;
+    font-size: 11px; background: #0b1320; border-radius: 4px; padding: 6px;
+  }
+  #log div { white-space: nowrap; }
+  .k-alarm { color: var(--bad); } .k-fail { color: var(--warn); }
+  .k-capture, .k-success { color: var(--ok); } .k-recover { color: var(--info); }
+  .k-action, .k-device { color: var(--dim); } .k-avoid { color: #e2b8ff; }
+  .k-report { color: #7dd3fc; } .k-test { color: #fde68a; }
+  #reports { font-size: 11px; max-height: 120px; overflow-y: auto; }
+  .hint { color: var(--dim); font-size: 11px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>雪坡守望</h1>
+  <label>seed <input type="number" id="seed" value="20261117"></label>
+  <button id="btnRun" class="active">⏸ 暂停</button>
+  <button id="btnReset">↺ 重置(同seed复现)</button>
+  <select id="speed">
+    <option value="1">1×</option><option value="2" selected>2×</option>
+    <option value="4">4×</option><option value="8">8×</option>
+  </select>
+  <button id="btnAudio">🔇 声音</button>
+  <button id="btnSelfTest">✔ 自检</button>
+  <span class="stat">时间 <b id="clock">00:00</b></span>
+  <span class="stat">有效影像 <b id="goal">0/3</b></span>
+  <span class="stat">当前干预 <b id="curAction">无</b></span>
+  <span id="successBanner">✔ 监测成功</span>
+</header>
+<main>
+  <div class="col">
+    <canvas id="view" width="720" height="460"></canvas>
+    <div class="panel" style="width:720px">
+      <h2>事件日志（含触发时刻）</h2>
+      <div id="log"></div>
+    </div>
+  </div>
+  <div class="col" style="width:330px">
+    <div class="panel">
+      <h2>环境指标（观测值 / 实际值 / 告警）</h2>
+      <table id="envTable">
+        <tr><th>指标</th><th>观测值</th><th>实际值</th><th>状态</th></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>相机与干预措施</h2>
+      <div id="cams"></div>
+    </div>
+    <div class="panel">
+      <h2>干预前后指标对比</h2>
+      <div id="reports"><span class="hint">尚无干预记录</span></div>
+    </div>
+    <div class="panel hint">
+      玩法：根据足迹与信号强度选择相机开机时段；雪会覆盖镜头（除雪/加热），
+      动物绕开强光（调低补光），低温加速耗电（更换电池）。集齐 3 组有效影像即成功。
+      同 seed 重置后天气与目标分布完全复现。
+    </div>
+  </div>
+</main>
+<script src="sim.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
