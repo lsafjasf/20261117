@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ede7dc" />
+    <title>纸间 · 双面明信片工作室</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='4' width='26' height='24' fill='%23fffaf1' stroke='%231e2b24' stroke-width='2'/%3E%3Cpath d='M8 9h16M8 23h10' stroke='%23bd5039' stroke-width='2'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>
+            <div class="brand-name">纸间 <span>POSTCARD STUDIO</span></div>
+            <div class="project-line">
+              <input id="projectName" class="project-name" value="未命名明信片" aria-label="项目名称" />
+              <span id="saveStatus" class="save-status">本机自动保存</span>
+            </div>
+          </div>
+        </div>
+        <div class="top-actions">
+          <div class="history-actions" role="group" aria-label="历史操作">
+            <button id="undoBtn" class="icon-btn" type="button" title="撤销 (Ctrl+Z)" aria-label="撤销" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 4 12l5 5M5 12h9a6 6 0 0 1 6 6" /></svg>
+            </button>
+            <button id="redoBtn" class="icon-btn" type="button" title="重做 (Ctrl+Shift+Z)" aria-label="重做" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 7 5 5-5 5m4-5h-9a6 6 0 0 0-6 6" /></svg>
+            </button>
+          </div>
+          <span class="toolbar-separator"></span>
+          <button id="saveBtn" class="text-btn" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5zM8 4v6h7V4M8 20v-6h8v6" /></svg>
+            保存
+          </button>
+          <button id="loadBtn" class="text-btn" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h6l2 2h8v11H4zM12 12v6m-3-3 3 3 3-3" /></svg>
+            载入
+          </button>
+          <button id="exportBtnTop" class="primary-btn" type="button">
+            导出 PNG
+            <span class="btn-spark" aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="left-rail" aria-label="版式与素材">
+          <section class="rail-section">
+            <div class="section-heading"><span>画布规格</span><span id="dimensionBadge">148 × 100 mm</span></div>
+            <div class="preset-grid" role="group" aria-label="明信片规格">
+              <button class="preset-card is-active" type="button" data-preset="standard">
+                <span class="preset-shape landscape"></span>
+                <span class="preset-copy"><strong>标准</strong><small>148 × 100</small></span>
+              </button>
+              <button class="preset-card" type="button" data-preset="square">
+                <span class="preset-shape square"></span>
+                <span class="preset-copy"><strong>方形</strong><small>120 × 120</small></span>
+              </button>
+              <button class="preset-card" type="button" data-preset="mini">
+                <span class="preset-shape mini"></span>
+                <span class="preset-copy"><strong>迷你</strong><small>90 × 60</small></span>
+              </button>
+            </div>
+
+            <div class="field-label-row">
+              <span class="field-label">版式方向</span>
+              <span class="mini-note">自动重排</span>
+            </div>
+            <div class="segmented" role="group" aria-label="横竖版">
+              <button id="landscapeBtn" class="is-active" type="button" data-orientation="landscape">
+                <svg viewBox="0 0 24 18" aria-hidden="true"><rect x="2" y="3" width="20" height="12" rx="1" /></svg>
+                横版
+              </button>
+              <button id="portraitBtn" type="button" data-orientation="portrait">
+                <svg viewBox="0 0 18 24" aria-hidden="true"><rect x="3" y="2" width="12" height="20" rx="1" /></svg>
+                竖版
+              </button>
+            </div>
+          </section>
+
+          <section class="rail-section">
+            <div class="section-heading"><span>排版案例</span><span class="eyebrow">CHECK</span></div>
+            <button id="standardExampleBtn" class="example-card" type="button">
+              <span class="example-art standard-art" aria-hidden="true">
+                <i></i><i></i><i></i><i></i>
+              </span>
+              <span><strong>标准旅行卡</strong><small>148 × 100 · 安全布局</small></span>
+              <span class="example-arrow">→</span>
+            </button>
+            <button id="extremeExampleBtn" class="example-card" type="button">
+              <span class="example-art extreme-art" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i>
+              </span>
+              <span><strong>极限长文</strong><small>90 × 60 · 长文本压力测试</small></span>
+              <span class="example-arrow">→</span>
+            </button>
+          </section>
+
+          <section class="rail-section">
+            <div class="section-heading"><span>添加元素</span><span class="eyebrow">ADD</span></div>
+            <div class="add-grid">
+              <button class="add-btn" type="button" data-add="photo">
+                <span class="add-icon photo-icon"></span><span>照片框</span>
+              </button>
+              <button class="add-btn" type="button" data-add="stamp">
+                <span class="add-icon stamp-icon"></span><span>邮票</span>
+              </button>
+              <button class="add-btn" type="button" data-add="address">
+                <span class="add-icon address-icon"></span><span>地址线</span>
+              </button>
+              <button class="add-btn" type="button" data-add="text">
+                <span class="add-icon text-icon">Aa</span><span>短句</span>
+              </button>
+            </div>
+            <p class="rail-hint">新元素添加到当前选中的一面。</p>
+          </section>
+
+          <section class="rail-section project-section">
+            <div class="section-heading"><span>项目文件</span><span class="eyebrow">JSON</span></div>
+            <div class="project-actions">
+              <button id="downloadProjectBtn" type="button">下载项目</button>
+              <button id="importProjectBtn" type="button">载入文件</button>
+            </div>
+            <button id="restoreSavedBtn" class="restore-btn" type="button">恢复本机保存版本</button>
+            <p class="rail-hint">项目文件保留文字、图形与照片，可继续编辑。</p>
+          </section>
+        </aside>
+
+        <main class="stage-panel">
+          <div class="stage-toolbar">
+            <div class="stage-title">
+              <span class="live-dot"></span>
+              <span>编辑画布</span>
+              <span class="stage-divider"></span>
+              <span id="activeSideLabel">正面 / FRONT</span>
+            </div>
+            <div class="stage-controls">
+              <label class="guide-toggle">
+                <input id="guidesToggle" type="checkbox" />
+                <span class="switch-track"></span>
+                安全区
+              </label>
+              <span class="toolbar-separator"></span>
+              <div class="zoom-control" role="group" aria-label="画布缩放">
+                <button id="zoomOutBtn" type="button" aria-label="缩小">−</button>
+                <span id="zoomLabel">适应</span>
+                <button id="zoomInBtn" type="button" aria-label="放大">＋</button>
+                <button id="zoomFitBtn" class="fit-btn" type="button" aria-label="适应画布">适应</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="canvasScroll" class="canvas-scroll">
+            <div id="canvasMount" class="canvas-mount">
+              <canvas id="editorCanvas" aria-label="双面明信片编辑画布"></canvas>
+            </div>
+          </div>
+
+          <div class="stage-footer">
+            <div class="stage-legend">
+              <span><i class="legend-swatch cut"></i>裁切线</span>
+              <span><i class="legend-swatch address"></i>地址安全区</span>
+              <span><i class="legend-swatch barcode"></i>条码安全区</span>
+            </div>
+            <div class="stage-tip">拖动元素调整位置 · 双击文字快速编辑 · Delete 删除</div>
+          </div>
+        </main>
+
+        <aside class="inspector" aria-label="属性与检查">
+          <section class="inspector-section">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">INSPECTOR</span>
+                <h2>元素属性</h2>
+              </div>
+              <span id="selectionBadge" class="selection-badge">未选择</span>
+            </div>
+            <div id="inspectorContent" class="inspector-content">
+              <div class="empty-inspector">
+                <span class="empty-icon" aria-hidden="true"></span>
+                <strong>选择画布中的元素</strong>
+                <p>可编辑文字、照片、位置与尺寸。所有修改都可撤销。</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="inspector-section checks-section">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">PRE-FLIGHT</span>
+                <h2>排版检查</h2>
+              </div>
+              <span id="checkBadge" class="check-badge is-ok">通过</span>
+            </div>
+            <div id="issueSummary" class="issue-summary is-ok">
+              <span class="summary-mark">✓</span>
+              <span><strong>可以导出</strong><small>安全边距、安全区与文本框均通过</small></span>
+            </div>
+            <div id="issueList" class="issue-list"></div>
+            <button id="exportBtn" class="export-button" type="button">
+              <span>导出双面 PNG</span>
+              <span class="export-meta">300 DPI · 含裁切线</span>
+            </button>
+            <p class="export-note">导出使用与预览相同的布局引擎；发现阻塞项时保留全部内容并提示修复。</p>
+          </section>
+        </aside>
+      </div>
+    </div>
+
+    <input id="imageFileInput" type="file" accept="image/*" hidden />
+    <input id="projectFileInput" type="file" accept=".json,application/json" hidden />
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <dialog id="errorDialog" class="error-dialog">
+      <div class="dialog-icon">!</div>
+      <div class="dialog-copy">
+        <span class="eyebrow">EXPORT PAUSED</span>
+        <h2>发现需要修复的排版问题</h2>
+        <p id="errorDialogIntro">当前内容已完整保留。修复下列问题后再导出，避免文字被裁切或进入安全区。</p>
+        <div id="errorDialogList" class="dialog-list"></div>
+      </div>
+      <button id="closeErrorDialogBtn" class="dialog-close" type="button" aria-label="关闭">×</button>
+      <div class="dialog-actions">
+        <button id="dialogFixBtn" class="primary-btn" type="button">返回修复</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
