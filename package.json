@@ -1,0 +1,13 @@
+{
+  "name": "beat-subtitle-timeline",
+  "version": "1.0.0",
+  "description": "节拍/字幕/片段共用单一时间基准的时间线示例（Web Audio + Canvas + WebVTT）",
+  "private": true,
+  "scripts": {
+    "test": "node tests/run-tests.js && node tests/selftest-smoke.js && node tests/app-smoke.js",
+    "demo": "node tests/demo-flow.js",
+    "serve": "python3 -m http.server 8080"
+  },
+  "keywords": ["webaudio", "canvas", "webvtt", "timeline", "mediarecorder"],
+  "license": "MIT"
+}

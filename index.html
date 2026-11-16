@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>节拍字幕时间线 · 统一时间基准演示</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>节拍 × 字幕 × 片段 —— 单一时间基准时间线</h1>
+    <div id="clock-readout" class="clock-readout" aria-live="polite">
+      <span id="ro-time">0.000</span>s / <span id="ro-duration">12.000</span>s
+      <span class="dot" id="ro-state-dot"></span><span id="ro-state">stopped</span>
+      <span class="bpm">BPM <span id="ro-bpm">120</span></span>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel transport-panel">
+      <div class="btn-row">
+        <button id="btn-play" type="button">▶ 播放</button>
+        <button id="btn-pause" type="button">⏸ 暂停</button>
+        <button id="btn-stop" type="button">⏹ 停止</button>
+        <button id="btn-loop" type="button" aria-pressed="false">🔁 循环:关</button>
+        <button id="btn-seek-zero" type="button">⏮ 回到 0</button>
+      </div>
+      <div class="btn-row">
+        <button id="btn-split" type="button">✂ 分割所选片段</button>
+        <button id="btn-transition" type="button">🌀 所选片段加 0.4s 转场</button>
+        <button id="btn-verify" type="button">🧪 对齐与时长校验</button>
+      </div>
+      <div class="btn-row">
+        <button id="btn-save" type="button">💾 保存工程</button>
+        <button id="btn-reload" type="button">♻ 重新载入工程</button>
+        <button id="btn-export-vtt" type="button">📄 导出 WebVTT</button>
+        <button id="btn-import-vtt" type="button">📥 导入 WebVTT</button>
+        <input id="file-import" type="file" accept=".vtt,text/vtt" hidden />
+        <button id="btn-export-media" type="button">🎬 导出可播放媒体(WebM)</button>
+      </div>
+      <div class="btn-row">
+        <button id="btn-replay-fail" type="button">⏮ 回放失败操作日志</button>
+        <button id="btn-clear-log" type="button">🧹 清空日志</button>
+        <button id="btn-selftest" type="button">🩺 浏览器内自测</button>
+        <a id="download-anchor" hidden download></a>
+      </div>
+    </section>
+
+    <section class="panel stage-panel">
+      <canvas id="stage-canvas" width="960" height="270" aria-label="节目画面"></canvas>
+      <div class="stage-meta">
+        <div>当前帧时间来自 <code>state.timeline.time</code>（与音频事件、播放头同源）</div>
+        <div id="stage-guard">黑帧守卫：待校验</div>
+      </div>
+    </section>
+
+    <section class="panel timeline-panel">
+      <canvas id="timeline-canvas" width="1200" height="360" aria-label="时间线"></canvas>
+      <div class="hint">
+        拖动：片段体=移动，左右边缘=入点/出点，字幕块=移动，字幕内竖线=逐字时间，播放头=定位，标尺=跳转。
+        非法重叠/越界会被阻止并在冲突处显示红色标记。
+      </div>
+    </section>
+
+    <section class="panel side-panel">
+      <div class="subpanel">
+        <h2>校验结果</h2>
+        <div id="validation-view" class="validation-view">尚未校验。</div>
+      </div>
+      <div class="subpanel">
+        <h2>时长对比（裁切 / 转场前后）</h2>
+        <table id="duration-table" class="duration-table">
+          <thead><tr><th>片段</th><th>原始时长</th><th>当前时长</th><th>差值</th><th>转场</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="subpanel">
+        <h2>操作 / 失败日志</h2>
+        <ol id="log-view" class="log-view"></ol>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/util.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/vtt.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/transport.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/exporter.js"></script>
+  <script src="js/selftest.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
