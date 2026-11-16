@@ -1,0 +1,14 @@
+{
+  "name": "multicam-timeline-demo",
+  "version": "1.0.0",
+  "description": "三机位程序生成画面、共享时间基准的非线性时间线示例（含转场、节拍同步、持久化与导出校验）",
+  "type": "module",
+  "scripts": {
+    "start": "node serve.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}
