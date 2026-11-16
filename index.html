@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07100f">
+  <title>VECTOR · 倒立摆安全控制台</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%230b1b17'/%3E%3Cpath d='M19 45V34M32 45V23M45 45V14' stroke='%2362e6cb' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div>
+          <div class="brand-line">VECTOR <small>/ LAB 07</small></div>
+          <div class="brand-sub">倒立摆安全控制台</div>
+        </div>
+      </div>
+      <div class="top-stats">
+        <div class="top-stat">
+          <span class="eyebrow">任务</span>
+          <strong id="missionState">准备就绪</strong>
+        </div>
+        <div class="top-stat">
+          <span class="eyebrow">仿真时钟</span>
+          <strong id="clockText">T+ 00.000 s</strong>
+        </div>
+        <div class="top-stat target-stat">
+          <span class="eyebrow">目标位置</span>
+          <strong id="targetText">+1.80 m</strong>
+        </div>
+        <div class="status-pill" id="statusPill" data-status="ready">
+          <i></i><span id="statusText">待命</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="stage-panel panel">
+        <div class="panel-head">
+          <div>
+            <span class="eyebrow">LIVE RIG · CP-07</span>
+            <h1>平衡与定位</h1>
+          </div>
+          <div class="stage-head-right">
+            <span class="signal"><i></i> 120 Hz 固定步长</span>
+            <button class="icon-button" id="btnHelp" title="查看操作说明" aria-label="查看操作说明">?</button>
+          </div>
+        </div>
+
+        <div class="canvas-shell" id="canvasShell">
+          <canvas id="simCanvas" aria-label="倒立摆仿真画布"></canvas>
+          <div class="stage-grid-label" id="gridLabel">RAIL 0.0 m</div>
+          <div class="stage-chip" id="stageChip">
+            <span class="chip-dot"></span>
+            <span id="stageChipText">保持摆杆竖直，推动小车前往目标区</span>
+          </div>
+          <div class="failure-callout" id="failureCallout" hidden>
+            <span class="callout-kicker">SAFETY TRIP</span>
+            <strong id="failureTitle">驱动轮超速</strong>
+            <span id="failureMeta">首次越限 · T+ 0.000 s</span>
+          </div>
+          <div class="success-callout" id="successCallout" hidden>
+            <span class="callout-kicker">OBJECTIVE COMPLETE</span>
+            <strong>稳定停靠目标区</strong>
+            <span id="successMeta">摆角与车速均在容差内</span>
+          </div>
+          <div class="canvas-legend">
+            <span><i class="legend-line"></i>摆杆顶端轨迹</span>
+            <span><i class="legend-arrow"></i>当前受力</span>
+            <span><i class="legend-zone"></i>目标区</span>
+          </div>
+        </div>
+
+        <div class="stage-footer">
+          <div class="control-readout">
+            <span class="eyebrow">当前控制量</span>
+            <div><strong id="forceReadout">+0.0</strong><span class="unit">N</span>
+              <span class="force-direction" id="forceDirection">静止</span>
+            </div>
+          </div>
+          <div class="key-hint">
+            <span><kbd>A</kbd><kbd>D</kbd> 或 <kbd>←</kbd><kbd>→</kbd> 瞬时推进</span>
+            <span><kbd>Space</kbd> 暂停 / 恢复</span>
+            <span><kbd>N</kbd> 单步</span>
+            <span><kbd>R</kbd> 重置</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="panel config-panel">
+          <div class="panel-head compact">
+            <div>
+              <span class="eyebrow">INITIAL SETUP</span>
+              <h2>初始条件</h2>
+            </div>
+            <span class="config-state" id="configState">已装载</span>
+          </div>
+          <label class="range-row" for="payloadRange">
+            <span>负载质量 <em>0.40–3.20 kg</em></span>
+            <output id="payloadValue">0.90 kg</output>
+          </label>
+          <input class="range" id="payloadRange" type="range" min="0.4" max="3.2" step="0.1" value="0.9">
+          <label class="range-row" for="targetRange">
+            <span>目标位置 <em>-2.60–+2.60 m</em></span>
+            <output id="targetValue">+1.80 m</output>
+          </label>
+          <input class="range" id="targetRange" type="range" min="-2.6" max="2.6" step="0.1" value="1.8">
+          <div class="assist-row">
+            <span>
+              <strong>平衡辅助</strong>
+              <small>主动补偿摆角与角速度</small>
+            </span>
+            <label class="switch">
+              <input id="assistToggle" type="checkbox" checked>
+              <span class="switch-track"><i></i></span>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel telemetry-panel">
+          <div class="panel-head compact">
+            <div>
+              <span class="eyebrow">TELEMETRY</span>
+              <h2>实时物理量</h2>
+            </div>
+            <span class="tick-rate">Δt 8.33 ms</span>
+          </div>
+          <div class="telemetry-grid">
+            <div class="metric">
+              <span>摆角 θ</span>
+              <strong id="angleValue">+0.00<small>°</small></strong>
+              <div class="microbar"><i id="angleBar"></i></div>
+            </div>
+            <div class="metric">
+              <span>车速 v</span>
+              <strong id="speedValue">+0.00<small>m/s</small></strong>
+              <div class="microbar"><i id="speedBar"></i></div>
+            </div>
+            <div class="metric">
+              <span>小车位移 x</span>
+              <strong id="positionValue">+0.00<small>m</small></strong>
+              <div class="microbar"><i id="positionBar"></i></div>
+            </div>
+            <div class="metric">
+              <span>推力 F</span>
+              <strong id="thrustValue">+0.0<small>N</small></strong>
+              <div class="microbar"><i id="thrustBar"></i></div>
+            </div>
+            <div class="metric temp-metric">
+              <span>电机温度</span>
+              <strong id="tempValue">31.0<small>°C</small></strong>
+              <div class="microbar"><i id="tempBar"></i></div>
+            </div>
+            <div class="metric">
+              <span>目标误差</span>
+              <strong id="errorValue">1.80<small>m</small></strong>
+              <div class="microbar"><i id="errorBar"></i></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel limits-panel">
+          <div class="panel-head compact">
+            <div>
+              <span class="eyebrow">SAFETY ENVELOPE</span>
+              <h2>安全边界</h2>
+            </div>
+            <span class="safety-state" id="safetyState">全部正常</span>
+          </div>
+          <div class="limit-list">
+            <div class="limit-row" data-limit="tilt">
+              <span>摆角</span><b>±35.0°</b><i><em id="limitTiltBar"></em></i>
+            </div>
+            <div class="limit-row" data-limit="speed">
+              <span>车速</span><b>±4.20 m/s</b><i><em id="limitSpeedBar"></em></i>
+            </div>
+            <div class="limit-row" data-limit="rail">
+              <span>导轨行程</span><b>±3.80 m</b><i><em id="limitRailBar"></em></i>
+            </div>
+            <div class="limit-row" data-limit="temp">
+              <span>电机温度</span><b>≤ 95.0 °C</b><i><em id="limitTempBar"></em></i>
+            </div>
+            <div class="limit-row" data-limit="load">
+              <span>负载质量</span><b>0.40–3.20 kg</b><i><em id="limitLoadBar"></em></i>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <section class="lower-grid">
+      <article class="panel trend-panel">
+        <div class="panel-head compact">
+          <div>
+            <span class="eyebrow">TREND RECORDER</span>
+            <h2>受力与姿态趋势</h2>
+          </div>
+          <div class="trend-legend">
+            <span><i style="--c:#ffb44c"></i>推力</span>
+            <span><i style="--c:#62e6cb"></i>摆角</span>
+            <span><i style="--c:#76a9ff"></i>车速</span>
+          </div>
+        </div>
+        <div class="trend-shell">
+          <canvas id="trendCanvas" aria-label="运行趋势曲线"></canvas>
+        </div>
+        <div class="replay-controls" id="replayControls" hidden>
+          <button class="small-button replay-toggle" id="btnReplayPlay">暂停回放</button>
+          <input class="replay-range" id="replayRange" type="range" min="0" max="100" step="1" value="0">
+          <span id="replayTime">00.000 s</span>
+          <select id="replaySpeed" aria-label="回放速度">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+          </select>
+        </div>
+      </article>
+
+      <article class="panel report-panel">
+        <div class="panel-head compact">
+          <div>
+            <span class="eyebrow">RUN REPORT</span>
+            <h2>最终报告</h2>
+          </div>
+          <button class="text-button" id="btnExport" disabled>导出 JSON</button>
+        </div>
+        <div class="peak-grid">
+          <div><span>峰值摆角</span><strong id="peakAngle">0.00°</strong></div>
+          <div><span>峰值车速</span><strong id="peakSpeed">0.00 m/s</strong></div>
+          <div><span>峰值推力</span><strong id="peakForce">0.0 N</strong></div>
+          <div><span>峰值温度</span><strong id="peakTemp">31.0 °C</strong></div>
+          <div><span>最大误差</span><strong id="peakError">1.80 m</strong></div>
+          <div><span>稳定驻留</span><strong id="dwellValue">0.00 s</strong></div>
+        </div>
+        <div class="fault-box" id="faultBox">
+          <span class="fault-icon">✓</span>
+          <div>
+            <strong id="faultPart">尚无故障</strong>
+            <span id="faultDetail">运行结束后将在此记录首次越限位置与时间。</span>
+          </div>
+        </div>
+        <div class="event-log" id="eventLog" aria-live="polite"></div>
+      </article>
+    </section>
+
+    <section class="operation-panel panel">
+      <div class="operation-left">
+        <span class="eyebrow">CONTROL INPUT</span>
+        <div class="command-title">
+          <h2>加速度指令</h2>
+          <output id="commandValue">0.00 m/s²</output>
+        </div>
+        <div class="command-slider-wrap">
+          <span>−3.0</span>
+          <input class="range command-range" id="commandRange" type="range" min="-3" max="3" step="0.05" value="0">
+          <span>+3.0</span>
+        </div>
+        <div class="push-buttons">
+          <button class="push-button" id="btnLeft"><span>←</span> 向左推进</button>
+          <button class="push-button" id="btnRight">向右推进 <span>→</span></button>
+        </div>
+      </div>
+      <div class="operation-actions">
+        <button class="primary-button" id="btnStart"><span id="startIcon">▶</span><span id="startLabel">开始运行</span></button>
+        <button class="secondary-button" id="btnStep" disabled><span>▮▶</span> 单步</button>
+        <button class="secondary-button" id="btnReplay" disabled><span>↺</span> 回放</button>
+        <button class="ghost-button" id="btnReset"><span>⟲</span> 重置</button>
+      </div>
+    </section>
+
+    <footer class="footer-note">
+      <span>固定时间步长 · 确定性 RK4 积分 · 安全阈值触发后立即冻结</span>
+      <span id="seedText">CFG / stable-seed</span>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="help-dialog" id="helpDialog" hidden>
+    <div class="help-card">
+      <div class="panel-head">
+        <div><span class="eyebrow">OPERATOR GUIDE</span><h2>如何完成任务</h2></div>
+        <button class="icon-button" id="btnHelpClose" aria-label="关闭">×</button>
+      </div>
+      <ol class="help-list">
+        <li><b>设定初始条件</b><span>选择负载与目标位置；每次重置都会回到相同的初始状态。</span></li>
+        <li><b>控制加速度</b><span>按住 A/D 或左右按钮给小车一个短促加速度脉冲。平衡辅助会自动修正摆杆姿态。</span></li>
+        <li><b>提前制动</b><span>接近目标时反向推动，使小车在绿色目标区内低速停稳。连续稳定 1.2 秒即成功。</span></li>
+        <li><b>观察边界</b><span>摆角、车速、导轨行程或温度首次越限时，仿真立即冻结并标出故障点。</span></li>
+        <li><b>复现与回放</b><span>暂停、单步和恢复共用同一物理时钟；结束后可拖动回放查看受力与趋势。</span></li>
+      </ol>
+      <button class="primary-button help-confirm" id="btnHelpConfirm">明白，开始操作</button>
+    </div>
+  </div>
+
+  <script src="physics.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
