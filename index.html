@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="TWIN LIFT 双人协同吊装训练：回转手与升降手共享仪表，三箱精准落位。"
+    />
+    <title>TWIN LIFT · 双人协同吊装</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient-grid" aria-hidden="true"></div>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="brand-copy">
+            <div class="brand-name">TWIN<span>LIFT</span></div>
+            <div class="brand-sub">协同吊装 · BAY 07</div>
+          </div>
+        </div>
+
+        <div class="top-state" aria-live="polite">
+          <span class="state-light" id="topStateLight"></span>
+          <span class="state-label" id="topStateLabel">系统待命</span>
+          <span class="top-divider"></span>
+          <span class="shift-code">NIGHT SHIFT / N-17</span>
+        </div>
+
+        <nav class="top-actions" aria-label="系统操作">
+          <button class="tool-button" id="replayButton" type="button">
+            <span class="button-icon">▣</span>
+            回放
+          </button>
+          <button class="tool-button" id="modeButton" type="button">
+            <span class="button-icon">◉</span>
+            <span id="modeLabel">单人调试</span>
+          </button>
+          <button class="tool-button" id="pauseButton" type="button">
+            <span class="button-icon" id="pauseIcon">II</span>
+            <span id="pauseLabel">暂停</span>
+            <kbd>P</kbd>
+          </button>
+          <button class="tool-button danger-tool" id="restartButton" type="button">
+            <span class="button-icon">↻</span>
+            重开
+            <kbd>R</kbd>
+          </button>
+        </nav>
+      </header>
+
+      <main class="workspace">
+        <aside class="operator operator-p1" aria-labelledby="p1Title">
+          <div class="operator-heading">
+            <div class="player-number">01</div>
+            <div class="player-identity">
+              <span class="eyebrow">PLAYER ONE / SLEW</span>
+              <h1 id="p1Title">回转手</h1>
+            </div>
+            <div class="link-pill" id="p1Link">
+              <span class="link-dot"></span>
+              <span class="link-text">在线</span>
+            </div>
+          </div>
+
+          <div class="scope-tag p1-scope">
+            <span>唯一操作域</span>
+            <strong>回转角度 + 回转稳定</strong>
+          </div>
+
+          <section class="instrument dial-card" aria-label="回转仪表">
+            <div class="instrument-label">
+              <span>SLEW CONTROL</span>
+              <span class="live-tag">实时</span>
+            </div>
+            <div class="dial-stage">
+              <svg class="angle-dial" viewBox="0 0 200 200" aria-hidden="true">
+                <circle class="dial-outer" cx="100" cy="100" r="84"></circle>
+                <circle class="dial-inner" cx="100" cy="100" r="67"></circle>
+                <g class="dial-ticks" id="dialTicks"></g>
+                <path class="dial-safe-arc" d="M 150 22 A 84 84 0 0 1 187 78"></path>
+                <g id="p1DialTarget" class="dial-target">
+                  <line x1="100" y1="13" x2="100" y2="30"></line>
+                </g>
+                <g id="p1DialNeedle" class="dial-needle">
+                  <line x1="100" y1="100" x2="100" y2="34"></line>
+                  <circle cx="100" cy="100" r="7"></circle>
+                </g>
+                <circle class="dial-hub" cx="100" cy="100" r="4"></circle>
+              </svg>
+              <div class="dial-readout">
+                <strong id="p1AngleValue">288.0°</strong>
+                <span>吊臂方位</span>
+              </div>
+            </div>
+            <div class="instrument-footer">
+              <div>
+                <span>回转速度</span>
+                <strong id="p1SpeedValue">0.0<small>°/s</small></strong>
+              </div>
+              <div>
+                <span>目标角度</span>
+                <strong id="p1TargetValue">356°</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="key-panel p1-keys" aria-label="回转手键盘控制">
+            <div class="key-panel-head">
+              <span>可操作范围</span>
+              <small>只响应此组键位</small>
+            </div>
+            <div class="key-row">
+              <div class="key-unit" data-player="p1" data-action="left">
+                <kbd>A</kbd><span>逆时针</span>
+              </div>
+              <div class="key-unit" data-player="p1" data-action="right">
+                <kbd>D</kbd><span>顺时针</span>
+              </div>
+              <div class="key-unit wide-key" data-player="p1" data-action="steady">
+                <kbd>F</kbd><span>回转稳定</span>
+              </div>
+            </div>
+            <div class="control-note">
+              <span class="note-mark">!</span>
+              速度超过安全线将持续累积冲击风险
+            </div>
+          </section>
+
+          <section class="shared-card p1-shared" aria-label="共享任务状态">
+            <div class="shared-head">
+              <span>共享任务状态</span>
+              <span class="sync-state"><i></i>SYNC</span>
+            </div>
+            <div class="shared-time-row">
+              <span>剩余时限</span>
+              <strong id="p1SharedClock">03:00.0</strong>
+            </div>
+            <div class="shared-bars">
+              <div class="shared-bar-row">
+                <span>液压</span>
+                <div class="mini-track"><i id="p1HydraulicFill"></i></div>
+                <b id="p1HydraulicValue">100</b>
+              </div>
+              <div class="shared-bar-row">
+                <span>结构</span>
+                <div class="mini-track integrity"><i id="p1IntegrityFill"></i></div>
+                <b id="p1IntegrityValue">100</b>
+              </div>
+            </div>
+          </section>
+
+          <div class="link-countdown" id="p1LinkCountdown">
+            <span>操作心跳</span>
+            <strong>14.0s</strong>
+          </div>
+          <button class="disconnect-link" id="p1Disconnect" type="button">
+            模拟 P1 链路断开
+          </button>
+        </aside>
+
+        <section class="stage" aria-label="吊装任务主视图">
+          <div class="mission-strip">
+            <div class="mission-title">
+              <span class="eyebrow">MISSION 03 / PRECISION LIFT</span>
+              <div class="mission-title-row">
+                <h2>三箱精吊</h2>
+                <span class="mission-mode" id="missionMode">双人协作</span>
+              </div>
+            </div>
+            <div class="cargo-sequence" id="cargoSequence" aria-label="货箱进度">
+              <div class="cargo-chip active" data-cargo="0">
+                <span class="cargo-index">01</span>
+                <span class="cargo-meta"><b>钢构箱</b><small>1.2 t</small></span>
+                <span class="cargo-state">待吊</span>
+              </div>
+              <div class="sequence-line"></div>
+              <div class="cargo-chip" data-cargo="1">
+                <span class="cargo-index">02</span>
+                <span class="cargo-meta"><b>设备箱</b><small>1.8 t</small></span>
+                <span class="cargo-state">等待</span>
+              </div>
+              <div class="sequence-line"></div>
+              <div class="cargo-chip" data-cargo="2">
+                <span class="cargo-index">03</span>
+                <span class="cargo-meta"><b>备件箱</b><small>0.9 t</small></span>
+                <span class="cargo-state">等待</span>
+              </div>
+            </div>
+            <div class="mission-clock">
+              <span>MISSION TIME</span>
+              <strong id="missionClock">03:00.0</strong>
+              <small id="clockState">计时未开始</small>
+            </div>
+          </div>
+
+          <div class="canvas-shell" id="canvasShell">
+            <canvas
+              id="gameCanvas"
+              width="1600"
+              height="900"
+              aria-label="吊场与起重机实时画面"
+            ></canvas>
+            <div class="canvas-grain" aria-hidden="true"></div>
+            <div class="canvas-top-left">
+              <span class="live-recording"><i></i>REC · 回放记录中</span>
+              <span class="yard-id">YARD 07 / SAFE LIFT ZONE</span>
+            </div>
+            <div class="canvas-top-right">
+              <div class="sway-readout">
+                <span>载荷摆幅</span>
+                <strong id="swayValue">0.0</strong>
+                <small>px</small>
+              </div>
+              <div class="sway-meter"><i id="swayFill"></i><b></b></div>
+            </div>
+            <div class="phase-banner">
+              <span id="phaseTag">待命</span>
+              <strong id="phaseGuide">双方就位后开始任务</strong>
+            </div>
+            <div class="joint-action" id="jointAction">
+              <span class="joint-label">协同落箱</span>
+              <div class="joint-keys">
+                <kbd class="p1-key" id="jointP1">F</kbd>
+                <span>+</span>
+                <kbd class="p2-key" id="jointP2">J</kbd>
+              </div>
+              <div class="joint-progress"><i id="jointProgressFill"></i></div>
+            </div>
+            <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+            <div class="overlay start-overlay" id="startOverlay">
+              <div class="briefing-card">
+                <div class="briefing-topline">
+                  <span>双人协同训练</span>
+                  <span class="briefing-code">TL-03 / 夜班</span>
+                </div>
+                <h3>一个人转臂，<br />一个人控钩。</h3>
+                <p>
+                  三只货箱必须依次挂载并落入右侧泊位。任何一侧动作过快都会造成摆动超限并撞击护栏。
+                </p>
+                <div class="briefing-roles">
+                  <div class="brief-role p1-brief">
+                    <span>P1 / 回转手</span>
+                    <div><kbd>A</kbd><kbd>D</kbd><b>回转</b><kbd>F</kbd><b>稳定</b></div>
+                  </div>
+                  <div class="brief-role p2-brief">
+                    <span>P2 / 升降手</span>
+                    <div><kbd>W</kbd><kbd>S</kbd><b>升降</b><kbd>J</kbd><b>稳定</b></div>
+                  </div>
+                </div>
+                <div class="briefing-rule">
+                  <span>F + J 同时按住</span>
+                  才能完成最终稳定落箱
+                </div>
+                <button class="primary-button" id="startButton" type="button">
+                  <span>开始吊装</span>
+                  <b>→</b>
+                </button>
+              </div>
+            </div>
+
+            <div class="overlay pause-overlay hidden" id="pauseOverlay">
+              <div class="state-card">
+                <span class="state-kicker">SYSTEM HOLD</span>
+                <h3>任务已暂停</h3>
+                <p>倒计时、液压与摆动状态已冻结。双方输入暂时锁定。</p>
+                <button class="primary-button compact" id="resumeButton" type="button">
+                  继续任务 <kbd>P</kbd>
+                </button>
+              </div>
+            </div>
+
+            <div class="overlay protection-overlay hidden" id="protectionOverlay">
+              <div class="state-card danger-card">
+                <span class="state-kicker">SAFETY INTERLOCK</span>
+                <h3 id="protectionTitle">P1 链路断开</h3>
+                <p id="protectionText">安全制动已接管，任务计时冻结。</p>
+                <div class="protection-sync">
+                  <span><i id="protectP1Dot"></i>P1</span>
+                  <span><i id="protectP2Dot"></i>P2</span>
+                  <b>共享状态已锁定</b>
+                </div>
+                <button class="primary-button compact" id="reconnectButton" type="button">
+                  重新接入并恢复
+                </button>
+              </div>
+            </div>
+
+            <div class="overlay end-overlay hidden" id="endOverlay">
+              <div class="state-card" id="endCard">
+                <span class="state-kicker" id="endKicker">MISSION COMPLETE</span>
+                <h3 id="endTitle">三箱全部落位</h3>
+                <p id="endText"></p>
+                <div class="end-stats">
+                  <div><span>用时</span><strong id="endTime">00:00</strong></div>
+                  <div><span>结构</span><strong id="endIntegrity">100</strong></div>
+                  <div><span>碰撞</span><strong id="endCollisions">0</strong></div>
+                </div>
+                <div class="end-actions">
+                  <button class="primary-button compact" id="endReplayButton" type="button">
+                    查看回放
+                  </button>
+                  <button class="secondary-button compact" id="endRestartButton" type="button">
+                    再次挑战 <kbd>R</kbd>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-deck">
+            <div class="deck-guide">
+              <span class="guide-index">NEXT</span>
+              <strong id="deckGuide">双方就位后开始任务</strong>
+            </div>
+            <div class="deck-shared">
+              <div class="deck-gauge">
+                <span>共享液压</span>
+                <div class="deck-track"><i id="deckHydraulicFill"></i></div>
+                <b id="deckHydraulicValue">100%</b>
+              </div>
+              <div class="deck-gauge">
+                <span>结构完整</span>
+                <div class="deck-track integrity"><i id="deckIntegrityFill"></i></div>
+                <b id="deckIntegrityValue">100%</b>
+              </div>
+            </div>
+            <div class="deck-role-legend">
+              <span><i class="legend-p1"></i>P1 只控回转</span>
+              <span><i class="legend-p2"></i>P2 只控升降</span>
+              <span><i class="legend-joint"></i>F + J 共同落箱</span>
+            </div>
+          </div>
+        </section>
+
+        <aside class="operator operator-p2" aria-labelledby="p2Title">
+          <div class="operator-heading">
+            <div class="player-number">02</div>
+            <div class="player-identity">
+              <span class="eyebrow">PLAYER TWO / HOIST</span>
+              <h1 id="p2Title">升降手</h1>
+            </div>
+            <div class="link-pill" id="p2Link">
+              <span class="link-dot"></span>
+              <span class="link-text">在线</span>
+            </div>
+          </div>
+
+          <div class="scope-tag p2-scope">
+            <span>唯一操作域</span>
+            <strong>吊钩高度 + 升降稳定</strong>
+          </div>
+
+          <section class="instrument hoist-card" aria-label="升降仪表">
+            <div class="instrument-label">
+              <span>HOIST CONTROL</span>
+              <span class="live-tag">实时</span>
+            </div>
+            <div class="hoist-stage">
+              <div class="height-scale" aria-hidden="true">
+                <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
+              </div>
+              <div class="height-track">
+                <div class="height-safe-zone"></div>
+                <div class="height-low-zone"></div>
+                <div class="height-fill" id="p2HeightFill"></div>
+                <div class="height-marker" id="p2HeightMarker">
+                  <span></span>
+                </div>
+              </div>
+              <div class="hoist-readout">
+                <span>吊钩高度</span>
+                <strong id="p2HeightValue">76<small>%</small></strong>
+                <em id="p2HeightBand">安全提升区</em>
+              </div>
+            </div>
+            <div class="instrument-footer">
+              <div>
+                <span>升降速度</span>
+                <strong id="p2SpeedValue">0.0<small>%/s</small></strong>
+              </div>
+              <div>
+                <span>当前载荷</span>
+                <strong id="p2LoadValue">1.2<small>t</small></strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="key-panel p2-keys" aria-label="升降手键盘控制">
+            <div class="key-panel-head">
+              <span>可操作范围</span>
+              <small>只响应此组键位</small>
+            </div>
+            <div class="key-row">
+              <div class="key-unit" data-player="p2" data-action="up">
+                <kbd>W</kbd><span>提升</span>
+              </div>
+              <div class="key-unit" data-player="p2" data-action="down">
+                <kbd>S</kbd><span>下降</span>
+              </div>
+              <div class="key-unit wide-key" data-player="p2" data-action="steady">
+                <kbd>J</kbd><span>升降稳定</span>
+              </div>
+            </div>
+            <div class="control-note">
+              <span class="note-mark">!</span>
+              低速点动，重载箱的启动与制动摆动更大
+            </div>
+          </section>
+
+          <section class="shared-card p2-shared" aria-label="共享任务状态">
+            <div class="shared-head">
+              <span>共享任务状态</span>
+              <span class="sync-state"><i></i>SYNC</span>
+            </div>
+            <div class="shared-time-row">
+              <span>剩余时限</span>
+              <strong id="p2SharedClock">03:00.0</strong>
+            </div>
+            <div class="shared-bars">
+              <div class="shared-bar-row">
+                <span>液压</span>
+                <div class="mini-track"><i id="p2HydraulicFill"></i></div>
+                <b id="p2HydraulicValue">100</b>
+              </div>
+              <div class="shared-bar-row">
+                <span>结构</span>
+                <div class="mini-track integrity"><i id="p2IntegrityFill"></i></div>
+                <b id="p2IntegrityValue">100</b>
+              </div>
+            </div>
+          </section>
+
+          <div class="link-countdown" id="p2LinkCountdown">
+            <span>操作心跳</span>
+            <strong>14.0s</strong>
+          </div>
+          <button class="disconnect-link" id="p2Disconnect" type="button">
+            模拟 P2 链路断开
+          </button>
+        </aside>
+      </main>
+    </div>
+
+    <div class="modal hidden" id="replayModal" role="dialog" aria-modal="true" aria-labelledby="replayTitle">
+      <div class="modal-backdrop" data-close-replay></div>
+      <div class="replay-shell">
+        <header class="replay-header">
+          <div>
+            <span class="eyebrow">SESSION ARCHIVE / SAFETY AUDIT</span>
+            <h2 id="replayTitle">任务回放</h2>
+          </div>
+          <div class="replay-header-actions">
+            <span class="archive-status"><i></i>本地存储</span>
+            <button class="icon-button" id="exportReplayButton" type="button" title="导出 JSON">
+              导出
+            </button>
+            <button class="icon-button close-button" data-close-replay type="button" aria-label="关闭回放">
+              ×
+            </button>
+          </div>
+        </header>
+        <div class="replay-body">
+          <aside class="replay-sessions">
+            <div class="replay-section-title">已保存记录</div>
+            <div id="replaySessionList"></div>
+          </aside>
+          <section class="replay-main">
+            <div class="replay-canvas-wrap">
+              <canvas id="replayCanvas" width="1600" height="900"></canvas>
+              <span class="replay-badge" id="replayBadge">回放</span>
+              <div class="replay-sync-strip" id="replaySyncStrip">
+                <span>共享快照</span>
+                <b id="replaySyncClock">02:59.9</b>
+                <i>HYD <em id="replaySyncHydraulic">100</em></i>
+                <i>INTEG <em id="replaySyncIntegrity">100</em></i>
+                <kbd id="replaySyncP1">P1 F</kbd>
+                <kbd id="replaySyncP2">P2 J</kbd>
+              </div>
+            </div>
+            <div class="replay-transport">
+              <button class="play-button" id="replayPlayButton" type="button">▶</button>
+              <span class="transport-time" id="replayTime">00:00.0 / 00:40.0</span>
+              <input id="replayRange" type="range" min="0" max="1000" value="0" />
+              <select id="replaySpeed" aria-label="回放速度">
+                <option value="0.5">0.5×</option>
+                <option value="1" selected>1×</option>
+                <option value="2">2×</option>
+                <option value="4">4×</option>
+              </select>
+            </div>
+            <div class="input-lanes" id="inputLanes"></div>
+            <div class="event-audit">
+              <div class="replay-section-title">
+                事件与冲突
+                <span id="replayEventCount">0 events</span>
+              </div>
+              <div class="event-list" id="replayEventList"></div>
+            </div>
+          </section>
+          <aside class="replay-summary">
+            <div class="replay-section-title">本局摘要</div>
+            <div id="replaySummary"></div>
+            <div class="replay-section-title conflict-title">
+              冲突时刻
+              <span id="conflictCount">0</span>
+            </div>
+            <div class="conflict-list" id="conflictList"></div>
+            <div class="sync-proof">
+              <span><i></i>仪表镜像快照</span>
+              <span><i></i>共享资源</span>
+              <span><i></i>双方输入</span>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <div class="rotate-notice">
+      <strong>建议横屏操作</strong>
+      <span>双人协作需要更宽的仪表空间</span>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
