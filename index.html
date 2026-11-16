@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>公交刷卡站点热区分析</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>公交刷卡站点热区分析</h1>
+    <div class="controls">
+      <label>数据集
+        <select id="datasetSelect"></select>
+      </label>
+      <label>线路
+        <select id="lineSelect"></select>
+      </label>
+      <label>换乘类型
+        <select id="transferSelect"></select>
+      </label>
+      <label>时间窗口
+        <select id="windowSelect"></select>
+      </label>
+      <button id="exportBtn">导出 PNG</button>
+      <button id="resetViewBtn">复位视图</button>
+      <button id="selftestBtn">运行自检</button>
+    </div>
+  </header>
+
+  <section class="meta-panel">
+    <div id="dataSummary" class="summary-line"></div>
+    <div id="filterBar" class="summary-line"></div>
+    <div id="versionTag" class="version-tag"></div>
+  </section>
+
+  <main class="layout">
+    <section class="map-pane">
+      <canvas id="mapCanvas" width="1000" height="620"></canvas>
+      <div id="stationDetail" class="station-detail"></div>
+    </section>
+    <aside class="side-pane">
+      <h2>站点排行</h2>
+      <div id="stationList" class="station-list"></div>
+    </aside>
+  </main>
+
+  <section class="chart-pane">
+    <h2>窗口内小时曲线</h2>
+    <canvas id="chartCanvas" width="1152" height="240"></canvas>
+  </section>
+
+  <section class="bottom-grid">
+    <div>
+      <h2>导出日志</h2>
+      <div id="exportLog" class="export-log"></div>
+    </div>
+    <div>
+      <h2>自检结果</h2>
+      <div id="selftestResult" class="selftest-result muted">点击「运行自检」执行去重、补缺、聚合与空结果断言。</div>
+    </div>
+  </section>
+
+  <script src="js/util.js"></script>
+  <script src="js/network.js"></script>
+  <script src="js/generate.js"></script>
+  <script src="js/pipeline.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/selftest.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

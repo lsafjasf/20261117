@@ -1,0 +1,6 @@
+.e2e/node_modules/
+.e2e/package.json
+.e2e/package-lock.json
+.e2e/*.png
+node_modules/
+*.log
