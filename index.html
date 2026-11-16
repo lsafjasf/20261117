@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>叠层玻璃 · WebGL 折射演示</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font: 14px/1.5 system-ui, sans-serif;
+    background: #101018; color: #e8e8f0;
+    display: grid; grid-template-columns: 300px 1fr; min-height: 100vh;
+  }
+  aside { padding: 14px; background: #17171f; overflow-y: auto; max-height: 100vh; }
+  h1 { font-size: 16px; margin: 0 0 10px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  button {
+    background: #2b2b3d; color: #e8e8f0; border: 1px solid #44445c;
+    border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 13px;
+  }
+  button:hover { background: #3a3a52; }
+  .ctl { display: grid; grid-template-columns: 1fr; gap: 2px; margin-bottom: 8px; font-size: 12px; }
+  .ctl span { color: #9c9cb5; }
+  .ctl input[type="range"] { width: 100%; }
+  .ctl input[type="number"] {
+    width: 90px; background: #101018; color: #e8e8f0;
+    border: 1px solid #44445c; border-radius: 4px; padding: 2px 6px;
+  }
+  .ctl input.invalid { border-color: #ff5b6a; background: #2a1218; }
+  main { position: relative; display: flex; flex-direction: column; }
+  #view { flex: 1; width: 100%; min-height: 60vh; display: block; }
+  #errors {
+    margin: 10px 14px 0; padding: 10px 12px; border-radius: 8px;
+    background: #3a1620; border: 1px solid #ff5b6a; color: #ffc9cf; font-size: 13px;
+  }
+  .err-title { font-weight: 600; margin-bottom: 4px; }
+  #bar { padding: 8px 14px; font-size: 12px; color: #9c9cb5; display: flex; gap: 24px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+  <aside>
+    <h1>叠层玻璃参数</h1>
+    <div class="btns">
+      <button id="btnDefault">默认画面</button>
+      <button id="btnExtreme">极端画面</button>
+      <button id="btnPause">暂停</button>
+      <button id="btnShot">导出截图</button>
+      <button id="btnSave">保存参数</button>
+      <button id="btnReset">重置存档</button>
+    </div>
+    <div id="controls"></div>
+  </aside>
+  <main>
+    <canvas id="view"></canvas>
+    <div id="errors" hidden></div>
+    <div id="bar">
+      <span id="status"></span>
+      <span id="layerOrder"></span>
+    </div>
+  </main>
+  <script src="params.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
