@@ -1,0 +1,10 @@
+{
+  "name": "underground-mailboat",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "地下河邮船：确定性 Canvas 游戏，含暂停、检查点、存档与固定 seed 复现",
+  "scripts": {
+    "test": "node --test tests/engine.test.js"
+  }
+}

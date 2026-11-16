@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>地下河邮船</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0d0b12;
+      color: #e8e2d5;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+    }
+    canvas {
+      background: #141019;
+      border: 1px solid #3a3145;
+      border-radius: 8px;
+    }
+    #panel {
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card {
+      background: #1a1622;
+      border: 1px solid #332b40;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .card h2 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      color: #d9b46a;
+    }
+    button {
+      background: #2c2440;
+      color: #e8e2d5;
+      border: 1px solid #4a3d5f;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin: 2px 2px 2px 0;
+      cursor: pointer;
+    }
+    button:hover { background: #3a2f54; }
+    input {
+      background: #100d17;
+      color: #e8e2d5;
+      border: 1px solid #4a3d5f;
+      border-radius: 6px;
+      padding: 6px;
+      width: 150px;
+    }
+    .muted { color: #9a8fb0; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="panel">
+    <div class="card">
+      <h2>任务状态</h2>
+      <div id="hudGoals">0/3 封信已送达</div>
+      <div id="hudHull">船体 100/100</div>
+      <div id="hudFuel">燃料 100/100</div>
+      <div id="hudLoad">载货 78kg</div>
+      <div id="hudCheckpoints">检查点 1/4</div>
+      <div id="hudStatus">状态：running</div>
+      <div id="hudFail">最近失败：无</div>
+      <div id="hudEvent">事件：</div>
+      <div id="hudSeed" class="muted">seed：</div>
+    </div>
+    <div class="card">
+      <h2>控制</h2>
+      <button id="btnPause">暂停/继续 (P)</button>
+      <button id="btnRestart">重开</button>
+      <button id="btnResumeCp">检查点继续</button>
+      <button id="btnSave">保存</button>
+      <button id="btnLoad">载入</button>
+      <button id="btnDebug">调试场景</button>
+      <button id="btnMute">静音</button>
+      <div class="muted">
+        W/↑ 向上转，S/↓ 向下转或倒车脱困，L 开关船灯，空格/P 暂停。
+      </div>
+      <div id="saveMsg" class="muted"></div>
+      <div id="debugMsg" class="muted"></div>
+    </div>
+    <div class="card">
+      <h2>固定 Seed 复现</h2>
+      <input id="seedInput" value="postal-2026" />
+      <button id="btnNewSeed">用该 seed 开局</button>
+      <div class="muted">
+        同 seed 的地图、障碍、仓库与水流顺序完全一致；也可用 ?seed=xxx&debug=1 直接打开调试场景。
+      </div>
+    </div>
+  </div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
