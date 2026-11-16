@@ -1,0 +1,15 @@
+{
+  "name": "precision-wash-line",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/*.test.js",
+    "test:ui": "playwright test tests/ui-smoke.spec.js --reporter=line",
+    "report": "node scripts/generate-report.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1"
+  }
+}

@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071517" />
+    <title>槽净 · 三批精密清洗线</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient-grid"></div>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <div>
+            <p class="eyebrow">PRECISION WASH LINE / 03</p>
+            <h1>槽净 <span>三批精密清洗</span></h1>
+          </div>
+        </div>
+        <div class="header-status">
+          <span class="status-pill" id="statusPill">待生产</span>
+          <span class="clock-readout">
+            <small>共享仿真时钟</small>
+            <strong id="clockValue">0.00 s</strong>
+          </span>
+          <span class="speed-control">
+            <label for="speedSelect">仿真倍率</label>
+            <select id="speedSelect">
+              <option value="1">1×</option>
+              <option value="2" selected>2×</option>
+              <option value="4">4×</option>
+              <option value="8">8×</option>
+            </select>
+          </span>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <article class="panel machine-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">LIVE PROCESS CELL</p>
+              <h2>超声清洗槽</h2>
+            </div>
+            <div class="stage-chip">
+              <span class="pulse-dot" id="stageDot"></span>
+              <span id="stageLabel">待机</span>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="washCanvas" width="1120" height="660" aria-label="清洗槽实时仿真"></canvas>
+            <div class="canvas-topline">
+              <span id="canvasBatch">B-01 · 精密齿轮</span>
+              <span id="canvasFault" class="fault-flag hidden">联锁停机</span>
+            </div>
+            <div class="canvas-caption">
+              <span id="canvasCaption">调整工艺参数后启动清洗</span>
+              <span id="canvasTimer">0.0 / 0.0 s</span>
+            </div>
+            <div class="paused-overlay hidden" id="pausedOverlay">
+              <span>SIMULATION PAUSED</span>
+              <small>生产 / 能耗 / 缓存已同步冻结</small>
+            </div>
+          </div>
+          <div class="equipment-strip">
+            <span class="strip-label">设备总线</span>
+            <div class="equipment-list" id="equipmentList">
+              <span class="equipment-chip">超声</span>
+              <span class="equipment-chip">水泵</span>
+              <span class="equipment-chip">加热</span>
+              <span class="equipment-chip">篮体</span>
+              <span class="equipment-chip">风机</span>
+            </div>
+            <button class="icon-btn" id="soundBtn" type="button" aria-pressed="false">
+              <span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+              声音关
+            </button>
+          </div>
+        </article>
+
+        <aside class="side-stack">
+          <article class="panel batch-panel">
+            <div class="panel-head compact">
+              <div>
+                <p class="eyebrow">BATCH QUEUE</p>
+                <h2 id="batchName">精密齿轮</h2>
+              </div>
+              <span class="batch-counter" id="batchCounter">01 / 03</span>
+            </div>
+            <div class="batch-meta">
+              <span id="batchId">B-01</span>
+              <span id="batchOil">轻质切削油</span>
+              <span id="batchAttempt">第 1 次</span>
+            </div>
+            <div class="batch-dots" id="batchDots" aria-label="批次状态"></div>
+            <div class="quality-grid">
+              <div class="quality-item">
+                <div><span>油污残留</span><strong id="residueValue">0%</strong></div>
+                <div class="meter"><i id="residueBar"></i></div>
+              </div>
+              <div class="quality-item">
+                <div><span>腐蚀</span><strong id="corrosionValue">0%</strong></div>
+                <div class="meter danger"><i id="corrosionBar"></i></div>
+              </div>
+              <div class="quality-item">
+                <div><span>锈蚀</span><strong id="rustValue">0%</strong></div>
+                <div class="meter amber"><i id="rustBar"></i></div>
+              </div>
+            </div>
+            <div class="inspection-card" id="inspectionCard">
+              <span class="inspection-kicker">检查站</span>
+              <strong id="inspectionTitle">等待首批清洗</strong>
+              <p id="inspectionDetail">清洗结束后自动进入三道指标检查。</p>
+            </div>
+          </article>
+
+          <article class="panel control-panel">
+            <div class="panel-head compact">
+              <div>
+                <p class="eyebrow">PROCESS SETPOINTS</p>
+                <h2>工艺设定</h2>
+              </div>
+              <span class="window-note" id="windowNote">按当前批次计算</span>
+            </div>
+            <div class="control" data-parameter="duration">
+              <label for="durationInput">
+                <span>超声时长</span>
+                <strong><b id="durationValue">40</b> s</strong>
+              </label>
+              <input id="durationInput" type="range" min="20" max="85" step="1" value="40" />
+              <div class="range-scale"><span>20</span><span id="durationSafe">安全 28–56</span><span>85</span></div>
+            </div>
+            <div class="control" data-parameter="temp">
+              <label for="tempInput">
+                <span>槽液温度</span>
+                <strong><b id="tempValue">50</b> °C</strong>
+              </label>
+              <input id="tempInput" type="range" min="30" max="75" step="1" value="50" />
+              <div class="range-scale"><span>30</span><span id="tempSafe">安全 40–62</span><span>75</span></div>
+            </div>
+            <div class="control" data-parameter="rpm">
+              <label for="rpmInput">
+                <span>篮体转速</span>
+                <strong><b id="rpmValue">900</b> rpm</strong>
+              </label>
+              <input id="rpmInput" type="range" min="400" max="1600" step="10" value="900" />
+              <div class="range-scale"><span>400</span><span id="rpmSafe">安全 600–1350</span><span>1600</span></div>
+            </div>
+            <div class="control-hint" id="controlHint">
+              参数越限仍会继续运行，但会在检查时反映为腐蚀或残留。
+            </div>
+            <div class="action-grid">
+              <button class="btn primary" id="startBtn" type="button">启动清洗</button>
+              <button class="btn" id="pauseBtn" type="button" disabled>暂停</button>
+              <button class="btn" id="stepBtn" type="button" disabled>单步 +0.5s</button>
+              <button class="btn" id="batchResetBtn" type="button">重置本批</button>
+              <button class="btn accent hidden" id="nextBtn" type="button">装载下一批</button>
+              <button class="btn danger hidden" id="recoverBtn" type="button">安全复位并返工</button>
+            </div>
+            <div class="session-row">
+              <span id="sessionHint">三批全部检查合格后判定生产成功。</span>
+              <button class="text-btn" id="sessionResetBtn" type="button">重开会话 · 清空缓存</button>
+            </div>
+          </article>
+        </aside>
+      </section>
+
+      <section class="telemetry-grid">
+        <article class="panel metric-panel">
+          <div class="panel-head compact">
+            <div>
+              <p class="eyebrow">PRODUCTION</p>
+              <h2>生产状态</h2>
+            </div>
+            <span class="sync-clock" id="productionClock">T 0.00</span>
+          </div>
+          <div class="metric-main">
+            <div><strong id="goodUnits">0</strong><span>良品数 / 3</span></div>
+            <div><strong id="yieldRate">0%</strong><span>检查良品率</span></div>
+          </div>
+          <div class="stage-track">
+            <div class="stage-node" data-stage="ultrasonic">
+              <i></i><span>超声</span><small id="ultrasonicTime">0 / 40s</small>
+            </div>
+            <div class="stage-node" data-stage="rinse">
+              <i></i><span>漂洗</span><small id="rinseTime">0 / 6s</small>
+            </div>
+            <div class="stage-node" data-stage="drying">
+              <i></i><span>烘干</span><small id="dryingTime">0 / 9s</small>
+            </div>
+            <div class="stage-node" data-stage="inspection">
+              <i></i><span>检查</span><small>三道指标</small>
+            </div>
+          </div>
+          <div class="batch-results" id="batchResults"></div>
+        </article>
+
+        <article class="panel metric-panel">
+          <div class="panel-head compact">
+            <div>
+              <p class="eyebrow">ENERGY</p>
+              <h2>能耗状态</h2>
+            </div>
+            <span class="sync-clock" id="energyClock">T 0.00</span>
+          </div>
+          <div class="metric-main">
+            <div><strong id="totalEnergy">0.000</strong><span>累计 kWh</span></div>
+            <div><strong id="peakPower">0.00</strong><span>峰值 kW</span></div>
+          </div>
+          <div class="energy-bars" id="energyBars"></div>
+          <p class="panel-footnote">峰值来自冻结时钟内的真实阶段功率采样。</p>
+        </article>
+
+        <article class="panel metric-panel">
+          <div class="panel-head compact">
+            <div>
+              <p class="eyebrow">SHARED CACHE</p>
+              <h2>缓存状态</h2>
+            </div>
+            <span class="sync-clock" id="cacheClock">T 0.00</span>
+          </div>
+          <div class="metric-main">
+            <div><strong id="cacheCount">0</strong><span>缓存条目</span></div>
+            <div><strong id="cacheHits">0</strong><span>缓存命中</span></div>
+          </div>
+          <div class="cache-line">
+            <span>最近样本</span>
+            <strong id="cacheLatest">尚无样本</strong>
+          </div>
+          <p class="panel-footnote">重开会话或刷新页面均不保留旧缓存，不写入 localStorage。</p>
+        </article>
+      </section>
+
+      <section class="lower-grid">
+        <article class="panel audit-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">AUDIT TRAIL</p>
+              <h2>设备与批次日志</h2>
+            </div>
+            <div class="audit-tools">
+              <span id="eventCount">0 条记录</span>
+              <select id="eventFilter" aria-label="日志筛选">
+                <option value="all">全部事件</option>
+                <option value="equipment">设备启停</option>
+                <option value="parameter">参数变化</option>
+                <option value="batch">批次与故障</option>
+              </select>
+            </div>
+          </div>
+          <div class="event-table-wrap">
+            <table class="event-table">
+              <thead>
+                <tr>
+                  <th>仿真时刻</th>
+                  <th>批次</th>
+                  <th>事件</th>
+                  <th>详情</th>
+                </tr>
+              </thead>
+              <tbody id="eventRows">
+                <tr class="empty-row"><td colspan="4">等待设备启动，所有事件写入同一仿真时钟。</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel validation-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">DETERMINISTIC VALIDATION</p>
+              <h2>流程验证</h2>
+            </div>
+            <button class="btn small primary" id="runAllBtn" type="button">运行全部验证</button>
+          </div>
+          <p class="validation-intro">
+            验证不是静态标签：每个场景都由独立仿真实例实际运行，记录触发时刻、当前参数和恢复检查结果。
+          </p>
+          <div class="scenario-buttons" id="scenarioButtons"></div>
+          <div class="validation-status" id="validationStatus">
+            <span class="validation-dot"></span>
+            <span>尚未运行验证</span>
+          </div>
+          <div class="scenario-results" id="scenarioResults">
+            <div class="scenario-empty">运行任一场景后在这里查看引擎结果。</div>
+          </div>
+          <div class="export-row">
+            <button class="btn" id="exportBtn" type="button">导出完整 JSON 报告</button>
+            <span id="exportHint">包含良品数、良品率、峰值、停机原因与异常位置。</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel report-panel">
+        <div class="panel-head compact">
+          <div>
+            <p class="eyebrow">REPORT PREVIEW</p>
+            <h2>当前导出摘要</h2>
+          </div>
+          <span class="report-stamp" id="reportStamp">LIVE</span>
+        </div>
+        <pre id="reportPreview">等待生产或验证数据…</pre>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
