@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#171713" />
+    <title>FRAME//08 — 二维相机与节目时间线</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 fill=%22%23ff5a36%22/><text x=%2210%22 y=%2242%22 font-size=%2228%22 font-family=%22monospace%22>F08</text></svg>" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="FRAME 08 首页">
+          <span class="brand-mark">F//08</span>
+          <span class="brand-copy">
+            <strong>CAMERA STUDIO</strong>
+            <small>二维镜头与节目时间线</small>
+          </span>
+        </a>
+        <div class="project-heading">
+          <span class="eyebrow">CURRENT PROJECT</span>
+          <strong id="projectName">FORM / FLOW</strong>
+          <span class="save-state" id="saveState">未保存更改</span>
+        </div>
+        <div class="top-actions">
+          <button class="button ghost" id="saveProjectBtn" type="button">
+            <span class="button-key">S</span> 保存工程
+          </button>
+          <button class="button ghost" id="loadProjectBtn" type="button">
+            <span class="button-key">R</span> 重新载入
+          </button>
+          <button class="button ghost" id="exportJsonBtn" type="button">关键帧 JSON</button>
+          <button class="button primary" id="exportVideoBtn" type="button">
+            <span class="record-dot"></span> 导出 8s WebM
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="panel inspector">
+          <section class="panel-block keyframe-panel">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">CAMERA PATH</span>
+                <h2>镜头关键帧</h2>
+              </div>
+              <span class="count-badge" id="keyframeCount">04</span>
+            </div>
+            <div class="keyframe-list" id="keyframeList" aria-label="相机关键帧列表"></div>
+          </section>
+
+          <section class="panel-block">
+            <div class="section-heading compact">
+              <div>
+                <span class="eyebrow">INSPECTOR</span>
+                <h2>所选关键帧</h2>
+              </div>
+              <span class="time-chip" id="selectedKeyframeTime">00:00:00</span>
+            </div>
+            <div class="field-grid" id="keyframeFields">
+              <label class="field">
+                <span>位置 X</span>
+                <span class="input-with-unit"><input id="kfX" type="number" min="-200" max="1400" step="1" /><b>px</b></span>
+              </label>
+              <label class="field">
+                <span>位置 Y</span>
+                <span class="input-with-unit"><input id="kfY" type="number" min="-200" max="900" step="1" /><b>px</b></span>
+              </label>
+              <label class="field">
+                <span>旋转</span>
+                <span class="input-with-unit"><input id="kfRotation" type="number" min="-45" max="45" step="0.5" /><b>°</b></span>
+              </label>
+              <label class="field">
+                <span>缩放</span>
+                <span class="input-with-unit"><input id="kfZoom" type="number" min="0.55" max="2.6" step="0.01" /><b>×</b></span>
+              </label>
+              <label class="field full">
+                <span>缓动曲线</span>
+                <select id="kfEasing"></select>
+              </label>
+            </div>
+            <div class="path-warning hidden" id="pathWarning" role="alert">
+              <span class="warning-icon">!</span>
+              <div>
+                <strong>路径越出舞台</strong>
+                <p id="pathWarningText">取景框超出画布边界。</p>
+              </div>
+            </div>
+            <div class="tip-line">
+              可直接在路线图上拖动所选关键帧。
+            </div>
+          </section>
+
+          <section class="panel-block shot-summary">
+            <span class="eyebrow">LINKED A/V</span>
+            <div class="shot-row">
+              <span class="shot-dot coral"></span>
+              <div><strong>SHOT A</strong><small>FORM · 4.20s</small></div>
+              <span class="link-icon">↔</span>
+              <div><strong>MIX A</strong><small>WARM · 0.72</small></div>
+            </div>
+            <div class="shot-row">
+              <span class="shot-dot blue"></span>
+              <div><strong>SHOT B</strong><small>FLOW · 4.20s</small></div>
+              <span class="link-icon">↔</span>
+              <div><strong>MIX B</strong><small>BRIGHT · 0.66</small></div>
+            </div>
+          </section>
+        </aside>
+
+        <section class="viewer">
+          <div class="viewer-head">
+            <div class="viewer-title">
+              <span class="live-dot"></span>
+              <strong>PROGRAM MONITOR</strong>
+              <span>CANVAS 1280 × 720</span>
+            </div>
+            <div class="viewer-meta">
+              <span id="currentCameraMeta">CAM 01 · X 414 · Y 382</span>
+              <button class="mini-button" id="resetDemoBtn" type="button">恢复示例</button>
+            </div>
+          </div>
+          <div class="canvas-stage" id="canvasStage">
+            <canvas id="previewCanvas" width="1280" height="720" aria-label="相机输出预览"></canvas>
+            <div class="safe-guides" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+            <div class="overview-card">
+              <div class="overview-title">
+                <span><i></i> ROUTE / 路线与取景框</span>
+                <b id="overviewScale">100%</b>
+              </div>
+              <canvas id="overviewCanvas" width="360" height="203" aria-label="相机路线与取景框"></canvas>
+            </div>
+            <div class="canvas-badge" id="canvasBadge">
+              <span class="badge-number" id="canvasTimecode">00:00:00</span>
+              <span class="badge-rule"></span>
+              <span id="canvasFrameLabel">FRAME 001 / 240</span>
+            </div>
+            <div class="path-canvas-warning hidden" id="pathCanvasWarning">ROUTE OUT OF STAGE</div>
+          </div>
+          <div class="transport">
+            <button class="play-button" id="playButton" type="button" aria-label="播放">
+              <span class="play-glyph" id="playGlyph"></span>
+            </button>
+            <div class="transport-time">
+              <strong id="transportTimecode">00:00:00</strong>
+              <span>/ 00:08:00</span>
+            </div>
+            <input class="scrubber" id="scrubber" type="range" min="0" max="8" step="0.001" value="0" aria-label="播放头" />
+            <label class="loop-toggle" title="循环播放">
+              <input id="loopToggle" type="checkbox" checked />
+              <span class="toggle-track"><i></i></span>
+              循环
+            </label>
+            <span class="transport-status" id="transportStatus">READY</span>
+          </div>
+        </section>
+
+        <aside class="panel output-panel">
+          <section class="panel-block">
+            <div class="section-heading compact">
+              <div>
+                <span class="eyebrow">DURATION CHECK</span>
+                <h2>时长核算</h2>
+              </div>
+              <span class="sync-pill" id="syncPill">SYNC</span>
+            </div>
+            <div class="duration-hero">
+              <strong id="programDuration">8.000</strong>
+              <span>SECONDS</span>
+            </div>
+            <div class="duration-bar">
+              <span class="duration-a" id="durationA"></span>
+              <span class="duration-transition" id="durationTransition"></span>
+              <span class="duration-b" id="durationB"></span>
+            </div>
+            <div class="duration-legend">
+              <span><i class="legend-a"></i> A <b id="durationAText">4.20s</b></span>
+              <span><i class="legend-transition"></i> 转场 <b id="transitionText">0.40s</b></span>
+              <span><i class="legend-b"></i> B <b id="durationBText">4.20s</b></span>
+            </div>
+            <div class="metric-grid">
+              <div><span>视频范围</span><b id="videoRange">0.00–8.00</b></div>
+              <div><span>音频范围</span><b id="audioRange">0.00–8.00</b></div>
+              <div><span>音画偏差</span><b id="avDelta">0 ms</b></div>
+              <div><span>轨道合计</span><b id="assembledDuration">8.00 s</b></div>
+            </div>
+          </section>
+
+          <section class="panel-block">
+            <div class="section-heading compact">
+              <div>
+                <span class="eyebrow">VALIDATION</span>
+                <h2>导出检查</h2>
+              </div>
+              <span class="status-dot ok" id="validationDot"></span>
+            </div>
+            <div class="validation-copy" id="validationCopy">
+              <strong>可以导出</strong>
+              <p>8 秒节目、音画范围和转场覆盖均有效。</p>
+            </div>
+            <div class="conflict-list" id="conflictList"></div>
+          </section>
+
+          <section class="panel-block self-test">
+            <div class="section-heading compact">
+              <div>
+                <span class="eyebrow">EDIT REGRESSION</span>
+                <h2>编辑自检</h2>
+              </div>
+              <span class="test-score" id="testScore">—</span>
+            </div>
+            <p class="self-test-copy">模拟片段移动、分割与转场，核对音画入出点和事件位置。</p>
+            <button class="button test-button" id="runSelfTestBtn" type="button">运行对齐自检</button>
+            <div class="test-results hidden" id="testResults"></div>
+          </section>
+        </aside>
+      </main>
+
+      <section class="timeline-panel">
+        <div class="timeline-head">
+          <div class="timeline-heading">
+            <span class="eyebrow">PROGRAM TIMELINE</span>
+            <h2>统一时间线 <span>30 FPS</span></h2>
+          </div>
+          <div class="timeline-tools">
+            <div class="selection-readout" id="selectionReadout">未选择片段</div>
+            <button class="mini-button" id="splitClipBtn" type="button" title="在播放头处分割所选音画组">
+              <span>✂</span> 分割
+            </button>
+            <button class="mini-button" id="nudgeLeftBtn" type="button" title="所选片段左移 0.10 秒">← 0.10s</button>
+            <button class="mini-button" id="nudgeRightBtn" type="button" title="所选片段右移 0.10 秒">0.10s →</button>
+            <label class="range-field">
+              <span>IN</span>
+              <input id="inPointInput" type="number" min="0" max="7.9" step="0.01" value="0" />
+            </label>
+            <label class="range-field">
+              <span>OUT</span>
+              <input id="outPointInput" type="number" min="0.1" max="12" step="0.01" value="8" />
+            </label>
+          </div>
+        </div>
+
+        <div class="timeline-body" id="timelineBody">
+          <div class="ruler-row">
+            <div class="track-label ruler-label">TIMEBASE</div>
+            <div class="ruler-lane" id="rulerLane"></div>
+          </div>
+          <div class="track-row" data-track="video">
+            <div class="track-label"><span class="track-index">01</span><strong>VIDEO</strong><small>联动画面</small></div>
+            <div class="track-lane" id="videoLane"></div>
+          </div>
+          <div class="track-row" data-track="subtitle">
+            <div class="track-label"><span class="track-index">02</span><strong>SUBTITLE</strong><small>字幕</small></div>
+            <div class="track-lane" id="subtitleLane"></div>
+          </div>
+          <div class="track-row" data-track="animation">
+            <div class="track-label"><span class="track-index">03</span><strong>ANIMATION</strong><small>镜头关键帧</small></div>
+            <div class="track-lane" id="animationLane"></div>
+          </div>
+          <div class="track-row" data-track="audio">
+            <div class="track-label"><span class="track-index">04</span><strong>AUDIO</strong><small>联动音频 / 事件</small></div>
+            <div class="track-lane" id="audioLane"></div>
+          </div>
+          <div class="conflict-layer" id="conflictLayer" aria-hidden="true"></div>
+          <div class="playhead" id="playhead"><span></span><b id="playheadLabel">0.000</b></div>
+        </div>
+        <div class="timeline-foot">
+          <span><i class="foot-dot"></i> 画面、字幕、动画与音频共享同一播放头</span>
+          <span id="binaryStatus">PROJECT READY / 240 FRAMES</span>
+        </div>
+      </section>
+    </div>
+
+    <div class="export-overlay hidden" id="exportOverlay" role="dialog" aria-modal="true" aria-labelledby="exportTitle">
+      <div class="export-dialog">
+        <div class="export-topline">
+          <span class="eyebrow">RENDER QUEUE</span>
+          <span id="exportStepLabel">PREPARING</span>
+        </div>
+        <h2 id="exportTitle">正在渲染 8 秒节目</h2>
+        <p id="exportDescription">从第 0 帧开始捕获画面与音轨，不做静音降级。</p>
+        <div class="export-progress"><span id="exportProgressBar"></span></div>
+        <div class="export-meta">
+          <span id="exportPercent">0%</span>
+          <span>WEBM · VP9/OPUS · 1280×720</span>
+        </div>
+        <video id="exportPreview" controls playsinline class="export-video hidden"></video>
+        <div class="export-result hidden" id="exportResult">
+          <div><strong>导出完成</strong><span id="exportResultDetail">文件已验证可播放</span></div>
+          <div class="export-links">
+            <a class="button primary" id="downloadVideoLink" download>下载 WebM</a>
+            <button class="button ghost" id="closeExportBtn" type="button">关闭</button>
+          </div>
+        </div>
+        <button class="export-close" id="cancelExportBtn" type="button" aria-label="取消导出">×</button>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
