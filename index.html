@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>磁悬浮小车 · 三段曲率轨道仿真</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>磁悬浮小车悬浮通过仿真</h1>
+  <div class="mode-badge" id="modeBadge">就绪</div>
+</header>
+
+<main>
+  <section class="panel controls">
+    <h2>运行参数</h2>
+    <div class="slider-row" id="sliders"></div>
+
+    <div class="btn-group">
+      <button id="btnRun" class="primary">运行</button>
+      <button id="btnPause">暂停</button>
+      <button id="btnStep">单步</button>
+      <button id="btnReset">重置</button>
+    </div>
+    <div class="btn-group">
+      <button id="btnSound">声音：关</button>
+      <button id="btnForce">受力箭头：开</button>
+      <button id="btnDeterm">确定性自检</button>
+    </div>
+
+    <h2>安全边界</h2>
+    <div id="limits" class="limits"></div>
+
+    <h2>实时物理量</h2>
+    <div id="metrics" class="metrics"></div>
+  </section>
+
+  <section class="panel stage">
+    <canvas id="trackCanvas"></canvas>
+    <div id="faultOverlay" class="overlay hidden">
+      <div class="overlay-card">
+        <h2 id="faultTitle">运行失败</h2>
+        <p id="faultDetail"></p>
+        <button id="btnFaultClose">查看现场</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel side">
+    <h2>变化趋势 / 受力</h2>
+    <div class="metric-tabs" id="metricTabs"></div>
+    <canvas id="trendCanvas"></canvas>
+
+    <h2>回放</h2>
+    <div class="btn-group">
+      <button id="btnReplay">回放</button>
+      <button id="btnReplayPause">回放暂停</button>
+    </div>
+    <input type="range" id="replayScrub" min="0" max="0" value="0">
+    <div class="replay-info" id="replayInfo">第 0 / 0 帧</div>
+
+    <h2>最终报告</h2>
+    <pre id="report" class="report">尚未运行。</pre>
+  </section>
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/track.js"></script>
+<script src="js/physics.js"></script>
+<script src="js/simulator.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
