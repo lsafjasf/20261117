@@ -1,0 +1,16 @@
+{
+  "name": "energy-atlas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "建筑能量流分析台：守恒的节点/弧线能量流、楼层地图、曲线与可审计导出。",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "verify": "node scripts/verify.mjs",
+    "test:browser": "node tests/browser.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.55.0"
+  }
+}

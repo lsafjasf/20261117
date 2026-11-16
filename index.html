@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f1eee6" />
+    <title>能量解剖台 · 建筑能量流分析</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2317322e'/%3E%3Crect x='7' y='7' width='7' height='7' rx='2' fill='%23d9ed83'/%3E%3Crect x='18' y='7' width='7' height='7' rx='2' fill='%2378b7a8'/%3E%3Crect x='7' y='18' width='7' height='7' rx='2' fill='%23e5c165'/%3E%3Crect x='18' y='18' width='7' height='7' rx='2' fill='%23f7f4e9'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="能量解剖台首页">
+          <span class="brand-mark" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
+          </span>
+          <span>
+            <strong>能量解剖台</strong>
+            <small>ENERGY ATLAS / 2026</small>
+          </span>
+        </a>
+        <div class="topbar-center">
+          <span class="live-dot"></span>
+          <span>能耗数字孪生 · <b id="topDatasetName">正常日</b></span>
+          <span class="version-chip" id="topDataVersion">DV-········</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="button button-quiet" id="exportCsv" type="button">
+            <span class="button-icon">↧</span> CSV
+          </button>
+          <button class="button button-primary" id="exportPng" type="button">
+            <span class="button-icon">↧</span> 导出图表
+          </button>
+        </div>
+      </header>
+
+      <section class="control-deck" aria-label="时间窗口与数据源">
+        <div class="dataset-switcher">
+          <span class="control-label">数据版本</span>
+          <div class="segmented" id="datasetTabs" role="tablist" aria-label="数据版本"></div>
+        </div>
+        <div class="window-switcher">
+          <span class="control-label">时间窗口</span>
+          <div class="window-tabs" id="windowTabs" role="tablist" aria-label="时间窗口"></div>
+        </div>
+        <div class="condition-strip" aria-live="polite">
+          <span class="condition-kicker">当前条件</span>
+          <strong id="conditionText">全部楼层 / 全部能源 / 06:00–10:00</strong>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <aside class="rail filter-rail" aria-label="筛选与数据摘要">
+          <section class="rail-section rail-intro">
+            <p class="eyebrow">FILTER / SCOPE</p>
+            <h2>观察条件</h2>
+            <p class="rail-copy">选择数据版本、楼层与能源，所有视图读取同一清洗快照。</p>
+          </section>
+
+          <section class="rail-section">
+            <label class="field-label" for="searchInput">搜索区域</label>
+            <div class="search-field">
+              <span aria-hidden="true">⌕</span>
+              <input id="searchInput" type="search" placeholder="区域名或编号，如 机房" autocomplete="off" />
+              <button id="clearSearch" class="search-clear" type="button" aria-label="清除搜索">×</button>
+            </div>
+            <div class="field-heading">
+              <span class="field-label">楼层</span>
+              <span class="field-note" id="floorNote">全部</span>
+            </div>
+            <div class="chip-grid" id="floorFilters" role="group" aria-label="楼层筛选"></div>
+            <div class="field-heading">
+              <span class="field-label">能源类型</span>
+              <span class="field-note" id="sourceNote">全部</span>
+            </div>
+            <div class="chip-grid" id="sourceFilters" role="group" aria-label="能源类型筛选"></div>
+            <button class="text-button" id="resetFilters" type="button">重置当前窗口筛选</button>
+          </section>
+
+          <section class="rail-section condition-card" aria-labelledby="filterCardTitle">
+            <div class="section-heading-row">
+              <h3 id="filterCardTitle">当前筛选</h3>
+              <span class="status-light" id="filterStatusLight">有效</span>
+            </div>
+            <dl class="condition-list">
+              <div><dt>范围</dt><dd id="activeFilterText">—</dd></div>
+              <div><dt>窗口</dt><dd id="activeWindowText">—</dd></div>
+              <div><dt>记录</dt><dd id="activeRecordCount">—</dd></div>
+              <div><dt>显示范围</dt><dd id="activeRangeText">—</dd></div>
+            </dl>
+            <p class="scope-note" id="scopeNote">—</p>
+          </section>
+
+          <section class="rail-section" aria-labelledby="dataSummaryTitle">
+            <div class="section-heading-row">
+              <h3 id="dataSummaryTitle">数据摘要</h3>
+              <span class="tiny-badge" id="datasetSummaryBadge">正常</span>
+            </div>
+            <div class="summary-grid">
+              <div><span>原始</span><strong id="summaryRaw">—</strong></div>
+              <div><span>清洗后</span><strong id="summaryClean">—</strong></div>
+              <div><span>去重</span><strong id="summaryDedup">—</strong></div>
+              <div><span>补缺</span><strong id="summaryFilled">—</strong></div>
+              <div><span>异常修正</span><strong id="summaryAnomaly">—</strong></div>
+              <div><span>当前命中</span><strong id="summaryHit">—</strong></div>
+            </div>
+            <div class="pipeline" aria-label="数据处理链路">
+              <span>去重</span><i>→</i><span>补缺</span><i>→</i><span>异常修正</span><i>→</i><span>聚合</span>
+            </div>
+            <p class="rail-copy mini">版本 <b id="railDataVersion">DV-········</b>；图表、地图、曲线、列表与导出均引用此版本。</p>
+          </section>
+        </aside>
+
+        <main class="main-stage" aria-label="能量分析视图">
+          <section class="kpi-strip" id="kpiStrip" aria-label="当前窗口关键指标">
+            <article class="kpi-card kpi-input">
+              <div class="kpi-top"><span>总输入</span><i class="kpi-icon">↘</i></div>
+              <div class="kpi-value"><strong id="kpiInput">—</strong><span>kW</span></div>
+              <p><b id="kpiInputSource">市电 + 光伏</b><span id="kpiInputDelta">窗口均值</span></p>
+            </article>
+            <article class="kpi-card kpi-useful">
+              <div class="kpi-top"><span>有效服务</span><i class="kpi-icon">✦</i></div>
+              <div class="kpi-value"><strong id="kpiUseful">—</strong><span>kW</span></div>
+              <p><b id="kpiUsefulNote">设备有效输出</b><span id="kpiUsefulRatio">—</span></p>
+            </article>
+            <article class="kpi-card kpi-loss">
+              <div class="kpi-top"><span>能量损失</span><i class="kpi-icon">≋</i></div>
+              <div class="kpi-value"><strong id="kpiLoss">—</strong><span>kW</span></div>
+              <p><b id="kpiLossNote">配电 + 设备</b><span id="kpiLossRatio">—</span></p>
+            </article>
+            <article class="kpi-card kpi-efficiency">
+              <div class="kpi-top"><span>系统效率</span><i class="kpi-icon">◎</i></div>
+              <div class="kpi-value"><strong id="kpiEfficiency">—</strong><span>%</span></div>
+              <div class="efficiency-track"><i id="efficiencyBar"></i></div>
+              <p><b id="kpiConservation">守恒校验</b><span id="kpiBalance">—</span></p>
+            </article>
+          </section>
+
+          <section class="card flow-card" aria-labelledby="flowTitle">
+            <header class="card-header">
+              <div>
+                <p class="eyebrow">SANKEY / LIVE BALANCE</p>
+                <h2 id="flowTitle">建筑能量流</h2>
+              </div>
+              <div class="card-meta">
+                <span class="data-badge"><i></i><b id="flowDataVersion">DV-········</b></span>
+                <span class="scenario-badge" id="scenarioVersion">SC-········</span>
+              </div>
+            </header>
+            <div class="flow-stage canvas-wrap" id="flowWrap">
+              <canvas id="flowCanvas" aria-label="建筑能量输入、转换与损失桑基图">
+                建筑能量流桑基图，显示市电、光伏、配电母线、设备转换、有效服务与损失。
+              </canvas>
+              <div class="empty-state" id="flowEmpty" hidden>
+                <span class="empty-mark">∅</span>
+                <strong>当前筛选无匹配记录</strong>
+                <p>清除搜索词或切换楼层 / 能源后恢复流向。</p>
+              </div>
+              <div class="canvas-hint" id="flowHint">点击节点查看功率</div>
+            </div>
+            <footer class="flow-footer">
+              <div class="balance-badge" id="balanceBadge">
+                <span class="check"></span>
+                <span>输入 = 有效服务 + 损失</span>
+                <b id="balanceEquation">—</b>
+              </div>
+              <div class="flow-legend" aria-label="能量流图例">
+                <span><i class="legend-line grid"></i>市电</span>
+                <span><i class="legend-line pv"></i>光伏</span>
+                <span><i class="legend-line loss"></i>损失</span>
+              </div>
+            </footer>
+          </section>
+
+          <section class="lower-grid">
+            <article class="card curve-card" aria-labelledby="curveTitle">
+              <header class="card-header compact">
+                <div>
+                  <p class="eyebrow">LOAD PROFILE / 15 MIN</p>
+                  <h2 id="curveTitle">功率曲线</h2>
+                </div>
+                <div class="range-toggle" id="rangeToggle" role="group" aria-label="曲线显示范围">
+                  <button type="button" data-range="window">当前窗口</button>
+                  <button type="button" data-range="day">全天</button>
+                </div>
+              </header>
+              <div class="curve-stage canvas-wrap" id="curveWrap">
+                <canvas id="curveCanvas" aria-label="当前筛选下的全天功率曲线"></canvas>
+                <div class="empty-state small" id="curveEmpty" hidden>
+                  <strong>无曲线数据</strong>
+                </div>
+              </div>
+              <footer class="mini-footer">
+                <span><i class="legend-dot total"></i>总输入</span>
+                <span><i class="legend-dot pv"></i>光伏</span>
+                <span id="curveRangeLabel">当前窗口 · 06:00–10:00</span>
+                <span class="data-badge" title="与地图、桑基图和列表相同的清洗数据版本"><i></i><b id="curveDataVersion">DV-········</b></span>
+              </footer>
+            </article>
+
+            <article class="card map-card" aria-labelledby="mapTitle">
+              <header class="card-header compact">
+                <div>
+                  <p class="eyebrow">FLOOR LOAD MAP</p>
+                  <h2 id="mapTitle">楼层负荷地图</h2>
+                </div>
+                <div class="map-meta">
+                  <span class="data-badge"><i></i><b id="mapDataVersion">DV-········</b></span>
+                  <span class="map-scale"><i></i>低 <b></b> 高</span>
+                </div>
+              </header>
+              <div class="map-stage canvas-wrap" id="mapWrap">
+                <canvas id="mapCanvas" aria-label="按楼层和区域显示负荷强度的地图"></canvas>
+                <div class="empty-state small" id="mapEmpty" hidden>
+                  <strong>无匹配区域</strong>
+                </div>
+              </div>
+              <footer class="mini-footer">
+                <span><i class="legend-dot heat"></i>平均功率</span>
+                <span id="mapRangeLabel">全部楼层</span>
+              </footer>
+            </article>
+          </section>
+
+          <section class="card table-card" aria-labelledby="tableTitle">
+            <header class="card-header compact">
+              <div>
+                <p class="eyebrow">INTERVAL LEDGER</p>
+                <h2 id="tableTitle">15 分钟聚合明细</h2>
+              </div>
+              <div class="table-meta">
+                <span id="tableSummary">16 个区间</span>
+                <span class="data-badge"><i></i><b id="tableDataVersion">DV-········</b></span>
+              </div>
+            </header>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>时间</th>
+                    <th>市电 kW</th>
+                    <th>光伏 kW</th>
+                    <th>总输入 kW</th>
+                    <th>区间电量 kWh</th>
+                    <th>数据状态</th>
+                  </tr>
+                </thead>
+                <tbody id="intervalTable"></tbody>
+              </table>
+              <div class="table-empty" id="tableEmpty" hidden>当前筛选没有可聚合区间。</div>
+            </div>
+          </section>
+        </main>
+
+        <aside class="rail insight-rail" aria-label="节点洞察、设备负载与导出日志">
+          <section class="rail-section inspector-card" aria-labelledby="inspectorTitle">
+            <div class="section-heading-row">
+              <div>
+                <p class="eyebrow">NODE INSPECTOR</p>
+                <h3 id="inspectorTitle">节点功率</h3>
+              </div>
+              <span class="node-status" id="nodeStatus">未选择</span>
+            </div>
+            <div class="inspector-hero">
+              <span class="inspector-swatch" id="nodeSwatch"></span>
+              <div>
+                <strong id="nodeName">点击流向节点</strong>
+                <p id="nodeDetail">查看当前窗口功率与守恒关系。</p>
+              </div>
+            </div>
+            <div class="inspector-value">
+              <strong id="nodePower">—</strong><span>kW</span>
+            </div>
+            <dl class="node-metrics">
+              <div><dt>输入</dt><dd id="nodeInput">—</dd></div>
+              <div><dt>输出</dt><dd id="nodeOutput">—</dd></div>
+              <div><dt>损失</dt><dd id="nodeLoss">—</dd></div>
+              <div><dt>占比</dt><dd id="nodeShare">—</dd></div>
+            </dl>
+            <p class="inspector-formula" id="nodeFormula">P<sub>out</sub> = P<sub>in</sub> − P<sub>loss</sub></p>
+          </section>
+
+          <section class="rail-section load-card" aria-labelledby="loadTitle">
+            <div class="section-heading-row">
+              <div>
+                <p class="eyebrow">SCENARIO CONTROL</p>
+                <h3 id="loadTitle">设备负载</h3>
+              </div>
+              <button class="text-button small" id="resetLoads" type="button">恢复基线</button>
+            </div>
+            <p class="rail-copy mini">拖动负载后，设备输入、总输入与损失同步重算。</p>
+            <div class="load-list" id="loadControls"></div>
+            <div class="loss-breakdown">
+              <div><span>配电损耗</span><strong id="distributionLossValue">—</strong></div>
+              <div><span>设备热损</span><strong id="equipmentLossValue">—</strong></div>
+            </div>
+          </section>
+
+          <section class="rail-section summary-rail" aria-labelledby="qualityTitle">
+            <div class="section-heading-row">
+              <h3 id="qualityTitle">统计口径</h3>
+              <span class="tiny-badge">15 MIN</span>
+            </div>
+            <dl class="scope-list">
+              <div><dt>数据版本</dt><dd id="scopeDataVersion">—</dd></div>
+              <div><dt>窗口样本</dt><dd id="scopeSampleCount">—</dd></div>
+              <div><dt>补缺 / 修正</dt><dd id="scopeQuality">—</dd></div>
+              <div><dt>守恒误差</dt><dd id="scopeBalance">—</dd></div>
+            </dl>
+            <p class="rail-copy mini" id="scopeFootnote">功率取窗口内 15 分钟区间均值；有效服务为设备输出；损失为总输入减去有效服务。</p>
+          </section>
+
+          <section class="rail-section export-card" aria-labelledby="exportLogTitle">
+            <div class="section-heading-row">
+              <div>
+                <p class="eyebrow">EXPORT AUDIT</p>
+                <h3 id="exportLogTitle">导出日志</h3>
+              </div>
+              <span class="log-count" id="exportLogCount">0</span>
+            </div>
+            <div class="export-log" id="exportLog" aria-live="polite">
+              <div class="log-placeholder">尚未导出。日志会记录当时的窗口、筛选与两个版本号。</div>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <footer class="app-footer">
+        <span>ENERGY ATLAS / BUILDING ENERGY FLOW</span>
+        <span>数据日期 2026-11-17 · Asia/Shanghai</span>
+        <span id="footerVersion">正常日 · DV-········</span>
+      </footer>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
