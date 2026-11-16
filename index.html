@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <title>Canvas Input FSM Demo</title>
+  <style>
+    body { margin: 0; font-family: monospace; background: #111; color: #eee; }
+    #hud { position: fixed; top: 8px; left: 8px; white-space: pre; pointer-events: none; }
+    canvas { display: block; touch-action: none; }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="hud"></div>
+  <script type="module">
+    import { CanvasApp } from "./src/app.js";
+    import { InputStateMachine } from "./src/input/state-machine.js";
+    import { Clock } from "./src/metrics.js";
+
+    const canvas = document.getElementById("c");
+    const hud = document.getElementById("hud");
+    const dpr = window.devicePixelRatio || 1;
+    const clock = new Clock(performance.now());
+    const app = new CanvasApp({
+      width: window.innerWidth,
+      height: window.innerHeight,
+      dpr,
+      inputImpl: InputStateMachine,
+      clock,
+    });
+    canvas.width = app.width * dpr;
+    canvas.height = app.height * dpr;
+    canvas.style.width = app.width + "px";
+    canvas.style.height = app.height + "px";
+    const ctx = canvas.getContext("2d");
+    app.rect = canvas.getBoundingClientRect();
+    app.scene.addNode("A", 100, 100, 20, "#3366cc");
+    app.scene.addNode("B", 300, 200, 25, "#33aa66");
+    app.scene.addNode("C", 500, 400, 30, "#aa3366");
+
+    for (const type of ["pointerdown", "pointermove", "pointerup", "pointercancel", "wheel"]) {
+      canvas.addEventListener(type, (e) => {
+        e.preventDefault();
+        app.dispatch(e);
+      }, { passive: false });
+      app.addListener(type);
+    }
+
+    // Bridge the recording renderer to the real 2D context.
+    function paint() {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      for (const call of app.renderer.calls) {
+        if (call.op === "clear") ctx.clearRect(0, 0, call.width, call.height);
+        if (call.op === "circle") {
+          ctx.beginPath();
+          ctx.arc(call.x, call.y, call.r, 0, Math.PI * 2);
+          ctx.fillStyle = call.fill;
+          ctx.fill();
+        }
+      }
+    }
+    function frame() {
+      app.tick(16.7);
+      paint();
+      const m = app.metrics.summary();
+      hud.textContent =
+        `state=${app.input.state} dpr=${dpr}\n` +
+        `frameAvg=${m.frameTimeAvgMs}ms p95=${m.frameTimeP95Ms}ms\n` +
+        `cacheHit=${m.cacheHitRate} active=${m.activeNodes} cand=${m.collisionCandidates}\n` +
+        `clicks=${app.clickEvents.length}`;
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>

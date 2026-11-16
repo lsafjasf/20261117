@@ -1,0 +1,11 @@
+{
+  "name": "canvas-input-fsm",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Unified canvas input state machine with observable metrics and scenario harness",
+  "scripts": {
+    "test": "node src/harness/run.js",
+    "verify": "node test/verify.mjs"
+  }
+}
