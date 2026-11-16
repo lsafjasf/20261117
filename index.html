@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1e2a24">
+  <title>纬声 · 节奏织机</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23f5efe2' stroke='%231d2923' stroke-width='2'/%3E%3Cpath d='M20 18v28M28 18v28M36 18v28M44 18v28' stroke='%23c9674c' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </span>
+        <div>
+          <h1>纬声 <span>LOOM RHYTHM</span></h1>
+          <p>四组踏综 · 十六根经线 · 把一段节奏织成布</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="text-button" id="saveParams" type="button">
+          <span class="button-icon">↓</span>保存参数
+        </button>
+        <button class="text-button" id="loadParams" type="button">
+          <span class="button-icon">↑</span>载入参数
+        </button>
+        <span class="save-state" id="saveState">本地保存就绪</span>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <article class="loom-panel">
+        <div class="loom-heading">
+          <div>
+            <span class="eyebrow">WARP / WEFT</span>
+            <h2>织机视窗</h2>
+          </div>
+          <div class="loop-status" id="loopStatus">
+            <span class="status-dot"></span>
+            <span id="loopStatusText">待机 · 按下播放开始踏综</span>
+          </div>
+        </div>
+
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="loomCanvas" aria-label="十六根经线与织机实时视图"></canvas>
+          <div class="cloth-scale" aria-hidden="true">
+            <span>经 01</span>
+            <span>08</span>
+            <span>16</span>
+          </div>
+          <div class="now-weaving" id="nowWeaving">
+            <span class="now-label">NOW</span>
+            <span class="now-value">第 00 纬</span>
+          </div>
+        </div>
+
+        <div class="loom-legend">
+          <span><i class="legend-line"></i>经线 16</span>
+          <span><i class="legend-gap"></i>错拍留白</span>
+          <span><i class="legend-break"></i>密集换色断经</span>
+          <span class="legend-progress"><b id="progressLabel">0 / 8 纬</b><i><em id="progressFill"></em></i></span>
+        </div>
+      </article>
+
+      <aside class="control-panel">
+        <div class="control-heading">
+          <div>
+            <span class="eyebrow">TREADLE SCORE</span>
+            <h2>踏综节奏谱</h2>
+          </div>
+          <button class="icon-button" id="clearScore" type="button" title="清空节奏" aria-label="清空节奏">↺</button>
+        </div>
+
+        <div class="score-meta">
+          <span>4 组 × 8 拍</span>
+          <span id="activeCount">28 次换色</span>
+          <span>单循环</span>
+        </div>
+
+        <div class="score-grid" id="scoreGrid"></div>
+
+        <div class="transport">
+          <div class="transport-main">
+            <button class="play-button" id="playButton" type="button" aria-label="播放">
+              <span class="play-icon" id="playIcon"></span>
+              <span id="playLabel">播放</span>
+            </button>
+            <button class="transport-button" id="pauseButton" type="button" aria-label="暂停">
+              <span class="pause-icon"></span>暂停
+            </button>
+            <button class="transport-button" id="stepButton" type="button" aria-label="单步">
+              <span class="step-icon"></span>单步
+            </button>
+            <button class="transport-button" id="replayButton" type="button" aria-label="重播">
+              <span class="replay-icon"></span>重播
+            </button>
+          </div>
+
+          <div class="tempo-row">
+            <label for="bpmRange">速度</label>
+            <input id="bpmRange" type="range" min="60" max="160" step="1" value="92">
+            <output id="bpmOutput" for="bpmRange">92 <small>BPM</small></output>
+          </div>
+        </div>
+
+        <section class="monitor-section">
+          <div class="section-line">
+            <h3>试听路由</h3>
+            <span class="node-count"><i></i><b id="nodeCount">0</b> 活动节点</span>
+          </div>
+          <div class="monitor-tabs" role="group" aria-label="试听状态">
+            <button class="monitor-tab active" data-monitor="main" type="button">
+              主输出<small>空间延迟</small>
+            </button>
+            <button class="monitor-tab" data-monitor="bypass" type="button">
+              旁路<small>干声直通</small>
+            </button>
+            <button class="monitor-tab" data-monitor="mute" type="button">
+              静音<small>输出归零</small>
+            </button>
+          </div>
+          <div class="stereo-meter" aria-label="左右声道电平">
+            <div class="meter-labels"><span>L</span><span>R</span></div>
+            <div class="meter-stack">
+              <div class="meter-track"><i id="meterL"></i><em></em><em></em><em></em><em></em></div>
+              <div class="meter-track"><i id="meterR"></i><em></em><em></em><em></em><em></em></div>
+            </div>
+            <div class="meter-db"><span id="dbL">−∞</span><span id="dbR">−∞</span></div>
+          </div>
+          <div class="audio-facts">
+            <span><b>STEREO</b> 2 ch</span>
+            <span><b>44.1</b> kHz</span>
+            <span id="audioState">音频待启动</span>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="output-panel">
+      <div class="output-intro">
+        <span class="eyebrow">FINISH &amp; VERIFY</span>
+        <h2>落布与导出</h2>
+        <p>完成一段八纬循环后，将布面定格为图片。WAV 导出会渲染两遍并核对参数重载结果。</p>
+      </div>
+      <div class="output-actions">
+        <button class="action-button image-action" id="exportImage" type="button">
+          <span class="action-glyph">▧</span>
+          <span><b>导出布面</b><small>PNG · 1600 × 1200</small></span>
+        </button>
+        <button class="action-button audio-action" id="exportAudio" type="button">
+          <span class="action-glyph">◉</span>
+          <span><b>导出并复验 WAV</b><small>离线渲染 · 2 声道</small></span>
+        </button>
+        <button class="action-button verify-action" id="runAudit" type="button">
+          <span class="action-glyph">✓</span>
+          <span><b>声学自检</b><small>声道 / 频段 / 延迟 / 节拍</small></span>
+        </button>
+      </div>
+      <div class="audit-panel" id="auditPanel">
+        <div class="audit-head">
+          <span>导出复验</span>
+          <strong id="auditVerdict">等待渲染</strong>
+        </div>
+        <div class="audit-grid">
+          <div><small>时长 A / B</small><b id="auditDuration">—</b></div>
+          <div><small>声道</small><b id="auditChannels">—</b></div>
+          <div><small>L 峰值 Δ</small><b id="auditPeakL">—</b></div>
+          <div><small>R 峰值 Δ</small><b id="auditPeakR">—</b></div>
+        </div>
+        <div class="dimension-strip" id="dimensionStrip">
+          <span data-dim="stereo">声道 <b>—</b></span>
+          <span data-dim="band">频段 <b>—</b></span>
+          <span data-dim="delay">延迟 <b>—</b></span>
+          <span data-dim="tempo">节拍 <b>—</b></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="busy-layer" id="busyLayer" aria-hidden="true">
+    <div class="busy-card"><i></i><b>正在离线织声</b><small>渲染、保存、重载并比对双声道峰值</small></div>
+  </div>
+
+  <script src="audio-engine.js"></script>
+  <script src="loom-renderer.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
