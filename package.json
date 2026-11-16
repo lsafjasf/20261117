@@ -1,0 +1,26 @@
+{
+  "name": "uid845",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u00002\u00000\u00002\u00006\u00001\u00001\u00001\u00007\u0000\r\u0000 \u0000",
+  "scripts": {
+    "test": "node tests/run-tests.js",
+    "test:browser": "node tests/browser-smoke.js",
+    "start": "python3 -m http.server 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsafjasf/20261117.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lsafjasf/20261117/issues"
+  },
+  "homepage": "https://github.com/lsafjasf/20261117#readme",
+  "dependencies": {
+    "puppeteer": "^25.17.0",
+    "yauzl": "^3.4.0"
+  }
+}
