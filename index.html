@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071417">
+  <title>峡谷索修 · 三组滑轮</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div>
+          <p class="eyebrow">FIELD MAINTENANCE / 07</p>
+          <h1>峡谷索修</h1>
+        </div>
+      </div>
+
+      <div class="seed-block">
+        <label for="seedInput">固定 SEED</label>
+        <div class="seed-row">
+          <input id="seedInput" value="CANYON-805" maxlength="24" spellcheck="false" autocomplete="off">
+          <button id="applySeedBtn" class="button ghost compact" type="button">应用</button>
+        </div>
+      </div>
+
+      <nav class="top-actions" aria-label="游戏控制">
+        <button id="soundBtn" class="button ghost icon-button" type="button" aria-pressed="true" title="切换声音">
+          <span class="sound-icon" aria-hidden="true"></span><span class="button-label">声音</span>
+        </button>
+        <button id="pauseBtn" class="button ghost" type="button" title="暂停 / 继续 (P)">暂停</button>
+        <button id="saveBtn" class="button ghost" type="button" title="保存完整状态">保存</button>
+        <button id="loadBtn" class="button ghost" type="button" title="载入本地存档">载入</button>
+        <button id="restartBtn" class="button danger-outline" type="button" title="完整重开 (R)">重开</button>
+      </nav>
+    </header>
+
+    <main class="workspace">
+      <section class="stage-card" aria-label="峡谷维修现场">
+        <canvas id="gameCanvas" aria-label="峡谷索道与维修吊篮"></canvas>
+
+        <div class="live-badge"><span class="live-dot"></span><span id="liveLabel">待命 / STANDBY</span></div>
+        <div class="seed-stamp">
+          <span id="stampSeed">SEED · CANYON-805</span>
+          <span id="stampFingerprint">FP · 00000000</span>
+        </div>
+
+        <div class="wind-dial" aria-label="当前风向">
+          <div class="dial-ring">
+            <span class="dial-north">N</span>
+            <span id="windArrow" class="dial-arrow">→</span>
+          </div>
+          <div>
+            <span class="micro-label">CROSSWIND</span>
+            <strong id="windCanvasValue">0.0 m/s</strong>
+          </div>
+        </div>
+
+        <div id="canvasHelp" class="canvas-help">
+          <span><kbd>A</kbd><kbd>D</kbd> 驱动</span>
+          <span><kbd>SPACE</kbd> 制动</span>
+          <span><kbd>Q</kbd><kbd>E</kbd> 调平</span>
+          <span><kbd>F</kbd> 维修</span>
+        </div>
+
+        <div class="canvas-actions" aria-label="现场快捷操作">
+          <button id="brakeBtn" class="button utility" type="button">制动 <kbd>SPACE</kbd></button>
+          <button id="repairBtn" class="button primary" type="button" disabled>执行维修 <kbd>F</kbd></button>
+          <button id="recoverBtn" class="button recover" type="button" hidden>缓慢回收</button>
+        </div>
+
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+        <div id="startOverlay" class="overlay visible">
+          <div class="brief-card">
+            <p class="eyebrow">MISSION BRIEF / 峡谷索修</p>
+            <h2>三组滑轮，<br><span>一条回家的索。</span></h2>
+            <p class="brief-copy">沿峡谷索道更换三个导向滑轮。风力、吊篮摆动与工具载重都会改变进站角度；到站过速会撞击轮组，停在线中间则必须消耗回收索。</p>
+            <div class="brief-meta">
+              <div><span>固定 SEED</span><strong id="briefSeed">CANYON-805</strong></div>
+              <div><span>关卡指纹</span><strong id="briefFingerprint">00000000</strong></div>
+              <div><span>目标</span><strong>3 处 · 往返</strong></div>
+            </div>
+            <p class="brief-tip">每完成一处维修即写入检查点。失败可回到最近检查点；<kbd>R</kbd> 会恢复全部目标与资源。</p>
+            <div class="brief-actions">
+              <button id="startBtn" class="button primary large" type="button">开始作业 <span>ENTER</span></button>
+              <button id="briefDebugBtn" class="button ghost large" type="button">载入调试场景</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="pauseOverlay" class="overlay">
+          <div class="modal-card compact-modal">
+            <p class="eyebrow">PAUSED / 现场冻结</p>
+            <h2>作业已暂停</h2>
+            <p>风场、吊篮和检查点计时均已冻结。</p>
+            <div class="modal-actions">
+              <button id="resumeBtn" class="button primary" type="button">继续作业</button>
+              <button id="pauseRestartBtn" class="button ghost" type="button">完整重开</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="failOverlay" class="overlay">
+          <div class="modal-card fail-card">
+            <p class="eyebrow danger-text">INCIDENT / 作业中断</p>
+            <h2 id="failTitle">轮组撞击</h2>
+            <p id="failSummary">进站速度超过安全阈值。</p>
+            <div id="failDetails" class="fail-details"></div>
+            <div class="modal-actions">
+              <button id="continueBtn" class="button primary" type="button">从最近检查点继续</button>
+              <button id="recoverOverlayBtn" class="button recover" type="button" hidden>缓慢回收</button>
+              <button id="failRestartBtn" class="button ghost" type="button">恢复全部资源重开</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="winOverlay" class="overlay">
+          <div class="modal-card win-card">
+            <p class="eyebrow">ROUTE COMPLETE / 索道贯通</p>
+            <h2>三组滑轮已复位</h2>
+            <p>吊篮安全返回左岸。本局状态与资源结算已写入本地。</p>
+            <div id="winSummary" class="win-summary"></div>
+            <div class="modal-actions">
+              <button id="winRestartBtn" class="button primary" type="button">同 seed 再跑一局</button>
+              <button id="winDebugBtn" class="button ghost" type="button">查看调试场景</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel target-panel">
+          <div class="panel-heading">
+            <div><span class="panel-index">01</span><h2>维修目标</h2></div>
+            <strong id="progressValue" class="progress-value">0 / 3</strong>
+          </div>
+          <div id="targetCards" class="target-cards"></div>
+          <p id="targetHint" class="panel-note">前往 1 号导向轮组。提前制动，保持摆角稳定。</p>
+        </section>
+
+        <section class="panel resources-panel">
+          <div class="panel-heading">
+            <div><span class="panel-index">02</span><h2>剩余资源</h2></div>
+            <span class="panel-tag">LOCAL SAVE</span>
+          </div>
+          <div class="battery-line">
+            <div class="row-label"><span>驱动电量</span><strong id="batteryValue">100%</strong></div>
+            <div class="meter"><span id="batteryBar"></span></div>
+          </div>
+          <div class="resource-grid">
+            <div><span>SPARE BOLTS</span><strong id="spareValue">3</strong><small>备用螺栓</small></div>
+            <div><span>RECOVERY ROPE</span><strong id="ropeValue">2</strong><small>回收索</small></div>
+            <div><span>LOAD</span><strong id="loadValue">164 kg</strong><small>吊篮载重</small></div>
+          </div>
+        </section>
+
+        <section id="failurePanel" class="panel failure-panel" hidden>
+          <div class="panel-heading">
+            <div><span class="panel-index">!</span><h2>最近一次失败</h2></div>
+            <span class="panel-tag danger-text">INCIDENT</span>
+          </div>
+          <strong id="recentFailTitle">—</strong>
+          <p id="recentFailReason">—</p>
+          <span id="recentFailTime" class="fail-time">—</span>
+        </section>
+
+        <section class="panel telemetry-panel">
+          <div class="panel-heading">
+            <div><span class="panel-index">03</span><h2>吊篮遥测</h2></div>
+            <span class="live-text"><span class="live-dot"></span>LIVE</span>
+          </div>
+          <div class="telemetry-grid">
+            <div><span>索速</span><strong id="speedValue">0.000</strong><small>m/s</small></div>
+            <div><span>摆角</span><strong id="angleValue">0.0</strong><small>°</small></div>
+            <div><span>张力</span><strong id="tensionValue">0.93</strong><small>kN</small></div>
+            <div><span>音频</span><strong id="pitchValue">156</strong><small>Hz</small></div>
+          </div>
+          <div class="wind-readout">
+            <span>当前风向</span><strong id="windValue">→ 0.0 m/s</strong>
+            <span>下一阵风</span><strong id="gustValue">计算中</strong>
+          </div>
+          <div class="tension-strip"><span id="tensionBar"></span></div>
+          <p class="panel-note">张力改变钢索音频；载重越大，调平越迟缓，横风摆角越明显。</p>
+        </section>
+
+        <section class="panel route-panel">
+          <div class="panel-heading">
+            <div><span class="panel-index">04</span><h2>索道路径</h2></div>
+            <span class="panel-tag">TARGET PATH</span>
+          </div>
+          <svg id="routeSvg" viewBox="0 0 360 96" role="img" aria-label="索道路径与吊篮位置">
+            <defs>
+              <linearGradient id="routeGradient" x1="0" x2="1">
+                <stop offset="0" stop-color="#d9a441"/><stop offset="1" stop-color="#65b5a5"/>
+              </linearGradient>
+            </defs>
+            <path id="routeBase" class="route-base" d="M20 38 C90 65 270 65 340 38"></path>
+            <path id="routeDone" class="route-done" d="M20 38 C90 65 270 65 340 38"></path>
+            <g id="routeStations"></g>
+            <circle id="routeCar" class="route-car" cx="20" cy="38" r="6"></circle>
+          </svg>
+          <div class="route-axis"><span>L0</span><span>P1</span><span>P2</span><span>P3</span><span>归站</span></div>
+          <div class="route-meta"><span id="routePosition">位置 0.055</span><span id="routeScenario">标准巡回</span></div>
+        </section>
+
+        <section class="panel debug-panel">
+          <div class="panel-heading">
+            <div><span class="panel-index">05</span><h2>调试场景</h2></div>
+            <span class="panel-tag">REPRODUCIBLE</span>
+          </div>
+          <div class="scenario-list">
+            <button class="scenario-button" data-scenario="standard" type="button"><span>01</span><strong>标准巡回</strong><small>完整目标</small></button>
+            <button class="scenario-button" data-scenario="overspeed" type="button"><span>02</span><strong>过速撞轮</strong><small>P1 进站</small></button>
+            <button class="scenario-button" data-scenario="stranded" type="button"><span>03</span><strong>中线回收</strong><small>检查点 P1</small></button>
+          </div>
+          <dl class="debug-readout">
+            <div><dt>路径</dt><dd id="debugPath">L0 → P1 → P2 → P3 → L0</dd></div>
+            <div><dt>载重</dt><dd id="debugLoad">164 kg</dd></div>
+            <div><dt>风向</dt><dd id="debugWind">→ 0.0 m/s</dd></div>
+            <div><dt>障碍顺序</dt><dd id="debugObstacles">—</dd></div>
+          </dl>
+        </section>
+
+      </aside>
+    </main>
+
+    <footer class="statusbar">
+      <span id="statusClock">07:20 · 第 01 日</span>
+      <span id="statusSave">LOCAL SAVE READY</span>
+      <span id="statusEngine">CANVAS / DETERMINISTIC SEED ENGINE</span>
+    </footer>
+  </div>
+
+  <script src="js/seed.js"></script>
+  <script src="js/level.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

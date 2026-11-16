@@ -1,0 +1,13 @@
+{
+  "name": "canyon-cable-maintenance",
+  "version": "1.0.0",
+  "private": true,
+  "description": "峡谷索道三组滑轮维修 Canvas 游戏",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "node tests/verify.cjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.1"
+  }
+}
