@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <title>三粉配料包装仿真</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23e8bb63'/%3E%3Cpath d='M8 9h16v5H8zm2 7h12v8H10z' fill='%23111a22'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark">FB</span>
+          <div>
+            <h1>三粉配料 · 包装仓</h1>
+            <p>同一仿真时钟驱动生产、能耗与缓存</p>
+          </div>
+        </div>
+        <div class="clock-board" aria-label="仿真时钟">
+          <div class="clock-cell">
+            <span>仿真时钟</span>
+            <strong id="clockValue">000.0 s</strong>
+          </div>
+          <div class="clock-cell">
+            <span>运行状态</span>
+            <strong id="runState">待机</strong>
+          </div>
+          <div class="clock-cell">
+            <span>当前阶段</span>
+            <strong id="phaseValue">待配料</strong>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="ghost" id="soundButton" type="button" aria-pressed="false">声音：关</button>
+          <div class="success-lamp" id="successLamp" role="status">
+            <span></span>
+            <b id="successText">良品 0 / 3</b>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="plant-panel panel" aria-label="生产设备">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">LIVE PROCESS</span>
+              <h2>配料与包装线</h2>
+            </div>
+            <div class="canvas-legend" aria-hidden="true">
+              <span><i class="legend-good"></i>合格</span>
+              <span><i class="legend-flow"></i>粉流</span>
+              <span><i class="legend-warn"></i>联锁</span>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="plantCanvas" width="1120" height="620" aria-label="料仓、称重斗、混合机和包装仓动态画面"></canvas>
+            <div class="canvas-note">画面仅随仿真时钟变化；暂停时粉流与能耗同时冻结</div>
+          </div>
+        </section>
+
+        <aside class="control-panel panel" aria-label="操作控制台">
+          <div class="panel-heading compact">
+            <div>
+              <span class="eyebrow">CONTROL DESK</span>
+              <h2>操作台</h2>
+            </div>
+            <span class="phase-chip" id="batchChip">批次 #1</span>
+          </div>
+
+          <section class="control-group">
+            <div class="group-title">
+              <h3>订单配方</h3>
+              <span id="purgeBadge" class="mini-badge">管路已清空</span>
+            </div>
+            <div class="segmented" id="recipeButtons">
+              <button type="button" data-recipe="R1" class="active">R1 · 5:3:2</button>
+              <button type="button" data-recipe="R2">R2 · 2.5:4:3.5</button>
+            </div>
+            <p class="hint" id="recipeHint">目标比例 50% / 30% / 20%，另需清线确认后才能换配料。</p>
+          </section>
+
+          <section class="control-group">
+            <div class="group-title">
+              <h3>送料螺旋</h3>
+              <span class="hint">0–100%</span>
+            </div>
+            <label class="slider-row" for="speedA">
+              <span><i class="flour-dot dot-a"></i>高筋螺旋</span>
+              <input id="speedA" type="range" min="0" max="100" step="1" value="50" />
+              <output id="speedAValue">50%</output>
+            </label>
+            <label class="slider-row" for="speedB">
+              <span><i class="flour-dot dot-b"></i>中筋螺旋</span>
+              <input id="speedB" type="range" min="0" max="100" step="1" value="30" />
+              <output id="speedBValue">30%</output>
+            </label>
+            <label class="slider-row" for="speedC">
+              <span><i class="flour-dot dot-c"></i>低筋螺旋</span>
+              <input id="speedC" type="range" min="0" max="100" step="1" value="20" />
+              <output id="speedCValue">20%</output>
+            </label>
+            <p class="hint">任一螺旋超过 70% 会引入称重振荡；配比应按订单比例设置。</p>
+          </section>
+
+          <section class="control-group">
+            <div class="group-title">
+              <h3>混合时间</h3>
+              <span class="hint">8–60 s</span>
+            </div>
+            <label class="slider-row" for="mixTime">
+              <span>混合机</span>
+              <input id="mixTime" type="range" min="8" max="60" step="1" value="20" />
+              <output id="mixTimeValue">20 s</output>
+            </label>
+          </section>
+
+          <section class="control-group action-grid">
+            <button class="primary" id="startDosing" type="button">开始称重</button>
+            <button class="secondary" id="openGate" type="button">打开称重门</button>
+            <button class="secondary" id="startMixing" type="button">开始混合</button>
+            <button class="secondary" id="dischargeBatch" type="button">出料入仓</button>
+            <button class="warning" id="clearLine" type="button">清空余料</button>
+            <button class="warning" id="resumeProduction" type="button">恢复当前批次</button>
+          </section>
+
+          <section class="control-group">
+            <div class="group-title">
+              <h3>仿真控制</h3>
+              <span class="hint">固定步长 0.1 s</span>
+            </div>
+            <div class="sim-controls">
+              <button id="pauseButton" type="button">暂停检查</button>
+              <button id="stepButton" type="button">单步 +0.1s</button>
+              <button id="resetBatch" type="button">重置本批</button>
+              <button id="hardReset" type="button" class="danger">重开仿真</button>
+            </div>
+          </section>
+
+          <section class="control-group fault-box">
+            <div class="group-title">
+              <h3>故障注入</h3>
+              <span class="hint">验证停机与恢复</span>
+            </div>
+            <div class="fault-actions">
+              <button id="faultScrew" type="button">中筋螺旋卡料</button>
+              <button id="faultMixer" type="button">混合机过载</button>
+              <button id="repairScrew" type="button">修复中筋螺旋</button>
+              <button id="repairMixer" type="button">修复混合机</button>
+            </div>
+          </section>
+        </aside>
+
+        <section class="telemetry-panel panel" aria-label="实时指标">
+          <div class="metrics" id="metrics">
+            <article><span>当前功率</span><strong id="powerValue">0.00 kW</strong><small id="peakValue">峰值 0.00 kW</small></article>
+            <article><span>累计能耗</span><strong id="energyValue">0.000 kWh</strong><small>仅运行时钟累计</small></article>
+            <article><span>包装仓缓存</span><strong id="cacheValue">0.0 kg</strong><small id="cacheBatches">0 批</small></article>
+            <article><span>良品率</span><strong id="yieldValue">—</strong><small id="batchCounts">0 / 0 批</small></article>
+          </div>
+          <div class="process-detail">
+            <div>
+              <span class="eyebrow">WEIGHT HOPPER</span>
+              <strong id="weighReadout">0.000 kg</strong>
+              <span id="weighState" class="state-line">秤台稳定</span>
+            </div>
+            <div>
+              <span class="eyebrow">CURRENT BATCH</span>
+              <div class="ratio-bars" id="ratioBars"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="records-panel panel" aria-label="事件与批次记录">
+          <div class="records-column">
+            <div class="panel-heading compact">
+              <div>
+                <span class="eyebrow">EVENT JOURNAL</span>
+                <h2>设备与参数日志</h2>
+              </div>
+              <span class="log-count" id="eventCount">0 条</span>
+            </div>
+            <div class="event-log" id="eventLog" role="log" aria-live="polite"></div>
+          </div>
+          <div class="records-column">
+            <div class="panel-heading compact">
+              <div>
+                <span class="eyebrow">BATCH LEDGER</span>
+                <h2>批次结果</h2>
+              </div>
+            </div>
+            <div class="batch-list" id="batchList"></div>
+          </div>
+        </section>
+
+        <section class="validation-panel panel" aria-label="自动验收">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">VERIFICATION LAB</span>
+              <h2>正常 / 越限 / 停机验收</h2>
+              <p class="hint">在独立仿真实例中驱动真实内核，记录触发时刻、当前值与恢复结果。</p>
+            </div>
+            <button class="primary" id="runValidation" type="button">运行三类验收</button>
+          </div>
+          <div class="validation-grid" id="validationGrid">
+            <article class="validation-card placeholder"><b>正常生产</b><span>尚未运行</span></article>
+            <article class="validation-card placeholder"><b>参数越限</b><span>尚未运行</span></article>
+            <article class="validation-card placeholder"><b>设备停机</b><span>尚未运行</span></article>
+          </div>
+          <div class="export-row">
+            <button id="exportReport" type="button">导出报告 JSON</button>
+            <button id="exportEvents" type="button">导出事件 CSV</button>
+            <button id="exportBatches" type="button">导出批次 CSV</button>
+            <span id="exportStatus">报告包含良品数、良品率、峰值、停机原因与异常位置。</span>
+          </div>
+        </section>
+      </main>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

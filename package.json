@@ -1,0 +1,12 @@
+{
+  "name": "flour-blending-simulator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Canvas flour blending and packaging line with a deterministic shared-time simulation.",
+  "scripts": {
+    "start": "node scripts/server.mjs",
+    "test": "node --test tests/*.test.js",
+    "verify": "node scripts/verify.mjs"
+  }
+}
