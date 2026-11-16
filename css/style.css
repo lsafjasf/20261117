@@ -1,0 +1,137 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  background: #10151d;
+  color: #d9e1ec;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #17202c;
+  border-bottom: 1px solid #243142;
+}
+.topbar h1 { font-size: 18px; margin: 0; }
+.clock { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.clock strong { font-variant-numeric: tabular-nums; color: #7dd3fc; }
+.badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+.badge-running { background: #14532d; color: #86efac; }
+.badge-paused { background: #3f2d12; color: #fcd34d; }
+.badge-done { background: #1e3a5f; color: #93c5fd; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 14px;
+  padding: 14px;
+}
+.panel {
+  background: #17202c;
+  border: 1px solid #243142;
+  border-radius: 10px;
+  padding: 14px;
+}
+#lineCanvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #0c1118;
+  border-radius: 8px;
+}
+.canvas-legend {
+  display: flex;
+  gap: 18px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+.dot-good { background: #4ade80; }
+.dot-bad { background: #f87171; }
+.dot-buffer { background: #64748b; }
+.dot-heat { background: #fb923c; }
+
+.side-panel h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #7dd3fc;
+  margin: 16px 0 8px;
+}
+.side-panel h2:first-child { margin-top: 0; }
+.control label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.control label b { color: #e2e8f0; }
+.control label em { font-style: normal; color: #64748b; font-size: 11px; }
+.control input[type="range"] { width: 100%; }
+.control.out-of-limit label b { color: #f87171; }
+.control.out-of-limit { background: #2a1717; border-radius: 6px; padding: 6px; }
+
+button {
+  background: #243142;
+  color: #dbe6f3;
+  border: 1px solid #33445c;
+  border-radius: 6px;
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+button:hover { background: #2d3d52; }
+button.primary { background: #1d4ed8; border-color: #2563eb; }
+button.primary:hover { background: #2563eb; }
+button.danger { background: #7f1d1d; border-color: #b91c1c; }
+button.danger:hover { background: #991b1b; }
+.equipment, .sim-controls, .scenarios, .exports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.eq-btn { flex: 1 1 100%; text-align: left; }
+.eq-on { border-left: 3px solid #4ade80; }
+.eq-off { border-left: 3px solid #f87171; background: #2a1717; }
+.speed, .mute { font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 4px; }
+.speed select { background: #243142; color: #dbe6f3; border: 1px solid #33445c; border-radius: 6px; padding: 4px; }
+
+.stats-panel {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin: 0 14px 14px;
+}
+.stat {
+  background: #17202c;
+  border: 1px solid #243142;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+.stat span { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+.stat strong { font-size: 18px; color: #7dd3fc; font-variant-numeric: tabular-nums; }
+
+.log-panel { margin: 0 14px 18px; }
+.log-head { display: flex; justify-content: space-between; align-items: center; }
+.log-head h2 { font-size: 13px; color: #7dd3fc; margin: 0 0 8px; }
+.event-log {
+  height: 220px;
+  overflow-y: auto;
+  background: #0c1118;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.log-row { display: flex; gap: 10px; border-bottom: 1px dashed #1c2735; }
+.log-t { color: #64748b; min-width: 64px; font-variant-numeric: tabular-nums; }
+.log-type { min-width: 150px; color: #93c5fd; }
+.log-row.DEFECT .log-type, .log-row.PARAM_OUT_OF_LIMIT .log-type,
+.log-row.EQUIPMENT_STOP .log-type { color: #f87171; }
+.log-row.BATCH_COMPLETE .log-type { color: #4ade80; }
+.log-msg { color: #cbd5e1; }

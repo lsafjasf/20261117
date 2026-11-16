@@ -1,0 +1,29 @@
+{
+  "name": "uid813",
+  "version": "1.0.0",
+  "description": "板材热压生产线离散事件仿真（Canvas + WebAudio）",
+  "main": "js/simulation.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node tests/scenarios.js && node tests/browser-smoke.js",
+    "test:scenarios": "node tests/scenarios.js",
+    "test:browser": "node tests/browser-smoke.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsafjasf/20261117.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lsafjasf/20261117/issues"
+  },
+  "homepage": "https://github.com/lsafjasf/20261117#readme",
+  "devDependencies": {
+    "jsdom": "^31.0.1"
+  }
+}

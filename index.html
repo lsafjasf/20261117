@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>板材热压生产线仿真</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>板材热压生产线仿真</h1>
+    <div class="clock">
+      <span>仿真时钟</span>
+      <strong id="simClock">0.00 s</strong>
+      <span id="runState" class="badge badge-paused">已暂停</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel canvas-panel">
+      <canvas id="lineCanvas" width="960" height="420"></canvas>
+      <div class="canvas-legend">
+        <span><i class="dot dot-good"></i>良品</span>
+        <span><i class="dot dot-bad"></i>缺陷/废品</span>
+        <span><i class="dot dot-buffer"></i>缓存位</span>
+        <span><i class="dot dot-heat"></i>热区</span>
+      </div>
+    </section>
+
+    <aside class="panel side-panel">
+      <h2>工艺参数</h2>
+      <div class="control" id="ctrl-moisture">
+        <label>含水率 <b id="val-moisture">8%</b><em>安全区 6–12%</em></label>
+        <input type="range" id="rng-moisture" min="4" max="14" step="0.5" value="8">
+      </div>
+      <div class="control" id="ctrl-pressure">
+        <label>压力 <b id="val-pressure">3.2 MPa</b><em>安全区 2.5–4.0 MPa</em></label>
+        <input type="range" id="rng-pressure" min="1.5" max="5.0" step="0.1" value="3.2">
+      </div>
+      <div class="control" id="ctrl-holdTime">
+        <label>保温时间 <b id="val-holdTime">8 s</b><em>安全区 6–12 s</em></label>
+        <input type="range" id="rng-holdTime" min="3" max="14" step="1" value="8">
+      </div>
+
+      <h2>设备启停</h2>
+      <div class="equipment">
+        <button class="eq-btn eq-on" data-eq="former">铺装机 运行中</button>
+        <button class="eq-btn eq-on" data-eq="heater">蒸汽预热器 运行中</button>
+        <button class="eq-btn eq-on" data-eq="pump">液压泵 运行中</button>
+      </div>
+
+      <h2>仿真控制</h2>
+      <div class="sim-controls">
+        <button id="btnPlay" class="primary">运行</button>
+        <button id="btnPause">暂停</button>
+        <button id="btnStep">单步</button>
+        <button id="btnReset" class="danger">批次重置</button>
+        <label class="speed">速度
+          <select id="selSpeed">
+            <option value="250">1×</option>
+            <option value="125">2×</option>
+            <option value="50">5×</option>
+          </select>
+        </label>
+        <label class="mute"><input type="checkbox" id="chkMute"> 静音</label>
+      </div>
+
+      <h2>场景验证</h2>
+      <div class="scenarios">
+        <button data-scenario="normal">正常生产</button>
+        <button data-scenario="outOfLimit">参数越限</button>
+        <button data-scenario="downtime">设备停机</button>
+      </div>
+
+      <h2>导出</h2>
+      <div class="exports">
+        <button id="btnExportJson">导出 JSON 报告</button>
+        <button id="btnExportCsv">导出事件 CSV</button>
+      </div>
+    </aside>
+  </main>
+
+  <section class="panel stats-panel">
+    <div class="stat"><span>良品数</span><strong id="statGood">0</strong></div>
+    <div class="stat"><span>废品数</span><strong id="statReject">0</strong></div>
+    <div class="stat"><span>良品率</span><strong id="statYield">—</strong></div>
+    <div class="stat"><span>峰值功率</span><strong id="statPeakKW">0 kW</strong></div>
+    <div class="stat"><span>峰值压力</span><strong id="statPeakP">0 MPa</strong></div>
+    <div class="stat"><span>累计能耗</span><strong id="statEnergy">0 kWh</strong></div>
+    <div class="stat"><span>液压泵功率</span><strong id="statPumpKW">0 kW</strong></div>
+  </section>
+
+  <section class="panel log-panel">
+    <div class="log-head">
+      <h2>事件日志（设备启停 / 参数变化 / 缺陷 / 批次结果）</h2>
+      <button id="btnClearLog" title="仅清空显示，仿真事件仍保留">清空显示</button>
+    </div>
+    <div id="eventLog" class="event-log"></div>
+  </section>
+
+  <script src="js/simulation.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
