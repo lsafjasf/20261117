@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>双人风筝航拍协作</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #10151f; color: #dfe6f0; font-family: "Microsoft YaHei", sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+  header { width: 1060px; display: flex; justify-content: space-between; align-items: center; padding: 8px 4px; }
+  header h1 { font-size: 18px; color: #8fd3ff; }
+  #topbar { display: flex; gap: 14px; align-items: center; font-size: 14px; }
+  .pill { background: #1c2635; border: 1px solid #33405a; border-radius: 6px; padding: 4px 10px; }
+  #countdown { color: #ffd166; font-weight: bold; font-size: 16px; }
+  #phase { color: #8fd3ff; }
+  button { background: #24334a; color: #dfe6f0; border: 1px solid #3b4c6b; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 13px; }
+  button:hover { background: #2f4258; }
+  button.warn { border-color: #a5524a; color: #ffb3ab; }
+  main { display: flex; gap: 10px; }
+  .panel { width: 210px; background: #16202e; border: 1px solid #2b3a52; border-radius: 8px; padding: 10px; font-size: 13px; }
+  .panel h2 { font-size: 15px; margin-bottom: 6px; }
+  .panel.line h2 { color: #7ee2a8; }
+  .panel.gimbal h2 { color: #ffb26b; }
+  .gauge { margin: 8px 0; }
+  .gauge label { display: flex; justify-content: space-between; font-size: 12px; color: #9fb0c8; }
+  .bar { position: relative; height: 12px; background: #0d141f; border: 1px solid #33405a; border-radius: 4px; overflow: hidden; margin-top: 2px; }
+  .bar .fill { position: absolute; top: 0; bottom: 0; left: 0; background: #4da3ff; }
+  .bar .band { position: absolute; top: 0; bottom: 0; background: rgba(126, 226, 168, .25); }
+  .bar .mark { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #ffd166; }
+  .keys { margin-top: 8px; font-size: 12px; color: #9fb0c8; line-height: 1.7; }
+  .keys b { color: #dfe6f0; background: #24334a; border-radius: 4px; padding: 1px 6px; }
+  .protect { display: none; margin-top: 8px; padding: 4px 6px; border: 1px solid #a5524a; color: #ffb3ab; border-radius: 6px; font-size: 12px; }
+  .protect.on { display: block; }
+  #stage { position: relative; }
+  canvas#main { background: #0b1a2b; border: 1px solid #2b3a52; border-radius: 8px; display: block; }
+  #overlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; background: rgba(8, 12, 20, .72); border-radius: 8px; text-align: center; }
+  #overlay.on { display: flex; }
+  #overlay h3 { font-size: 26px; margin-bottom: 8px; }
+  #viewfinder { width: 100%; background: #0d141f; border: 1px solid #33405a; border-radius: 6px; margin-top: 6px; }
+  #log { width: 1060px; height: 110px; overflow-y: auto; background: #0d141f; border: 1px solid #2b3a52; border-radius: 8px; margin: 8px 0 16px; padding: 6px 10px; font-size: 12px; line-height: 1.6; }
+  #log .line-side { color: #7ee2a8; }
+  #log .gimbal-side { color: #ffb26b; }
+  #log .sys-side { color: #9fb0c8; }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; border-radius: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>双人风筝航拍协作</h1>
+  <div id="topbar">
+    <span class="pill">倒计时 <span id="countdown">240</span>s</span>
+    <span class="pill" id="phase">阶段：航拍测点</span>
+    <span class="pill" id="progress">测点 0/3</span>
+    <span class="pill" id="mode">双人模式</span>
+    <button id="btnPause">暂停(P)</button>
+    <button id="btnRestart">重开(R)</button>
+    <button id="btnDebug">单人调试(T)</button>
+    <button id="btnReplay">回放(B)</button>
+    <button id="btnSave">保存回放</button>
+  </div>
+</header>
+<main>
+  <div class="panel line" id="panelLine">
+    <h2>线手（玩家A）</h2>
+    <div class="gauge"><label>线长 <span id="vLineL"></span></label><div class="bar"><div class="fill" id="barLine"></div></div></div>
+    <div class="gauge"><label>张力 <span id="vTension"></span></label><div class="bar"><div class="band" id="tensionBand"></div><div class="fill" id="barTension"></div></div></div>
+    <div class="gauge"><label>风速 <span id="vWind"></span></label><div class="bar"><div class="fill" id="barWind" style="background:#8fd3ff"></div></div></div>
+    <div class="keys">职责：控制线长与张力<br><b>A</b> 收线　<b>D</b> 放线<br>太松会失速，太紧会断线</div>
+    <div class="protect" id="protLine">保护状态：该侧已断开/超时，自动保持中</div>
+    <button class="warn" id="btnDcLine" style="margin-top:8px">模拟线手断开</button>
+  </div>
+  <div id="stage">
+    <canvas id="main" width="620" height="520"></canvas>
+    <div id="flash"></div>
+    <div id="overlay"><h3 id="ovTitle"></h3><p id="ovText"></p></div>
+  </div>
+  <div class="panel gimbal" id="panelGimbal">
+    <h2>云台手（玩家B）</h2>
+    <div class="gauge"><label>取景模糊 <span id="vBlur"></span></label><div class="bar"><div class="mark" id="blurMark"></div><div class="fill" id="barBlur" style="background:#ffb26b"></div></div></div>
+    <div class="gauge"><label>剩余快门 <span id="vShots"></span></label></div>
+    <div class="gauge"><label>当前目标 <span id="vTarget"></span></label></div>
+    <canvas id="viewfinder" width="188" height="150"></canvas>
+    <div class="keys">职责：转动云台取景拍摄<br><b>←→↑↓</b> 转动　<b>空格</b> 快门<br>转太快画面会模糊</div>
+    <div class="protect" id="protGimbal">保护状态：该侧已断开/超时，自动锁定中</div>
+    <button class="warn" id="btnDcGimbal" style="margin-top:8px">模拟云台断开</button>
+  </div>
+</main>
+<div id="log"></div>
+<script src="sim.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
