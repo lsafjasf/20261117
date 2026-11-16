@@ -1,0 +1,25 @@
+{
+  "name": "contour-studio",
+  "version": "1.0.0",
+  "description": "Procedural terrain to editable contour line-art studio",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node tests/run.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "serve": "python3 -m http.server 8931"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsafjasf/20261117.git"
+  },
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/lsafjasf/20261117/issues"
+  },
+  "homepage": "https://github.com/lsafjasf/20261117#readme",
+  "dependencies": {
+    "playwright-core": "^1.65.1"
+  }
+}
