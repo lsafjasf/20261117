@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="可锁色、可撤销、可平铺的无缝纹样编辑器，支持 Canvas 预览和可编辑 SVG 导出。"
+    />
+    <title>接缝配色工坊 · Seamless Pattern Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <a class="brand" href="./" aria-label="接缝配色工坊首页">
+        <span class="brand-mark" aria-hidden="true"><i></i></span>
+        <span class="brand-copy">
+          <span class="eyebrow">SEAMLESS PATTERN STUDIO</span>
+          <span class="brand-title">接缝配色工坊</span>
+        </span>
+      </a>
+
+      <label class="project-name-field">
+        <span>工程名</span>
+        <input
+          id="projectName"
+          data-field="name"
+          type="text"
+          maxlength="60"
+          autocomplete="off"
+          aria-label="工程名"
+        />
+      </label>
+
+      <nav class="header-actions" aria-label="工程操作">
+        <div class="button-cluster" aria-label="历史记录">
+          <button id="undoButton" class="icon-button" type="button" title="撤销 (Ctrl+Z)" aria-label="撤销">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 4 12l5 5M5 12h8a5 5 0 1 1 0 10" /></svg>
+          </button>
+          <button id="redoButton" class="icon-button" type="button" title="重做 (Ctrl+Shift+Z)" aria-label="重做">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 7 5 5-5 5m4-5h-8a5 5 0 1 0 0 10" /></svg>
+          </button>
+        </div>
+        <div class="button-cluster" aria-label="保存操作">
+          <button id="saveButton" class="soft-button" type="button" title="保存到本机 (Ctrl+S)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l2 2v16H5zM8 3v6h8V3M8 21v-7h8v7" /></svg>
+            保存
+          </button>
+          <button id="reloadButton" class="soft-button" type="button" title="重新载入上次保存">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 9a7 7 0 0 1 11-2l3 3M18 15a7 7 0 0 1-11 2l-3-3" /></svg>
+            重新载入
+          </button>
+        </div>
+        <div class="button-cluster export-cluster" aria-label="导出">
+          <button id="exportSvgButton" class="export-button" type="button">导出 SVG</button>
+          <button id="exportPngButton" class="export-button export-button--alt" type="button">导出 PNG</button>
+        </div>
+      </nav>
+
+      <div id="saveStatus" class="save-status" role="status">
+        <span class="save-dot" aria-hidden="true"></span>
+        <span id="saveStatusText">尚未保存</span>
+      </div>
+    </header>
+
+    <div class="studio-shell">
+      <aside class="sidebar" aria-label="纹样设置">
+        <div class="sidebar-intro">
+          <div>
+            <span class="section-kicker">REPEAT UNIT</span>
+            <h1>一次设计，三套配色</h1>
+          </div>
+          <span class="version-badge">v1.0</span>
+        </div>
+        <div id="sidebarSections"></div>
+      </aside>
+
+      <main class="workspace">
+        <div class="workspace-toolbar">
+          <div class="preview-heading">
+            <span class="section-kicker">LIVE CANVAS</span>
+            <div>
+              <strong id="activeSchemeName">晨雾</strong>
+              <span id="tileDimensionLabel">512 × 512 px</span>
+            </div>
+          </div>
+          <div id="validationSummary" class="validation-summary" role="status"></div>
+          <div class="zoom-controls" aria-label="画布缩放">
+            <button id="zoomOutButton" class="mini-button" type="button" aria-label="缩小">−</button>
+            <label>
+              <span class="sr-only">缩放比例</span>
+              <input id="zoomRange" type="range" min="25" max="300" step="5" value="75" />
+            </label>
+            <output id="zoomOutput">75%</output>
+            <button id="zoomInButton" class="mini-button" type="button" aria-label="放大">+</button>
+            <button id="fitButton" class="fit-button" type="button">适应</button>
+          </div>
+        </div>
+
+        <div class="canvas-grid">
+          <section class="canvas-card tile-card" aria-labelledby="tileHeading">
+            <div class="canvas-card-header">
+              <div>
+                <span class="card-index">01</span>
+                <h2 id="tileHeading">单元画布</h2>
+              </div>
+              <span class="canvas-badge">重复单元</span>
+            </div>
+            <div id="tileStage" class="canvas-stage canvas-stage--tile">
+              <canvas id="tileCanvas" aria-label="纹样单元 Canvas 预览"></canvas>
+            </div>
+            <p class="canvas-note">
+              纹样按九宫格重复绘制，跨越边缘的元素会在对侧继续。
+            </p>
+          </section>
+
+          <section class="canvas-card preview-card" aria-labelledby="previewHeading">
+            <div class="canvas-card-header">
+              <div>
+                <span class="card-index">02</span>
+                <h2 id="previewHeading">平铺预览</h2>
+              </div>
+              <label class="toggle-compact">
+                <input id="showSeams" data-field="canvas.showSeams" type="checkbox" />
+                <span>接缝参考线</span>
+              </label>
+            </div>
+            <div id="previewStage" class="canvas-stage canvas-stage--preview">
+              <canvas id="previewCanvas" aria-label="三乘三无缝平铺 Canvas 预览"></canvas>
+            </div>
+            <p class="canvas-note" id="previewNote">
+              3 × 3 连续铺贴；底色与图形在接缝两侧共用同一坐标。
+            </p>
+          </section>
+        </div>
+
+        <footer class="workspace-footer">
+          <div class="footer-stat">
+            <span>主色锁定</span>
+            <strong id="lockFooterState">已开启</strong>
+          </div>
+          <div class="footer-stat">
+            <span>当前配色</span>
+            <strong id="footerScheme">晨雾</strong>
+          </div>
+          <div class="footer-stat">
+            <span>历史步骤</span>
+            <strong id="historyCount">0 / 0</strong>
+          </div>
+          <p class="footer-hint">拖动缩放不会改变导出尺寸。SVG 保留文字与图形节点。</p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

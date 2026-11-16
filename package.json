@@ -1,0 +1,16 @@
+{
+  "name": "seamless-pattern-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Canvas seamless repeat editor with locked palettes and editable SVG export.",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test",
+    "test:e2e": "playwright test",
+    "check": "node --check src/app.js && node --check src/model.js && node --check src/palette.js && node --check src/render.js && node --check src/validation.js && node --check src/exporter.js && node --check src/sidebar.js && node --check src/utils.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1"
+  }
+}
