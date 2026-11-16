@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>四声道房间空间声场实验台</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="topbar">
+  <h1>四声道房间空间声场实验台</h1>
+  <div class="seg" id="modeSeg" role="group" aria-label="渲染模式">
+    <button data-mode="stereo" class="active">立体声</button>
+    <button data-mode="binaural">双耳</button>
+    <button data-mode="surround">环绕</button>
+  </div>
+  <div class="seg" id="auditionSeg" role="group" aria-label="试听状态">
+    <button data-audition="main" class="active">主输出</button>
+    <button data-audition="bypass">旁路</button>
+    <button data-audition="mute">静音</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="panel room-panel">
+    <div class="panel-head">
+      <h2>房间俯视图（可拖拽声源与监听点）</h2>
+      <span id="roomReadout" class="readout"></span>
+    </div>
+    <canvas id="roomCanvas" width="720" height="504"></canvas>
+    <div class="transport">
+      <button id="playBtn" class="primary">▶ 播放</button>
+      <button id="replayBtn">⟲ 重播</button>
+      <button id="stepBtn">⏭ 单步</button>
+      <label>BPM <input id="bpmInput" type="number" min="40" max="240" value="100" /></label>
+      <span id="stepReadout" class="readout">节拍 0/8</span>
+      <span id="nodeReadout" class="readout">活动节点 0</span>
+      <span id="stateReadout" class="readout">已停止</span>
+    </div>
+  </section>
+
+  <section class="panel side-panel">
+    <div class="panel-head"><h2>声源参数</h2></div>
+    <div id="sourceEditor"></div>
+    <div class="panel-head"><h2>墙面反射（混响）</h2></div>
+    <label class="slider-row">混响量 <input id="reverbMix" type="range" min="0" max="0.8" step="0.01" value="0.28" /> <b id="reverbMixVal">0.28</b></label>
+    <label class="slider-row">衰减时间 <input id="reverbDecay" type="range" min="0.2" max="4" step="0.1" value="1.6" /> <b id="reverbDecayVal">1.6s</b></label>
+
+    <div class="panel-head"><h2>电平 / 频段 / 声道</h2></div>
+    <div id="meters"></div>
+  </section>
+
+  <section class="panel export-panel">
+    <div class="panel-head"><h2>导出与验证</h2></div>
+    <div class="btn-row">
+      <button id="exportWavBtn">导出 WAV</button>
+      <button id="saveParamsBtn">保存参数</button>
+      <button id="loadParamsBtn">载入参数</button>
+      <input id="paramFile" type="file" accept="application/json" hidden />
+    </div>
+    <div class="btn-row">
+      <button id="snapshotBtn" class="primary">采集验证快照</button>
+      <button id="cleanCheckBtn">节点清洁自检</button>
+    </div>
+    <div id="verifyPanel" class="verify"></div>
+    <div class="panel-head"><h2>导出对比</h2></div>
+    <div id="comparePanel" class="verify"></div>
+    <div id="logPanel" class="log"></div>
+  </section>
+</main>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
