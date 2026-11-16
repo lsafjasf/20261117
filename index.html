@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>栖息地适宜性地图</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header>
+    <h1>栖息地适宜性地图 <span class="sub">高程 · 植被 · 水源 三因子加权</span></h1>
+    <div id="statusBar" class="status-bar">加载中…</div>
+  </header>
+
+  <main>
+    <section class="col sidebar">
+      <div id="summaryPanel" class="panel"></div>
+
+      <div class="panel">
+        <div class="panel-title">时间窗口</div>
+        <select id="windowSelect"></select>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">因子权重（自动归一化）</div>
+        <label>高程 <input type="range" id="w_elevation" min="0" max="1" step="0.01" value="0.34">
+          <span id="w_elevation_val"></span></label>
+        <label>植被 <input type="range" id="w_ndvi" min="0" max="1" step="0.01" value="0.33">
+          <span id="w_ndvi_val"></span></label>
+        <label>水源 <input type="range" id="w_water" min="0" max="1" step="0.01" value="0.33">
+          <span id="w_water_val"></span></label>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">筛选条件</div>
+        <label class="block">最低适宜度
+          <input type="range" id="scoreRange" min="0" max="1" step="0.01" value="0">
+          <span id="scoreRangeVal"></span>
+        </label>
+        <label class="block">高程区间(m)
+          <input type="number" id="elevMin" min="0" max="2600" value="0" class="num">
+          –
+          <input type="number" id="elevMax" min="0" max="2600" value="2600" class="num">
+        </label>
+        <div class="block">
+          <label class="inline"><input type="checkbox" class="level-check" value="high" checked>高适宜</label>
+          <label class="inline"><input type="checkbox" class="level-check" value="medium" checked>中适宜</label>
+          <label class="inline"><input type="checkbox" class="level-check" value="low" checked>低适宜</label>
+          <label class="inline"><input type="checkbox" class="level-check" value="poor" checked>不适宜</label>
+        </div>
+        <div class="btn-row">
+          <button id="resetFilter">重置筛选</button>
+          <button id="emptyTest" class="warn">空结果测试</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">统计与聚合口径</div>
+        <label class="block">统计口径
+          <select id="statsMode">
+            <option value="filtered">筛选后网格</option>
+            <option value="all">全部网格</option>
+          </select>
+        </label>
+        <label class="block">聚合维度
+          <select id="aggSelect">
+            <option value="level">按适宜等级</option>
+            <option value="row">按网格行</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="col center">
+      <div class="map-toolbar">
+        <button id="zoomOut">－</button>
+        <span id="zoomVal">1.0×</span>
+        <button id="zoomIn">＋</button>
+        <button id="zoomReset">复位视图</button>
+        <button id="exportBtn" class="primary">导出 PNG</button>
+      </div>
+      <canvas id="mapCanvas" width="720" height="560"></canvas>
+      <canvas id="legendCanvas" width="720" height="30"></canvas>
+      <div class="panel">
+        <div class="panel-title">适宜度分布与累计曲线（同源数据）</div>
+        <canvas id="histCanvas" width="720" height="220"></canvas>
+      </div>
+    </section>
+
+    <section class="col sidebar">
+      <div id="statsPanel" class="panel"></div>
+      <div id="detailPanel" class="panel"></div>
+      <div id="aggPanel" class="panel"></div>
+      <div id="listPanel" class="panel list"></div>
+      <div class="panel">
+        <div class="panel-title">导出日志</div>
+        <div id="exportLog"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

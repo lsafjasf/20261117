@@ -1,0 +1,11 @@
+{
+  "name": "habitat-suitability-map",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "高程/植被/水源三因子栖息地适宜性地图（Canvas，可调权重，可导出 PNG）",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "serve": "python3 -m http.server 8080"
+  }
+}
