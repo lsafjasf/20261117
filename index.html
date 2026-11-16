@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="根据书名、作者和主题色排版书封，支持撤销、保存、PNG 与可编辑 SVG 导出。"
+    />
+    <title>Folio 书封工坊</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand" aria-label="Folio 书封工坊">
+        <span class="brand-mark">F</span>
+        <span class="brand-copy">
+          <strong>FOLIO</strong>
+          <small>书封工坊</small>
+        </span>
+      </div>
+
+      <div class="history-actions" role="group" aria-label="历史记录">
+        <button class="icon-button" id="undoButton" type="button" title="撤销 (Ctrl+Z)" disabled>
+          <span aria-hidden="true">↶</span><span>撤销</span>
+        </button>
+        <button class="icon-button" id="redoButton" type="button" title="重做 (Ctrl+Shift+Z)" disabled>
+          <span aria-hidden="true">↷</span><span>重做</span>
+        </button>
+      </div>
+
+      <div class="top-actions">
+        <span class="save-state" id="saveState">尚未保存</span>
+        <button class="button button-quiet" id="saveButton" type="button" title="保存到本机 (Ctrl+S)">
+          保存
+        </button>
+        <button class="button button-quiet" id="reloadButton" type="button">重新载入</button>
+        <button class="button button-quiet" id="exportSvgButton" type="button">导出 SVG</button>
+        <button class="button button-primary" id="exportPngButton" type="button">导出 PNG</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="panel panel-left" aria-label="封面设置">
+        <section class="control-section">
+          <div class="section-heading">
+            <span class="section-index">01</span>
+            <h2>内容</h2>
+          </div>
+          <label class="field">
+            <span class="field-label">书名</span>
+            <textarea id="titleInput" rows="4" spellcheck="false"></textarea>
+          </label>
+          <div class="field-row">
+            <label class="field">
+              <span class="field-label">作者</span>
+              <input id="authorInput" type="text" spellcheck="false" />
+            </label>
+          </div>
+        </section>
+
+        <section class="control-section">
+          <div class="section-heading">
+            <span class="section-index">02</span>
+            <h2>主题色</h2>
+          </div>
+          <div class="color-grid">
+            <label class="color-field">
+              <input id="backgroundInput" type="color" />
+              <span>底色</span>
+            </label>
+            <label class="color-field">
+              <input id="inkInput" type="color" />
+              <span>文字</span>
+            </label>
+            <label class="color-field">
+              <input id="accentInput" type="color" />
+              <span>插图</span>
+            </label>
+          </div>
+          <div class="palette-list" id="paletteList" aria-label="配色方案"></div>
+        </section>
+
+        <section class="control-section">
+          <div class="section-heading">
+            <span class="section-index">03</span>
+            <h2>网格与尺寸</h2>
+          </div>
+          <label class="field">
+            <span class="field-label">画布预设</span>
+            <select id="sizePreset">
+              <option value="standard">标准书封 · 1200 × 1800</option>
+              <option value="pocket">口袋书 · 600 × 900</option>
+              <option value="mini">极小尺寸 · 240 × 360</option>
+              <option value="custom">自定义</option>
+            </select>
+          </label>
+          <div class="field-row">
+            <label class="field">
+              <span class="field-label">宽 px</span>
+              <input id="widthInput" type="number" min="120" max="4000" step="10" />
+            </label>
+            <label class="field">
+              <span class="field-label">高 px</span>
+              <input id="heightInput" type="number" min="180" max="6000" step="10" />
+            </label>
+          </div>
+          <label class="range-field">
+            <span class="field-label">网格列数 <output id="columnsOutput"></output></span>
+            <input id="columnsInput" type="range" min="3" max="12" step="1" />
+          </label>
+          <label class="range-field">
+            <span class="field-label">网格行数 <output id="rowsOutput"></output></span>
+            <input id="rowsInput" type="range" min="4" max="16" step="1" />
+          </label>
+          <label class="range-field">
+            <span class="field-label">安全边距 <output id="marginOutput"></output></span>
+            <input id="marginInput" type="range" min="4" max="14" step="1" />
+          </label>
+          <div class="toggle-row">
+            <label class="check-field">
+              <input id="showGridInput" type="checkbox" />
+              <span>显示网格</span>
+            </label>
+            <label class="check-field">
+              <input id="showSafeInput" type="checkbox" />
+              <span>显示安全边距</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="control-section">
+          <div class="section-heading">
+            <span class="section-index">04</span>
+            <h2>字体</h2>
+          </div>
+          <label class="field">
+            <span class="field-label">字体家族</span>
+            <select id="fontInput">
+              <option value="serif">文学衬线</option>
+              <option value="display">粗体展示</option>
+              <option value="sans">现代无衬线</option>
+              <option value="mono">等宽字体</option>
+            </select>
+          </label>
+          <label class="range-field">
+            <span class="field-label">书名大小 <output id="titleScaleOutput"></output></span>
+            <input id="titleScaleInput" type="range" min="70" max="135" step="1" />
+          </label>
+          <label class="range-field">
+            <span class="field-label">行高 <output id="lineHeightOutput"></output></span>
+            <input id="lineHeightInput" type="range" min="85" max="130" step="1" />
+          </label>
+          <label class="range-field">
+            <span class="field-label">字距 <output id="letterSpacingOutput"></output></span>
+            <input id="letterSpacingInput" type="range" min="-4" max="12" step="1" />
+          </label>
+          <div class="field">
+            <span class="field-label">对齐</span>
+            <div class="segmented" id="alignButtons" role="group" aria-label="文字对齐">
+              <button type="button" data-align="left">左</button>
+              <button type="button" data-align="center">中</button>
+              <button type="button" data-align="right">右</button>
+            </div>
+          </div>
+          <label class="check-field check-wide">
+            <input id="autoFitInput" type="checkbox" />
+            <span>书名自动缩小以容纳长标题</span>
+          </label>
+        </section>
+
+        <section class="control-section">
+          <div class="section-heading">
+            <span class="section-index">05</span>
+            <h2>插图与文字框</h2>
+          </div>
+          <label class="field">
+            <span class="field-label">插图图形</span>
+            <select id="illustrationStyle">
+              <option value="arch">拱门与月</option>
+              <option value="orbit">轨道</option>
+              <option value="bloom">花瓣</option>
+              <option value="none">不使用插图</option>
+            </select>
+          </label>
+          <label class="range-field">
+            <span class="field-label">插图大小 <output id="illustrationScaleOutput"></output></span>
+            <input id="illustrationScaleInput" type="range" min="50" max="150" step="1" />
+          </label>
+          <label class="range-field">
+            <span class="field-label">标题框宽度 <output id="titleWidthOutput"></output></span>
+            <input id="titleWidthInput" type="range" min="40" max="100" step="1" />
+          </label>
+          <label class="range-field">
+            <span class="field-label">标题框高度 <output id="titleHeightOutput"></output></span>
+            <input id="titleHeightInput" type="range" min="18" max="62" step="1" />
+          </label>
+          <p class="hint">也可以直接在画布上拖动标题、作者或插图，网格开启时自动吸附。</p>
+        </section>
+      </aside>
+
+      <section class="stage-panel" aria-label="封面预览">
+        <div class="stage-toolbar">
+          <div class="preview-label">
+            <span class="live-dot" aria-hidden="true"></span>
+            <strong>实时预览</strong>
+            <span id="dimensionLabel"></span>
+          </div>
+          <div class="zoom-controls" role="group" aria-label="缩放">
+            <button class="mini-button" id="zoomOutButton" type="button" aria-label="缩小">−</button>
+            <output id="zoomOutput">75%</output>
+            <button class="mini-button" id="zoomInButton" type="button" aria-label="放大">+</button>
+            <button class="mini-button zoom-fit" id="zoomFitButton" type="button">适合</button>
+          </div>
+        </div>
+
+        <div class="canvas-stage" id="canvasStage">
+          <div class="canvas-bezel">
+            <canvas id="coverCanvas" aria-label="书封编辑画布"></canvas>
+          </div>
+        </div>
+
+        <section class="diagnostics" aria-live="polite">
+          <div class="diagnostics-head">
+            <div>
+              <span class="eyebrow">排版检查</span>
+              <h2 id="diagnosticsTitle">正在检查…</h2>
+            </div>
+            <span class="issue-summary" id="issueSummary"></span>
+          </div>
+          <div class="issue-list" id="issueList"></div>
+          <div class="diagnostics-ok" id="diagnosticsOk" hidden>
+            <span aria-hidden="true">✓</span>
+            <p>安全边距、文字换行与元素重叠检查均已通过。</p>
+          </div>
+        </section>
+      </section>
+
+      <aside class="panel panel-right" aria-label="预设与检查器">
+        <section class="control-section thumb-section">
+          <div class="section-heading compact">
+            <span class="section-index">A</span>
+            <h2>缩略图</h2>
+          </div>
+          <div class="thumb-frame">
+            <canvas id="thumbCanvas" aria-label="书封缩略图"></canvas>
+          </div>
+          <p class="hint">与全尺寸预览共用布局，取消勾选辅助线后可直接对照。</p>
+        </section>
+
+        <section class="control-section">
+          <div class="section-heading compact">
+            <span class="section-index">B</span>
+            <h2>测试案例</h2>
+          </div>
+          <div class="case-list" id="caseList">
+            <button class="case-card" type="button" data-case="standard">
+              <strong>标准案例</strong>
+              <span>1200 × 1800 · 短标题</span>
+            </button>
+            <button class="case-card" type="button" data-case="long">
+              <strong>极长文本</strong>
+              <span>自动换行与字号收缩</span>
+            </button>
+            <button class="case-card" type="button" data-case="mini">
+              <strong>极小尺寸</strong>
+              <span>240 × 360 · 安全边距</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="control-section">
+          <div class="section-heading compact">
+            <span class="section-index">C</span>
+            <h2>当前选中</h2>
+          </div>
+          <div class="selection-card" id="selectionCard">
+            <span class="selection-name" id="selectionName">未选择元素</span>
+            <div class="selection-actions" id="selectionActions" hidden>
+              <button class="mini-link" type="button" data-nudge="left">←</button>
+              <button class="mini-link" type="button" data-nudge="up">↑</button>
+              <button class="mini-link" type="button" data-nudge="down">↓</button>
+              <button class="mini-link" type="button" data-nudge="right">→</button>
+            </div>
+            <p class="hint" id="selectionHint">点击画布上的文字或插图即可移动。</p>
+          </div>
+        </section>
+
+        <section class="control-section shortcut-section">
+          <div class="section-heading compact">
+            <span class="section-index">D</span>
+            <h2>快捷键</h2>
+          </div>
+          <dl class="shortcut-list">
+            <div><dt>撤销</dt><dd>Ctrl Z</dd></div>
+            <div><dt>重做</dt><dd>Ctrl ⇧ Z</dd></div>
+            <div><dt>保存</dt><dd>Ctrl S</dd></div>
+            <div><dt>微调位置</dt><dd>方向键</dd></div>
+          </dl>
+        </section>
+      </aside>
+    </main>
+
+    <div class="toast-region" id="toastRegion" aria-live="assertive"></div>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
