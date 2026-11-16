@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>湿地水位管理模拟器 · 鸟类栖息地与碳储存权衡</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <h1>湿地水位管理模拟器</h1>
+    <span class="subtitle">浅水区鸟类保护 × 碳储存 · 一年期模拟</span>
+  </div>
+  <div class="controls">
+    <label>种子 <input id="seedInput" type="text" value="WETLAND-2026" size="12"></label>
+    <label>模式
+      <select id="modeSelect">
+        <option value="validation" selected>验证模式（脚本化处置）</option>
+        <option value="free">自由模式（手动干预）</option>
+      </select>
+    </label>
+    <label>速度
+      <select id="speedSelect">
+        <option value="1">1×</option>
+        <option value="4">4×</option>
+        <option value="16" selected>16×</option>
+        <option value="64">64×</option>
+      </select>
+    </label>
+    <button id="btnPlay" class="primary">▶ 连续运行</button>
+    <button id="btnStep">单步 1h</button>
+    <button id="btnBatch">验证跑批</button>
+    <button id="btnRepro">复现性自检</button>
+    <button id="btnReset">重置</button>
+    <button id="btnSound">🔊 声音开</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="stage-head">
+      <div id="clock" class="clock">--</div>
+      <div id="weather" class="weather">--</div>
+      <div id="runStatus" class="run-status">已重置</div>
+    </div>
+    <canvas id="wetlandCanvas" width="960" height="440"></canvas>
+    <div class="intervene">
+      <span class="intervene-title">当前干预</span>
+      <button id="btnGate">排水闸：关</button>
+      <div class="pump-group">
+        补水流量
+        <button data-pump="0" class="pump-btn active">关</button>
+        <button data-pump="1" class="pump-btn">低 (1 cm/h)</button>
+        <button data-pump="2" class="pump-btn">高 (2 cm/h)</button>
+      </div>
+      <button id="btnHarvest">芦苇收割</button>
+      <span id="interveneHint" class="intervene-hint"></span>
+    </div>
+  </section>
+
+  <aside class="sidebar">
+    <section class="panel">
+      <h2>环境指标 <span class="legend">实际值 / 观测值 / 告警</span></h2>
+      <table class="metrics" id="metricsTable"></table>
+    </section>
+
+    <section class="panel">
+      <h2>目标数量（年末达标线）</h2>
+      <div id="targets"></div>
+      <h3 class="sub">鸟类目标位点（同 seed 位置固定）</h3>
+      <div id="sites"></div>
+    </section>
+
+    <section class="panel">
+      <h2>验证检查点</h2>
+      <ul id="checkpoints" class="checkpoints"></ul>
+    </section>
+
+    <section class="panel">
+      <h2>事件日志 <span class="legend">含触发时刻</span></h2>
+      <div id="logBox" class="log-box"></div>
+    </section>
+
+    <section class="panel">
+      <h2>处置前后对比</h2>
+      <div id="compareBox" class="compare-box"></div>
+    </section>
+  </aside>
+</main>
+
+<script src="js/util.js"></script>
+<script src="js/sim.js"></script>
+<script src="js/director.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/render.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
