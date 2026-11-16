@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>码头拖运 · QUAY TOW 804</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">QT</div>
+      <div>
+        <h1>码头拖运 <span>QUAY TOW</span></h1>
+        <p>电动牵引车 · 顺序转运三个故障货柜</p>
+      </div>
+    </div>
+    <div class="seed-controls">
+      <label for="seedInput">FIXED SEED</label>
+      <input id="seedInput" type="number" min="1" max="999999" value="804" />
+      <button id="btnDebugScene" class="btn ghost" title="载入 seed 804 调试场景">调试场景</button>
+    </div>
+    <div class="top-actions">
+      <button id="btnSave" class="btn">保存</button>
+      <button id="btnLoad" class="btn">载入</button>
+      <button id="btnPause" class="btn">暂停</button>
+      <button id="btnRestart" class="btn danger-ghost">重开</button>
+      <button id="btnMute" class="btn icon-btn" title="声音开关">声音</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="play-column">
+      <div class="stage-shell">
+        <canvas id="scene" width="1200" height="720" aria-label="俯视港区拖车游戏画面"></canvas>
+
+        <div class="hud hud-top-left">
+          <div class="hud-kicker">SEQUENCE / 顺序任务</div>
+          <div class="mission-head">
+            <strong id="progressText">0 / 3</strong>
+            <span id="missionTitle">等待挂接首个货柜</span>
+          </div>
+          <div class="progress-track"><i id="progressBar"></i></div>
+          <div id="missionRows" class="mission-rows"></div>
+        </div>
+
+        <div class="hud hud-top-right">
+          <div class="hud-kicker">RESOURCES / 剩余资源</div>
+          <div class="resource-row">
+            <span>动力电池</span><b id="batteryText">100%</b>
+          </div>
+          <div class="resource-track"><i id="batteryBar"></i></div>
+          <div class="resource-row">
+            <span>牵引杆</span><b id="drawbarText">100%</b>
+          </div>
+          <div class="resource-track drawbar"><i id="drawbarBar"></i></div>
+          <div class="resource-row shift-row">
+            <span>班次剩余</span><b id="shiftText">06:00</b>
+          </div>
+          <div class="mini-recovery" id="recoveryText">检查点恢复 0 次</div>
+        </div>
+
+        <div id="statusBanner" class="status-banner"></div>
+        <div id="toast" class="toast"></div>
+
+        <div class="hud hud-bottom-left">
+          <div class="telemetry">
+            <span><small>车速</small><b id="speedText">0.0</b><em>km/h</em></span>
+            <span><small>载重</small><b id="loadText">0.0t</b><em id="loadPercent">0%</em></span>
+            <span><small>路面</small><b id="surfaceText">干燥</b><em id="gearText">N</em></span>
+          </div>
+          <div class="steer-strip">
+            <small>STEER</small>
+            <span class="steer-axis"><i id="steerNeedle"></i></span>
+            <em id="steerText">0°</em>
+          </div>
+        </div>
+
+        <div class="hud hud-bottom-right">
+          <div class="wind-dial" id="windDial">
+            <div class="wind-arrow" id="windArrow">➤</div>
+            <span id="windLabel">东南风</span>
+          </div>
+          <div class="wind-speed"><b id="windSpeed">5.3</b> m/s<small id="windHint">侧风</small></div>
+        </div>
+      </div>
+
+      <section class="debug-strip panel">
+        <div class="panel-title-row">
+          <div>
+            <span class="eyebrow">DEBUG SCENARIO</span>
+            <h2>路径 / 载重 / 风向</h2>
+          </div>
+          <label class="switch">
+            <input id="debugToggle" type="checkbox" checked />
+            <span>显示路径</span>
+          </label>
+        </div>
+        <div class="debug-grid">
+          <div><span>固定 seed</span><b id="debugSeed">804</b></div>
+          <div><span>地图签名</span><b id="signatureValue">—</b></div>
+          <div><span>导航目标</span><b id="debugRoute">—</b></div>
+          <div><span>当前载重</span><b id="debugLoad">空载 / 0%</b></div>
+          <div><span>当前风向</span><b id="debugWind">—</b></div>
+          <div><span>障碍顺序</span><b id="debugObstacles" class="small-value">—</b></div>
+        </div>
+      </section>
+
+      <section class="validation-panel panel">
+        <div class="panel-title-row">
+          <div>
+            <span class="eyebrow">REPRODUCIBILITY</span>
+            <h2>场景验收</h2>
+          </div>
+          <button id="btnValidate" class="btn primary">运行验收</button>
+        </div>
+        <div id="validateReport" class="validate-report">
+          运行正常路线、碰撞、搁浅恢复、同 seed 复现、存档往返与完整重开检查。
+        </div>
+      </section>
+    </section>
+
+    <aside class="sidebar">
+      <section class="panel checkpoint-panel">
+        <span class="eyebrow">FAILURE & CHECKPOINT</span>
+        <h2>失败与检查点</h2>
+        <div id="lastFailureReason" class="failure-reason">最近失败：暂无</div>
+        <div id="failureMeta" class="muted-line">尚未发生失败</div>
+        <div class="checkpoint-card">
+          <div>
+            <span>最近检查点</span>
+            <b id="checkpointInfo">CP-01 · 任务开始 · 00:00</b>
+          </div>
+          <button id="btnContinue" class="btn primary full" disabled>从检查点继续</button>
+          <button id="btnManualCheckpoint" class="btn ghost full">保存当前检查点</button>
+        </div>
+        <div id="saveStatus" class="save-status">存档：尚未写入</div>
+      </section>
+
+      <section class="panel controls-panel">
+        <div class="panel-title-row compact">
+          <div>
+            <span class="eyebrow">DRIVE CONSOLE</span>
+            <h2>驾驶控制</h2>
+          </div>
+          <span class="key-hint">WASD / 方向键</span>
+        </div>
+        <div class="touch-pad">
+          <button class="drive-key up" data-drive="up">▲<small>W</small></button>
+          <button class="drive-key left" data-drive="left">◀<small>A</small></button>
+          <button class="drive-key brake" data-drive="brake">■<small>刹车</small></button>
+          <button class="drive-key right" data-drive="right">▶<small>D</small></button>
+          <button class="drive-key down" data-drive="down">▼<small>S</small></button>
+        </div>
+        <button id="btnInteract" class="btn interact-btn">E · 挂接 / 交付</button>
+        <p class="help-text">货物必须按 <b>1 → 2 → 3</b> 顺序。湿滑甲板制动距离更长；载重越大，加速与转向越迟缓。</p>
+      </section>
+
+      <section class="panel log-panel">
+        <div class="panel-title-row compact">
+          <div>
+            <span class="eyebrow">EVENT LOG</span>
+            <h2>事件记录</h2>
+          </div>
+          <span class="live-dot">LIVE</span>
+        </div>
+        <div id="log" class="log"></div>
+      </section>
+    </aside>
+  </main>
+
+  <script src="js/rng.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/sim.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/validate.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

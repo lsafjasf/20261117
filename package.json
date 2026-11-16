@@ -1,0 +1,16 @@
+{
+  "name": "quay-tow-sequencer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "电动拖车港区故障货柜顺序拖运模拟器",
+  "scripts": {
+    "test:node": "node test/run-node-validation.js",
+    "test:browser": "node test/smoke.cjs",
+    "test": "npm run test:node && npm run test:browser",
+    "serve": "python3 -m http.server 8080"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.17.0"
+  },
+  "license": "MIT"
+}
