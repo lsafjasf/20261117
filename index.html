@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAGLEV PROVING GROUND / 三圈协同试车</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- 顶部标题与全局控制 -->
+  <header id="topbar">
+    <div class="brand">
+      <div class="brand-mark">M<span>03</span></div>
+      <div class="brand-text">
+        <div class="brand-en">MAGLEV PROVING GROUND / 试验线</div>
+        <h1>三圈协同试车 <em>TRIAL 03</em></h1>
+      </div>
+    </div>
+    <div class="mission-timer">
+      <div class="timer-label">MISSION T-</div>
+      <div class="timer-value" id="timerValue">03:00.0</div>
+      <div class="timer-state" id="timerState">等待授权</div>
+    </div>
+    <div class="global-actions">
+      <button class="gbtn" id="btnPause"><kbd>P</kbd> 暂停</button>
+      <button class="gbtn" id="btnRestart"><kbd>R</kbd> 重开</button>
+      <button class="gbtn" id="btnReplay"><kbd>V</kbd> 回放</button>
+      <button class="gbtn" id="btnDebug"><kbd>F2</kbd> 单控调试</button>
+    </div>
+  </header>
+
+  <!-- 共享状态条：单一模拟核心广播给双端仪表 -->
+  <section id="statusstrip">
+    <div class="ss-cell">
+      <div class="ss-k">运行模式</div>
+      <div class="ss-v" id="ssMode">双人协同</div>
+      <div class="ss-sub" id="ssModeSub">2 / 2 LINK</div>
+    </div>
+    <div class="ss-cell">
+      <div class="ss-k">共享速度</div>
+      <div class="ss-v" id="ssSpeed">0.0 <small>m/s</small></div>
+      <div class="ss-sub">摩擦 0.00 · TEST LOOP</div>
+    </div>
+    <div class="ss-cell resource-cell">
+      <div class="ss-k">牵引储能</div>
+      <div class="ss-v" id="ssTraction">100<small>%</small></div>
+      <div class="res-bar"><i id="barTraction"></i></div>
+    </div>
+    <div class="ss-cell resource-cell">
+      <div class="ss-k">制动风缸</div>
+      <div class="ss-v" id="ssBrake">100<small>%</small></div>
+      <div class="res-bar brake"><i id="barBrake"></i></div>
+    </div>
+    <div class="ss-cell">
+      <div class="ss-k">任务进度</div>
+      <div class="ss-v" id="ssLap">LAP 1 / 3</div>
+      <div class="ss-sub" id="ssLapSub">0 m / LAP</div>
+    </div>
+    <div class="ss-cell">
+      <div class="ss-k">双端同步</div>
+      <div class="ss-v" id="ssSync">同步</div>
+      <div class="ss-sub">冲突 <b id="ssConflict">0</b></div>
+    </div>
+  </section>
+
+  <!-- 主工作区：左仪表 / 中央 Canvas / 右仪表 -->
+  <main id="workspace">
+    <aside class="console console-p1" id="panelP1"><!-- js/ui.js 渲染 --></aside>
+
+    <section class="center-col">
+      <div class="canvas-head">
+        <div class="ch-left"><span class="dot"></span><b id="phaseTitle">双端链路待命</b> <em id="phaseSub">等待发车授权 · 3 LAPS</em></div>
+        <div class="ch-right">NO FRICTION 0.00 μ &nbsp; LINE TEST LOOP A</div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="trackCanvas" width="960" height="520"></canvas>
+        <div class="overlay" id="overlayArm">
+          <div class="ov-card">
+            <div class="ov-en">DUAL OPERATOR AUTHORIZATION / 双席授权</div>
+            <h2>双人同时就位</h2>
+            <p class="ov-desc">P1 只管加速度，P2 只管制動与道岔。完成三圈，并在终点前把速度降到安全阈值。</p>
+            <div class="ov-info">
+              <div><b>P1 · 加速席</b><kbd>W / S</kbd><span>只调加速度</span></div>
+              <div><b>P2 · 制动席</b><kbd>↑ ↓ ← →</kbd><span>只控制动 / 道岔</span></div>
+              <div><b>目标 · 三圈</b><kbd>3 LAPS</kbd><span>终点 ≤ 4.4 m/s</span></div>
+            </div>
+            <button class="ov-btn" id="btnArm">发车授权 <kbd>ENTER</kbd></button>
+            <div class="ov-foot">两位操作员使用独立键区；同一席位无法完成全部动作。链路静默 30 秒会触发保护。</div>
+          </div>
+        </div>
+        <div class="overlay hidden" id="overlayProtect">
+          <div class="ov-card protect">
+            <div class="ov-en">SINGLE-SIDE FAILSAFE / 单侧保护</div>
+            <h2 id="protectTitle">P1 加速席 链路保护</h2>
+            <p class="ov-desc">检测到链路断开。保护制动已接管，共享计时冻结，健康一侧不能代替失联一侧完成恢复。</p>
+            <div class="ov-info">
+              <div><b>保护原因</b><span id="protectReason">链路断开</span><small id="protectWatch">30.0 s watchdog</small></div>
+              <div><b>制动状态</b><span>AUTO</span><small>保护制动 100%</small></div>
+              <div><b>恢复键位</b><kbd id="protectKey">Q</kbd><small id="protectKeySub">仅 P1 本席</small></div>
+            </div>
+            <div class="ov-foot" id="protectFoot">请由 P1 按下 Q 恢复本席链路；随后进入 2 秒双端状态对齐。</div>
+          </div>
+        </div>
+        <div class="overlay hidden" id="overlayResult">
+          <div class="ov-card" id="resultCard">
+            <div class="ov-en" id="resultEn">MISSION RESULT / 任务结果</div>
+            <h2 id="resultTitle">三圈协同试车成功</h2>
+            <p class="ov-desc" id="resultDesc"></p>
+            <button class="ov-btn" id="btnResultRestart">重新开始 <kbd>R</kbd></button>
+            <div class="ov-foot">完整任务已写入回放，按 V 可回看双方输入、共享资源与冲突时刻。</div>
+          </div>
+        </div>
+      </div>
+      <div class="replay-bar hidden" id="replayBar">
+        <div class="rb-head">
+          <span class="dot"></span><b>任务回放</b>
+          <span id="rbMeta">0 帧 · 0 输入 · 0 冲突</span>
+          <em id="rbExit">返回任务 ESC</em>
+        </div>
+        <div class="rb-controls">
+          <button id="rbPlay">⏸</button>
+          <input type="range" id="rbScrub" min="0" max="0" value="0">
+          <span id="rbTime">00:00.0</span>
+          <select id="rbSpeed">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+          </select>
+        </div>
+        <div class="rb-event" id="rbEvent">P1 KeyW · 增大加速度 · 牵引 0.0 / 制动 0%</div>
+      </div>
+      <div class="lower-grid">
+        <div class="panel mission-log">
+          <div class="panel-head"><b>MISSION LOG / 任务记录</b><span>双端同帧</span></div>
+          <ul id="missionLog"></ul>
+        </div>
+        <div class="panel input-buffer">
+          <div class="panel-head"><b>INPUT BUFFER</b><span id="bufferCount">0 EVENTS</span></div>
+          <div class="buffer-bars">
+            <div class="buf p1"><label>P1</label><i id="bufP1"></i><b id="bufP1Count">0</b></div>
+            <div class="buf p2"><label>P2</label><i id="bufP2"></i><b id="bufP2Count">0</b></div>
+          </div>
+          <div class="buffer-detail" id="bufferDetail">冲突检测：牵引与制动同时作用将写入回放。</div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="console console-p2" id="panelP2"><!-- js/ui.js 渲染 --></aside>
+  </main>
+
+  <footer id="footer">
+    <span><i class="dot"></i> 状态通过单一模拟核心广播至双端仪表，暂停、复位与倒计时不会分叉。</span>
+    <span id="footerKeys">P 暂停 · R 重开 · V 回放 · F2 单控调试 · ESC 关闭回放 · F3 自检</span>
+  </footer>
+
+  <div id="selftest" class="hidden"></div>
+</div>
+
+<script src="js/track.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/input.js"></script>
+<script src="js/render.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/replay.js"></script>
+<script src="js/selftest.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

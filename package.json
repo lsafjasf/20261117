@@ -1,0 +1,17 @@
+{
+  "name": "maglev-dual-operator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "三圈协同试车：Canvas 磁轨车双人协作模拟（双席职责隔离 + 单侧保护 + 回放）",
+  "scripts": {
+    "selftest": "node tests/node-selftest.js",
+    "dom": "node tests/dom-smoke.js",
+    "e2e": "node tests/e2e.js",
+    "fullrun": "node tests/fullrun.js",
+    "shoot": "node tests/shoot.js",
+    "test": "node tests/node-selftest.js && node tests/dom-smoke.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.0"
+  }
+}
