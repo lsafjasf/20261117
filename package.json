@@ -1,0 +1,21 @@
+{
+  "name": "poster-studio",
+  "version": "1.0.0",
+  "description": "Editable poster studio: geometry + text layers, crop/alignment/z-order, SVG/PNG export with parity, undo/redo and save/reload.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "serve": "node server.js",
+    "check": "node --check src/main.js && node --check src/editor.js && node --check src/renderer.js && node --check src/svg.js"
+  },
+  "keywords": [
+    "poster",
+    "canvas",
+    "svg",
+    "editor"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "playwright": "^1.65.1"
+  }
+}

@@ -1,0 +1,6 @@
+node_modules/
+test/screenshot-*.png
+test/exported.png
+test/exported.svg
+*.log
+.DS_Store

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poster Studio · 可编辑海报编辑器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🎨 Poster Studio</div>
+    <div class="toolbar">
+      <button id="undo" title="撤销 Ctrl+Z">↶ 撤销</button>
+      <button id="redo" title="重做 Ctrl+Y / Ctrl+Shift+Z">↷ 重做</button>
+      <span class="divider"></span>
+      <button id="layer-up" title="上移一层">⬆ 层级</button>
+      <button id="layer-down" title="下移一层">⬇ 层级</button>
+      <button id="crop-toggle">✂ 裁切</button>
+      <button id="crop-reset">重置裁切</button>
+      <span class="divider"></span>
+      <button data-align="left" title="左对齐">⇤</button>
+      <button data-align="h-center" title="水平居中对齐">↔</button>
+      <button data-align="right" title="右对齐">⇥</button>
+      <button data-align="top" title="顶对齐">⤒</button>
+      <button data-align="v-center" title="垂直居中对齐">↕</button>
+      <button data-align="bottom" title="底对齐">⤓</button>
+      <button data-align="canvas-h" title="相对画布水平居中">画布⇔</button>
+      <button data-align="canvas-v" title="相对画布垂直居中">画布⇕</button>
+      <span class="divider"></span>
+      <button id="margin-toggle">安全边距</button>
+      <button id="delete" title="Delete">🗑 删除</button>
+    </div>
+    <div class="toolbar">
+      <button id="reload-local">重新载入</button>
+      <button id="save-file">保存工程</button>
+      <label class="file-btn">载入工程<input id="load-file" type="file" accept="application/json,.json" hidden></label>
+      <button id="new-doc">新建</button>
+      <span class="divider"></span>
+      <button id="export-svg" class="primary">导出 SVG</button>
+      <button id="export-png" class="primary">导出 PNG</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar left">
+      <h3>添加元素</h3>
+      <div class="add-row">
+        <select id="shape-type">
+          <option value="rect">矩形</option>
+          <option value="ellipse">椭圆</option>
+          <option value="triangle">三角形</option>
+          <option value="hexagon">六边形</option>
+          <option value="star">星形</option>
+        </select>
+        <button id="add-shape">添加图形</button>
+      </div>
+      <button id="add-text" class="wide">添加文本框</button>
+
+      <h3>视图缩放</h3>
+      <div class="add-row">
+        <button id="zoom-out">－</button>
+        <span id="zoom-label" class="zoom-label">100%</span>
+        <button id="zoom-in">＋</button>
+      </div>
+      <button id="zoom-fit" class="wide">适应窗口</button>
+
+      <h3>图层（拖动排序）</h3>
+      <div id="layers" class="layers"></div>
+    </aside>
+
+    <section id="canvas-wrap" class="canvas-wrap">
+      <canvas id="canvas"></canvas>
+      <div id="status" class="status"></div>
+    </section>
+
+    <aside class="sidebar right">
+      <h3>属性</h3>
+      <div id="properties"></div>
+      <h3>排版检查</h3>
+      <div id="issues" class="issues"></div>
+    </aside>
+  </main>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
