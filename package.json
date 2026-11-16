@@ -1,0 +1,14 @@
+{
+  "name": "canvas-safe-batch",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Texture/blend-mode safe batching comparison with pixel-level consistency checks",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.js"
+  }
+}
