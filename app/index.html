@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>钻孔地层柱交互对比</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>钻孔地层柱交互对比</h1>
+    <div class="controls">
+      <label>数据集
+        <select id="datasetSelect"></select>
+      </label>
+      <label>时间窗口
+        <select id="windowSelect"></select>
+      </label>
+      <label>统计口径
+        <select id="basisSelect"></select>
+      </label>
+      <label>深度顶 <input id="depthTop" type="number" min="0" step="0.5" value="0" style="width:72px"></label>
+      <label>深度底 <input id="depthBottom" type="number" min="0" step="0.5" placeholder="自动" style="width:72px"></label>
+      <button id="applyDepth">应用范围</button>
+      <button id="resetDepth">重置范围</button>
+      <button id="exportBtn" class="primary">导出 SVG</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="side">
+      <section class="card">
+        <h3>钻孔平面图（点击切换）</h3>
+        <div id="map"></div>
+      </section>
+      <section class="card">
+        <h3>图例 / 岩性筛选</h3>
+        <div id="legend" class="legend"></div>
+      </section>
+      <section class="card">
+        <h3>层位详情</h3>
+        <div id="detail"></div>
+      </section>
+    </aside>
+
+    <section class="content">
+      <section class="card">
+        <h3>数据摘要 · 当前筛选 · 数据版本</h3>
+        <div id="summary"></div>
+      </section>
+      <section class="card scroll-x">
+        <h3>地层柱（Canvas 纹理 + 深度刻度，点击查看层位）</h3>
+        <canvas id="columnCanvas"></canvas>
+      </section>
+      <section class="card scroll-x">
+        <h3>GR 测井曲线（0.5m 网格重采样，缺测断线）</h3>
+        <canvas id="curveCanvas"></canvas>
+      </section>
+      <section class="card">
+        <h3>统计结果（口径与筛选联动）</h3>
+        <div id="stats"></div>
+      </section>
+      <section class="card">
+        <h3>层位列表</h3>
+        <div id="layerList" class="table-wrap"></div>
+      </section>
+      <section class="card">
+        <h3>导出日志</h3>
+        <div id="exportLog"></div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

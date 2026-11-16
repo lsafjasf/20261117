@@ -1,0 +1,14 @@
+{
+  "name": "borehole-strat-column",
+  "version": "1.0.0",
+  "description": "交互式钻孔地层柱对比：Canvas 纹理、地层对比、筛选同步与 SVG 导出",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test 'app/tests/**/*.test.js'",
+    "serve": "node app/tests/server.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^31.0.1"
+  }
+}
