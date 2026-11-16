@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="曲柄滑块机构安全实验台：确定性运动学、边界监测、单步与回放。"
+    />
+    <title>KINEMATICA · 曲柄滑块安全实验台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span class="brand-ring"></span>
+            <span class="brand-line"></span>
+            <span class="brand-node"></span>
+          </div>
+          <div class="brand-copy">
+            <span class="eyebrow">MECHANISM SAFETY LAB / 07</span>
+            <h1>曲柄滑块 <span>安全实验台</span></h1>
+          </div>
+        </div>
+        <div class="solver-status" title="物理状态只由固定时间步决定">
+          <span class="live-dot"></span>
+          <span id="solverLabel">确定性求解</span>
+          <span class="solver-divider"></span>
+          <span class="mono">Δt 16.67 ms</span>
+        </div>
+        <div class="top-actions">
+          <button class="button ghost compact" id="reportButton" type="button">
+            <span class="button-icon" aria-hidden="true">▤</span>
+            运行报告
+          </button>
+          <button class="icon-button" id="helpButton" type="button" aria-label="使用说明">?</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="left-rail">
+          <section class="panel-card assembly-card">
+            <div class="card-heading">
+              <div>
+                <span class="section-index">01</span>
+                <h2>机构装配</h2>
+              </div>
+              <span class="micro-badge" id="assemblyBadge">待机</span>
+            </div>
+
+            <div class="control-stack">
+              <label class="control" for="radiusInput">
+                <span class="control-label">曲柄半径 <em>r</em></span>
+                <output class="control-value" id="radiusValue">48.0 <small>mm</small></output>
+                <input id="radiusInput" type="range" min="28" max="60" step="0.5" value="48" />
+                <span class="range-meta"><span>28</span><span>60</span></span>
+              </label>
+
+              <label class="control" for="rodInput">
+                <span class="control-label">连杆长度 <em>L</em></span>
+                <output class="control-value" id="rodValue">160.0 <small>mm</small></output>
+                <input id="rodInput" type="range" min="50" max="240" step="1" value="160" />
+                <span class="range-meta"><span>50</span><span>240</span></span>
+              </label>
+
+              <label class="control" for="strokeInput">
+                <span class="control-label">目标行程 <em>S</em></span>
+                <output class="control-value" id="strokeValue">96.0 <small>mm</small></output>
+                <input id="strokeInput" type="range" min="72" max="116" step="0.5" value="96" />
+                <span class="range-meta"><span>72</span><span>116</span></span>
+              </label>
+
+              <div class="control-divider">
+                <span>驱动与负载</span>
+              </div>
+
+              <label class="control" for="speedInput">
+                <span class="control-label">驱动转速 <em>n</em></span>
+                <output class="control-value" id="speedValue">60 <small>rpm</small></output>
+                <input id="speedInput" type="range" min="20" max="180" step="1" value="60" />
+                <span class="range-meta"><span>20</span><span>180</span></span>
+              </label>
+
+              <label class="control" for="loadInput">
+                <span class="control-label">外加载荷 <em>F</em></span>
+                <output class="control-value" id="loadValue">1 150 <small>N</small></output>
+                <input id="loadInput" type="range" min="300" max="3400" step="50" value="1150" />
+                <span class="range-meta"><span>300</span><span>3 400</span></span>
+              </label>
+            </div>
+
+            <div class="assembly-summary">
+              <div>
+                <span>实际行程</span>
+                <strong><span id="actualStroke">96.0</span><small>mm</small></strong>
+              </div>
+              <div>
+                <span>连杆比 L/r</span>
+                <strong id="rodRatio">3.33</strong>
+              </div>
+              <div>
+                <span>最小传动角</span>
+                <strong><span id="minTransmission">72.5</span><small>°</small></strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-card boundary-card">
+            <div class="card-heading">
+              <div>
+                <span class="section-index">02</span>
+                <h2>安全边界</h2>
+              </div>
+              <span class="limit-count">5 项</span>
+            </div>
+            <ul class="boundary-list">
+              <li><span class="boundary-dot load"></span><span>外加载荷</span><strong>≤ 2 600 N</strong></li>
+              <li><span class="boundary-dot speed"></span><span>驱动转速</span><strong>≤ 150 rpm</strong></li>
+              <li><span class="boundary-dot temp"></span><span>轴承温度</span><strong>≤ 90 °C</strong></li>
+              <li><span class="boundary-dot pressure"></span><span>轴瓦压力</span><strong>≤ 4.00 MPa</strong></li>
+              <li><span class="boundary-dot angle"></span><span>传动角</span><strong>≥ 20° / L &gt; r</strong></li>
+            </ul>
+            <p class="boundary-note">首次越限即冻结求解，保留触发时刻与部件。</p>
+          </section>
+        </aside>
+
+        <section class="center-stage">
+          <section class="panel-card mechanism-card">
+            <div class="card-heading stage-heading">
+              <div>
+                <span class="section-index">03</span>
+                <h2>机构视图</h2>
+              </div>
+              <div class="stage-indicators">
+                <span class="state-pill ready" id="statePill"><i></i><span id="stateText">就绪</span></span>
+                <span class="mono ghost-text" id="angleReadout">θ 0.0°</span>
+              </div>
+            </div>
+            <div class="canvas-shell mechanism-shell">
+              <canvas id="mechanismCanvas" aria-label="曲柄滑块机构实时示意图"></canvas>
+              <div class="canvas-corner top-left">
+                <span>MECHANISM / LIVE</span>
+                <strong id="mechanismMode">静态检查</strong>
+              </div>
+              <div class="canvas-corner top-right">
+                <span>COMPONENT</span>
+                <strong>R-L-S</strong>
+              </div>
+              <div class="mechanism-readout">
+                <div><span>位移</span><strong id="liveDisplacement">0.0<small> mm</small></strong></div>
+                <div><span>速度</span><strong id="liveVelocity">0<small> mm/s</small></strong></div>
+                <div><span>轴力</span><strong id="liveForce">0<small> N</small></strong></div>
+              </div>
+              <div class="canvas-legend">
+                <span><i class="legend-line cyan"></i>位移</span>
+                <span><i class="legend-line amber"></i>速度</span>
+                <span><i class="legend-line red"></i>轴力</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-card chart-card">
+            <div class="card-heading chart-heading">
+              <div>
+                <span class="section-index">04</span>
+                <h2>运动响应</h2>
+              </div>
+              <div class="series-toggles" role="group" aria-label="曲线显示">
+                <button class="series-chip active displacement" type="button" data-series="displacement">
+                  <i></i>位移
+                </button>
+                <button class="series-chip active velocity" type="button" data-series="velocity">
+                  <i></i>速度
+                </button>
+                <button class="series-chip active force" type="button" data-series="force">
+                  <i></i>轴力
+                </button>
+              </div>
+            </div>
+            <div class="canvas-shell chart-shell">
+              <canvas id="responseCanvas" aria-label="滑块位移、速度与轴力曲线"></canvas>
+              <div class="chart-empty" id="chartEmpty">
+                <span>等待采样</span>
+                <small>启动后绘制确定性响应曲线</small>
+              </div>
+            </div>
+            <div class="chart-footer">
+              <span class="mono" id="chartMeta">窗口 0.00 s · 0 samples</span>
+              <span>目标节拍 <strong id="targetCadence">1.000 s 目标 · 当前 1.000 s</strong></span>
+            </div>
+          </section>
+        </section>
+
+        <aside class="right-rail">
+          <section class="panel-card telemetry-card">
+            <div class="card-heading">
+              <div>
+                <span class="section-index">05</span>
+                <h2>安全包络</h2>
+              </div>
+              <span class="mono live-label"><i></i>LIVE</span>
+            </div>
+            <div class="gauge-list" id="gaugeList"></div>
+          </section>
+
+          <section class="panel-card record-card">
+            <div class="card-heading">
+              <div>
+                <span class="section-index">06</span>
+                <h2>运行记录</h2>
+              </div>
+              <button class="text-button" id="inlineReportButton" type="button">详情 ↗</button>
+            </div>
+
+            <div class="target-block">
+              <div class="target-row">
+                <span>行程目标</span>
+                <strong><span id="targetStrokeLabel">96.0</span> <small>mm</small></strong>
+              </div>
+              <div class="target-track"><span id="targetProgress"></span><i id="targetTarget"></i></div>
+              <div class="target-foot">
+                <span id="strokeDeviation">偏差 +0.0 mm</span>
+                <span id="strokeMatch" class="ok">匹配</span>
+              </div>
+            </div>
+
+            <div class="record-grid">
+              <div><span>峰值轴力</span><strong id="peakForce">0<small> N</small></strong></div>
+              <div><span>峰值轴压</span><strong id="peakPressure">0.00<small> MPa</small></strong></div>
+              <div><span>最高温度</span><strong id="peakTemp">26.0<small> °C</small></strong></div>
+              <div><span>最小传动角</span><strong id="minAngleStat">72.5<small> °</small></strong></div>
+            </div>
+
+            <div class="fault-summary safe" id="faultSummary">
+              <span class="fault-icon" id="faultIcon">✓</span>
+              <div>
+                <span id="faultEyebrow">边界状态</span>
+                <strong id="faultTitle">全部参数在安全包络内</strong>
+                <small id="faultDetail">等待首次运行采样</small>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </main>
+
+      <footer class="statusbar">
+        <div class="status-group">
+          <span class="status-label">RUN</span>
+          <span class="mono" id="runFingerprint">R-0000</span>
+          <span class="status-divider"></span>
+          <span class="status-label">T+</span>
+          <span class="mono" id="runTime">00.000 s</span>
+          <span class="status-divider"></span>
+          <span class="status-label">CYCLE</span>
+          <span class="mono" id="cycleCount">0.00</span>
+        </div>
+        <div class="status-message" id="statusMessage">
+          <span class="status-pulse"></span>
+          调整装配参数后启动；暂停、单步与恢复共享同一固定步长状态。
+        </div>
+        <div class="status-group right">
+          <span class="status-label">STATE</span>
+          <span class="mono" id="stateCode">READY</span>
+        </div>
+      </footer>
+    </div>
+
+    <div class="action-dock">
+      <button class="button primary" id="startButton" type="button">
+        <span class="button-icon play-icon" aria-hidden="true"></span>
+        <span id="startButtonText">启动仿真</span>
+        <kbd>Space</kbd>
+      </button>
+      <button class="button secondary" id="stepButton" type="button">
+        <span class="button-icon" aria-hidden="true">›|</span>
+        单步
+      </button>
+      <button class="button secondary" id="replayButton" type="button" disabled>
+        <span class="button-icon" aria-hidden="true">↻</span>
+        回放
+      </button>
+      <button class="button secondary" id="resetButton" type="button">
+        <span class="button-icon" aria-hidden="true">⌫</span>
+        重置
+      </button>
+    </div>
+
+    <dialog class="modal report-modal" id="reportDialog">
+      <div class="modal-shell">
+        <div class="modal-head">
+          <div>
+            <span class="eyebrow">RUN REPORT / IMMUTABLE SNAPSHOT</span>
+            <h2>运行报告</h2>
+          </div>
+          <button class="icon-button modal-close" data-close-dialog type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="report-hero" id="reportHero"></div>
+        <div class="report-stats" id="reportStats"></div>
+        <div class="report-fault" id="reportFault"></div>
+        <div class="report-meta">
+          <div><span>求解指纹</span><strong class="mono" id="reportHash">—</strong></div>
+          <div><span>记录样本</span><strong class="mono" id="reportSamples">0</strong></div>
+          <div><span>求解方式</span><strong>固定步长 · 无累计漂移</strong></div>
+        </div>
+        <div class="modal-actions">
+          <button class="button secondary" data-close-dialog type="button">关闭</button>
+          <button class="button primary" id="reportReplayButton" type="button">
+            <span class="button-icon" aria-hidden="true">↻</span>
+            回放本次记录
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="modal help-modal" id="helpDialog">
+      <div class="modal-shell">
+        <div class="modal-head">
+          <div>
+            <span class="eyebrow">CONTROL PROTOCOL</span>
+            <h2>实验说明</h2>
+          </div>
+          <button class="icon-button modal-close" data-close-dialog type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="help-grid">
+          <article><span>01</span><h3>装配</h3><p>调整曲柄半径与连杆长度。实际行程等于 2r；连杆短于曲柄会进入不可解的死点区。</p></article>
+          <article><span>02</span><h3>边界</h3><p>载荷、转速、温度、轴瓦压力逐帧核验。任一项越限即停止积分并锁定首次故障。</p></article>
+          <article><span>03</span><h3>时间控制</h3><p>暂停不推进物理时间，单步固定推进 16.67 ms，恢复后从同一状态接续。</p></article>
+          <article><span>04</span><h3>回放</h3><p>回放读取已记录的样本，不重新积分，因此趋势、峰值和故障点保持一致。</p></article>
+        </div>
+        <div class="modal-actions">
+          <button class="button primary" data-close-dialog type="button">开始实验</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
