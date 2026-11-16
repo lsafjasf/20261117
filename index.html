@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>12 秒图表视频 · 统一时间线工作台</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>图表视频工作台 <small>Canvas 图表 + Web Audio 节拍 + 单一时间基准</small></h1>
+    <div id="status" class="status">就绪</div>
+  </header>
+
+  <main class="layout">
+    <section class="stage-panel">
+      <canvas id="stage" width="960" height="540"></canvas>
+      <div class="transport-bar">
+        <button id="play-pause">播放</button>
+        <button id="seek-zero">回到起点</button>
+        <label class="loop-label"><input type="checkbox" id="loop-toggle" checked> 循环</label>
+        <span id="time-readout" class="time-readout">0.00s / 12s</span>
+      </div>
+      <div id="conflict-box" class="conflict-box" hidden>
+        <strong>非法重叠 — 导出已阻止：</strong>
+        <ul id="conflict-list"></ul>
+      </div>
+    </section>
+
+    <aside class="side-panel">
+      <section class="card">
+        <h2>内置数据编辑</h2>
+        <p class="hint">修改标签或数值后，柱条、数值滚动与百分比比例同步更新。</p>
+        <div id="data-rows" class="data-rows"></div>
+      </section>
+      <section class="card">
+        <h2>动画与转场时长</h2>
+        <label>柱条生长 <span id="bar-grow-val">1.20</span>s
+          <input type="range" id="bar-grow" min="0.2" max="4" step="0.05"></label>
+        <label>数值滚动 <span id="number-roll-val">1.20</span>s
+          <input type="range" id="number-roll" min="0.2" max="4" step="0.05"></label>
+      </section>
+      <section class="card">
+        <h2>片段检查器</h2>
+        <p id="inspector-title" class="hint">在时间线点选片段</p>
+        <div class="inspector-grid">
+          <label>入点(s) <input type="number" id="trim-in" step="0.1" min="0"></label>
+          <label>出点(s) <input type="number" id="trim-out" step="0.1" min="0.1"></label>
+          <button id="trim-apply">应用裁切</button>
+          <label>转场(s) <input type="number" id="transition-duration" step="0.1" min="0" max="6"></label>
+          <button id="transition-apply">应用转场</button>
+          <button id="split-btn">在播放头分割</button>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <section class="timeline-wrap card">
+    <h2>节目时间线（视频轨 / 字幕轨，拖动移动 · 空白处拖动播放头）</h2>
+    <div id="timeline" class="timeline"></div>
+  </section>
+
+  <section class="bottom-grid">
+    <div class="card">
+      <h2>工程保存 / 重新载入</h2>
+      <div class="button-row">
+        <button id="save-btn">保存工程</button>
+        <button id="reload-btn">重新载入</button>
+        <label class="file-btn">载入 JSON
+          <input type="file" id="load-file" accept="application/json" hidden></label>
+        <button id="reset-btn">恢复内置数据</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>WebM 导出（不丢帧）</h2>
+      <div class="button-row">
+        <button id="export-btn" class="primary">导出 WebM</button>
+        <button id="export-fail-btn">模拟失败导出</button>
+      </div>
+      <div id="export-progress" class="progress" hidden>
+        <div id="export-bar" class="progress-bar"></div>
+      </div>
+      <div id="replay-panel" hidden>
+        <p id="replay-info" class="hint"></p>
+        <button id="retry-export">重试导出</button>
+      </div>
+      <div id="export-result" hidden>
+        <p id="export-summary" class="hint"></p>
+        <button id="download-webm">下载 WebM</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>时长对比（裁切 / 转场）</h2>
+      <ul id="duration-checks" class="duration-list"></ul>
+    </div>
+  </section>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
