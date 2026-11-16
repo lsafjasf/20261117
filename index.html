@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>双人协作 · 消防水带</title>
+<style>
+  body { margin: 0; background: #14181f; color: #dfe6ef; font-family: "Microsoft YaHei", sans-serif; display: flex; flex-direction: column; align-items: center; }
+  h1 { font-size: 20px; margin: 12px 0 6px; }
+  #game { background: #1c2330; border: 1px solid #33405a; border-radius: 6px; }
+  .bar { display: flex; gap: 24px; margin: 10px 0; font-size: 14px; }
+  .panel { background: #1c2330; border: 1px solid #33405a; border-radius: 6px; padding: 8px 14px; }
+  .panel b { color: #7fd0ff; }
+  .p1 b { color: #ffb347; }
+  .p2 b { color: #8ee08a; }
+  button { background: #2a3a55; color: #dfe6ef; border: 1px solid #44597f; border-radius: 4px; padding: 6px 14px; cursor: pointer; font-size: 14px; }
+  button:hover { background: #35496e; }
+  #status { min-height: 20px; color: #ffd27f; font-size: 14px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+  <h1>🚒 双人协作消防水带 <span style="font-size:13px;color:#8fa3c0">（一人控压 · 一人控向 · 共用键盘）</span></h1>
+  <canvas id="game" width="1000" height="640"></canvas>
+  <div class="bar">
+    <div class="panel p1"><b>P1 泵手</b>：<b>W</b> 增压 / <b>S</b> 降压（只能控压）</div>
+    <div class="panel p2"><b>P2 枪手</b>：<b>←</b> 下压枪口 / <b>→</b> 上抬枪口（只能控向）</div>
+    <div class="panel"><b>P</b> 暂停 · <b>R</b> 重开 · <b>M</b> 单人调试 · <b>V</b> 回放 · <b>E</b> 导出回放</div>
+  </div>
+  <div class="bar">
+    <button id="btnPause">暂停/继续 (P)</button>
+    <button id="btnRestart">重开 (R)</button>
+    <button id="btnMode">单人调试 (M)</button>
+    <button id="btnReplay">回放上一局 (V)</button>
+    <button id="btnExport">导出回放 (E)</button>
+  </div>
+  <div id="status"></div>
+  <script src="game.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
