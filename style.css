@@ -1,0 +1,50 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #1d2b1f;
+  color: #e8f0e4;
+  font-size: 14px;
+}
+header {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  padding: 8px 16px;
+  background: #142015;
+}
+header h1 { font-size: 18px; margin: 0; }
+#status-bar span { margin-right: 18px; }
+#result.ok { color: #8fe388; }
+#result.bad { color: #ff8f8f; }
+main { display: flex; gap: 12px; padding: 12px; align-items: flex-start; }
+#left { flex: 0 0 auto; }
+canvas { background: #2c3e2a; border: 2px solid #4a5d43; border-radius: 6px; display: block; }
+#controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; }
+button, select, input[type="text"] {
+  background: #2f4630; color: #e8f0e4; border: 1px solid #577a52;
+  border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 13px;
+}
+button:hover { background: #3a563c; }
+#herd-controls { margin-top: 8px; display: flex; gap: 12px; flex-wrap: wrap; }
+.herd-card { background: #243524; border: 1px solid #4a5d43; border-radius: 6px; padding: 6px 10px; }
+aside {
+  flex: 1 1 340px; max-width: 460px; max-height: 720px; overflow-y: auto;
+  background: #22311f; border-radius: 6px; padding: 10px 14px;
+}
+aside h2 { font-size: 14px; margin: 12px 0 6px; border-bottom: 1px solid #3c5138; padding-bottom: 3px; }
+table { border-collapse: collapse; width: 100%; font-size: 12px; }
+th, td { border: 1px solid #3c5138; padding: 3px 5px; text-align: center; }
+th { background: #2c4029; }
+.alert { color: #ffb04f; font-weight: bold; }
+.crit { color: #ff7070; font-weight: bold; }
+.okv { color: #9fe390; }
+#log { font-size: 12px; max-height: 220px; overflow-y: auto; background: #1a2718; padding: 6px; border-radius: 4px; }
+#log div { margin: 1px 0; }
+#log .t { color: #8fa9c9; margin-right: 6px; }
+#log .alert-line { color: #ffb04f; }
+#log .fail-line { color: #ff8080; }
+#log .op-line { color: #9fd49f; }
+#verify-report { font-size: 12px; }
+#verify-report .pass { color: #8fe388; }
+#verify-report .fail { color: #ff8080; }

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>牧场轮牧模拟</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>牧场轮牧模拟</h1>
+  <div id="status-bar">
+    <span id="clock">第 0 天 00:00</span>
+    <span id="weather">天气: --</span>
+    <span id="season">--</span>
+    <span id="result"></span>
+  </div>
+</header>
+<main>
+  <section id="left">
+    <canvas id="view" width="960" height="560"></canvas>
+    <div id="controls">
+      <button id="btn-run">▶ 连续运行</button>
+      <select id="speed">
+        <option value="1">1x</option>
+        <option value="4" selected>4x</option>
+        <option value="16">16x</option>
+      </select>
+      <label>放牧时长/日 <input id="graze-hours" type="range" min="4" max="20" value="10"> <span id="graze-hours-v">10h</span></label>
+      <label>种子 <input id="seed" type="text" value="ranch-1" size="8"></label>
+      <button id="btn-reset">↺ 重置</button>
+      <button id="btn-verify">✔ 运行验证</button>
+      <button id="btn-audio">🔊 声音开</button>
+    </div>
+    <div id="herd-controls"></div>
+  </section>
+  <aside id="panel">
+    <h2>环境指标(观测 / 实际 / 告警)</h2>
+    <div id="metrics"></div>
+    <h2>目标</h2>
+    <div id="targets"></div>
+    <h2>当前干预</h2>
+    <div id="interventions"></div>
+    <h2>验证报告</h2>
+    <div id="verify-report">尚未运行</div>
+    <h2>事件日志(含触发时刻)</h2>
+    <div id="log"></div>
+  </aside>
+</main>
+<script src="js/rng.js"></script>
+<script src="js/sim.js"></script>
+<script src="js/verify.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
