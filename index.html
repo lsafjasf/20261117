@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="机场航线延误分析台：按航空公司与时段筛选，查看航线延误、班次量及具体航班。"
+    />
+    <title>航网脉搏 · 机场航线延误分析</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="航网脉搏首页">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" role="img">
+              <path d="M5 22.5 15.8 5l2.1 12.1L27 25l-9.5-2.1L12 30l-1.2-8.4L5 22.5Z" />
+              <circle cx="16" cy="16" r="2.1" />
+            </svg>
+          </span>
+          <span>
+            <strong>航网脉搏</strong>
+            <small>AIRPORT FLOW</small>
+          </span>
+        </a>
+        <div class="topbar-meta">
+          <div class="version-pill" title="当前所有视图使用同一份数据快照">
+            <span class="live-dot"></span>
+            快照版本 <b id="dataVersion">--</b>
+          </div>
+          <time id="snapshotTime" class="muted">--</time>
+          <button class="button primary" id="exportBtn" type="button">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M10 2v9m0 0 3.2-3.2M10 11 6.8 7.8M3 13v4h14v-4" />
+            </svg>
+            导出当前视图
+          </button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <aside class="sidebar">
+          <section class="panel filter-panel" aria-labelledby="filterTitle">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">CONTROL</p>
+                <h2 id="filterTitle">筛选条件</h2>
+              </div>
+              <span class="status-chip">同源视图</span>
+            </div>
+
+            <label class="field-label" for="scenarioSelect">数据场景</label>
+            <div class="select-wrap">
+              <select id="scenarioSelect">
+                <option value="normal">正常数据 · 基线</option>
+                <option value="missing">缺失数据 · 补缺</option>
+                <option value="anomalous">异常数据 · 清洗</option>
+              </select>
+            </div>
+            <p class="field-note" id="scenarioNote">--</p>
+
+            <div class="field-head">
+              <span class="field-label">航空公司</span>
+              <div class="inline-actions">
+                <button class="text-button" id="selectAllAirlines" type="button">全选</button>
+                <button class="text-button" id="clearAirlines" type="button">清空</button>
+              </div>
+            </div>
+            <div class="airline-list" id="airlineFilter" aria-label="航空公司筛选"></div>
+
+            <span class="field-label">时间窗口</span>
+            <div class="window-tabs" id="windowTabs" role="group" aria-label="时间窗口"></div>
+            <div class="state-note" id="windowStateNote">
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M10 3a7 7 0 1 0 7 7m-7-3v3l2.2 1.5M14.5 3.5v4h-4" />
+              </svg>
+              每个窗口独立记忆航司、选中航线与地图范围
+            </div>
+
+            <div class="current-filter" aria-live="polite">
+              <div class="current-filter-head">
+                <span>当前筛选</span>
+                <b id="filterResultCount">--</b>
+              </div>
+              <div class="filter-chips" id="currentFilters"></div>
+            </div>
+          </section>
+
+          <section class="panel data-panel" aria-labelledby="dataTitle">
+            <div class="panel-heading compact">
+              <div>
+                <p class="eyebrow">DATA HEALTH</p>
+                <h2 id="dataTitle">数据摘要</h2>
+              </div>
+              <span class="quality-badge" id="qualityBadge">--</span>
+            </div>
+            <div class="summary-grid">
+              <div><span>原始记录</span><b id="sumSource">--</b></div>
+              <div><span>有效航班</span><b id="sumAccepted">--</b></div>
+              <div><span>重复去除</span><b id="sumDuplicates">--</b></div>
+              <div><span>缺失补缺</span><b id="sumMissing">--</b></div>
+              <div><span>异常修正</span><b id="sumInvalid">--</b></div>
+              <div><span>取消航班</span><b id="sumCancelled">--</b></div>
+            </div>
+            <div class="coverage-row">
+              <span>覆盖日期</span>
+              <b id="sumCoverage">--</b>
+            </div>
+            <button class="text-button wide" id="validationToggle" type="button" aria-expanded="true">
+              查看数据校验
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4" /></svg>
+            </button>
+            <div class="validation-list" id="validationList"></div>
+          </section>
+
+          <section class="panel definition-panel" aria-labelledby="definitionTitle">
+            <div class="panel-heading compact">
+              <div>
+                <p class="eyebrow">METHOD</p>
+                <h2 id="definitionTitle">统计口径</h2>
+              </div>
+            </div>
+            <ul class="definition-list">
+              <li><b>延误</b>实际起飞晚于计划起飞，且差值大于 15 分钟。</li>
+              <li><b>航线颜色</b>非取消航班加权平均延误，区间见地图图例。</li>
+              <li><b>航线宽度</b>去重后班次量，越宽表示班次越多。</li>
+              <li><b>取消率</b>取消航班 ÷ 当前筛选内全部航班。</li>
+              <li><b>缺失值</b>依次用航司×航线、航线、航司、全局中位数补缺。</li>
+            </ul>
+          </section>
+        </aside>
+
+        <section class="workspace">
+          <div class="filter-strip">
+            <div>
+              <p class="eyebrow">LIVE SNAPSHOT</p>
+              <h1>航线运行态势</h1>
+              <p id="filterSentence">--</p>
+            </div>
+            <div class="filter-strip-actions">
+              <div class="sync-state" id="syncState">
+                <span class="sync-icon">✓</span>
+                <span>地图 · 曲线 · 列表 · 导出已同步</span>
+              </div>
+              <button class="button ghost" id="resetMapBtn" type="button">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M4 7V3m0 0h4M4 3l3 3a6 6 0 1 1-1.2 6.4" />
+                </svg>
+                重置地图
+              </button>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <article class="kpi-card">
+              <div class="kpi-icon sky">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m3 14 8-9 1.3 7.5L21 16l-6 1.4L12 23l-2-5.4L3 14Z" />
+                </svg>
+              </div>
+              <div><span>执行航班</span><b id="kpiFlights">--</b><small>去重后班次</small></div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-icon violet">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="5" cy="17" r="2.4" />
+                  <circle cx="19" cy="7" r="2.4" />
+                  <path d="M7.3 16.1c3.2-.7 4.4-3.8 6.6-5.9 1.3-1.2 2.5-1.6 3.2-2" />
+                </svg>
+              </div>
+              <div><span>活跃航线</span><b id="kpiRoutes">--</b><small>起降机场对</small></div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-icon amber">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="13" r="7" />
+                  <path d="M12 9v4l2.7 1.7M9 3h6" />
+                </svg>
+              </div>
+              <div><span>平均延误</span><b id="kpiDelay">--</b><small>分钟 · 不含取消</small></div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-icon rose">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8" />
+                  <path d="m8.5 8.5 7 7m0-7-7 7" />
+                </svg>
+              </div>
+              <div><span>取消率</span><b id="kpiCancel">--</b><small id="kpiCancelMeta">--</small></div>
+            </article>
+          </div>
+
+          <div class="visual-grid">
+            <section class="panel map-panel" aria-labelledby="mapTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">ROUTE NETWORK</p>
+                  <h2 id="mapTitle">机场航线图</h2>
+                </div>
+                <div class="map-tools">
+                  <span class="canvas-hint">滚轮缩放 · 拖拽平移 · 点击航线</span>
+                  <span class="selected-route" id="selectedRoutePill" hidden></span>
+                </div>
+              </div>
+              <div class="map-frame">
+                <canvas id="mapCanvas" aria-label="机场航线交互地图"></canvas>
+                <div class="map-tooltip" id="mapTooltip" hidden></div>
+                <div class="map-empty" id="mapEmpty" hidden>
+                  <span>◎</span>
+                  <b>当前条件下没有航班</b>
+                  <small>调整航司或时间窗口后重试</small>
+                </div>
+              </div>
+              <div class="map-footer">
+                <span><i class="line-sample"></i>颜色：平均延误</span>
+                <span><i class="width-sample"></i>宽度：班次量</span>
+                <span class="map-scale" id="mapScale">范围 100%</span>
+              </div>
+            </section>
+
+            <section class="panel flight-panel" aria-labelledby="flightTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">FLIGHT DETAIL</p>
+                  <h2 id="flightTitle">航线与航班</h2>
+                </div>
+                <button class="icon-button" id="backToRoutes" type="button" title="返回航线列表" hidden>
+                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12.5 5-5 5 5 5" /></svg>
+                </button>
+              </div>
+              <div class="flight-panel-meta" id="flightPanelMeta">--</div>
+              <div class="flight-panel-body" id="flightPanelBody"></div>
+            </section>
+          </div>
+
+          <div class="lower-grid">
+            <section class="panel trend-panel" aria-labelledby="trendTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">30 MIN BINS</p>
+                  <h2 id="trendTitle">时段运行曲线</h2>
+                </div>
+                <div class="chart-legend">
+                  <span><i class="bar-key"></i>班次</span>
+                  <span><i class="line-key"></i>平均延误</span>
+                </div>
+              </div>
+              <div class="chart-frame">
+                <canvas id="trendCanvas" aria-label="班次与平均延误曲线"></canvas>
+              </div>
+            </section>
+
+            <section class="panel export-panel" aria-labelledby="exportTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">AUDIT TRAIL</p>
+                  <h2 id="exportTitle">导出日志</h2>
+                </div>
+                <span class="status-chip" id="exportStatus">待导出</span>
+              </div>
+              <div class="export-summary">
+                <div><span>当前快照</span><b id="exportSnapshotValue">--</b></div>
+                <div><span>导出校验</span><b id="exportCheckValue">就绪</b></div>
+              </div>
+              <div class="export-list" id="exportLog">
+                <div class="empty-log">本次会话尚无导出记录</div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>数据为演示航班，日期 2026-11-17</span>
+        <span id="footerVersion">快照 --</span>
+      </footer>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
