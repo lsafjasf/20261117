@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>热管散热器 · 热管理模拟</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>三热源 · 热管散热器模拟</h1>
+  <p class="sub">调节风扇、导热片与负载分配，让三块热源安全运行 10 分钟</p>
+</header>
+
+<main>
+  <section class="left">
+    <canvas id="scene" width="760" height="420"></canvas>
+    <canvas id="chart" width="760" height="220"></canvas>
+  </section>
+
+  <section class="right">
+    <div class="panel" id="transport">
+      <h2>模拟控制</h2>
+      <div class="btnrow">
+        <button id="btnRun">开始</button>
+        <button id="btnStep" title="单步推进一个物理步长">单步</button>
+        <button id="btnReset">重置</button>
+        <button id="btnReplay">回放</button>
+      </div>
+      <div class="replaybar" id="replaybar" hidden>
+        <label>回放游标 <input type="range" id="replayCursor" min="0" max="0" value="0" step="1"></label>
+        <span id="replayTime">t = 0.0 s</span>
+      </div>
+      <div class="statusline" id="statusline">待机 · 按「开始」运行</div>
+    </div>
+
+    <div class="panel" id="controls">
+      <h2>玩家调节</h2>
+      <label>风扇转速 <output id="oFan">50%</output>
+        <input type="range" id="fan" min="0" max="100" value="50">
+      </label>
+      <label>导热片 1（热源1→热管）<output id="oPad0">5.0 W/K</output>
+        <input type="range" class="pad" data-i="0" min="10" max="100" value="50">
+      </label>
+      <label>导热片 2（热源2→热管）<output id="oPad1">5.0 W/K</output>
+        <input type="range" class="pad" data-i="1" min="10" max="100" value="50">
+      </label>
+      <label>导热片 3（热源3→热管）<output id="oPad2">5.0 W/K</output>
+        <input type="range" class="pad" data-i="2" min="10" max="100" value="50">
+      </label>
+      <label>负载权重 1 <output id="oW0">33</output>
+        <input type="range" class="wt" data-i="0" min="0" max="100" value="33">
+      </label>
+      <label>负载权重 2 <output id="oW1">33</output>
+        <input type="range" class="wt" data-i="1" min="0" max="100" value="33">
+      </label>
+      <label>负载权重 3 <output id="oW2">34</output>
+        <input type="range" class="wt" data-i="2" min="0" max="100" value="34">
+      </label>
+    </div>
+
+    <div class="panel" id="readouts">
+      <h2>物理量 / 边界</h2>
+      <table id="tbl">
+        <thead><tr><th>量</th><th>当前</th><th>上限</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="report" hidden>
+      <h2>运行报告</h2>
+      <div id="reportBody"></div>
+    </div>
+  </section>
+</main>
+
+<script src="sim.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
