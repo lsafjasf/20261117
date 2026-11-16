@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>听诊故障诊断台</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>听诊故障诊断台</h1>
+  <div class="transport">
+    <button id="btnPlay">▶ 播放</button>
+    <button id="btnPause">⏸ 暂停</button>
+    <button id="btnReplay">↺ 重播</button>
+    <button id="btnStep">⏭ 单步</button>
+    <label>试听状态
+      <select id="selMonitor">
+        <option value="main">主输出</option>
+        <option value="bypass">旁路</option>
+        <option value="mute">静音</option>
+      </select>
+    </label>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>设备图(点击听诊点)</h2>
+    <canvas id="cvMachines" width="960" height="300"></canvas>
+    <div class="row">
+      <label>设备负载 <input type="range" id="rngLoad" min="0" max="1" step="0.01" value="0.4"><span id="txtLoad">0.40</span></label>
+      <label>听诊增益 <input type="range" id="rngGain" min="0" max="1" step="0.01" value="0.5"><span id="txtGain">0.50</span></label>
+      <span id="txtDistort" class="badge">未失真</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>波形与电平</h2>
+    <canvas id="cvWave" width="960" height="180"></canvas>
+    <div class="row meters">
+      <span>电平 L <canvas id="cvL" width="160" height="14"></canvas></span>
+      <span>R <canvas id="cvR" width="160" height="14"></canvas></span>
+      <span id="txtCh">声道: 立体声 2ch</span>
+      <span id="txtNodes">活动节点: 0</span>
+      <span id="txtState">状态: 已停止</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>诊断</h2>
+    <div class="row" id="diagRow">
+      <label>机器 1 <select class="diagSel" data-m="0"></select></label>
+      <label>机器 2 <select class="diagSel" data-m="1"></select></label>
+      <label>机器 3 <select class="diagSel" data-m="2"></select></label>
+      <button id="btnDiagnose">提交诊断</button>
+      <button id="btnNewGame">新一局</button>
+      <span id="txtVerdict" class="badge">未提交</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>参数与导出</h2>
+    <div class="row">
+      <button id="btnSave">保存参数</button>
+      <button id="btnLoad">重载参数</button>
+      <button id="btnExport">导出 WAV</button>
+      <button id="btnSelfTest">维度自检</button>
+    </div>
+    <pre id="log" class="log"></pre>
+  </section>
+</main>
+
+<script src="js/audio.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

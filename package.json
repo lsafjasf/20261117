@@ -1,0 +1,25 @@
+{
+  "name": "uid828",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u00002\u00000\u00002\u00006\u00001\u00001\u00001\u00007\u0000\r\u0000 \u0000",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/e2e.mjs",
+    "serve": "python3 -m http.server 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsafjasf/20261117.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lsafjasf/20261117/issues"
+  },
+  "homepage": "https://github.com/lsafjasf/20261117#readme",
+  "dependencies": {
+    "playwright": "^1.65.1"
+  }
+}
