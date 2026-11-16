@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#071115">
+  <title>双路调压 · 三罐协同</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23071014'/%3E%3Cpath d='M8 22V12M16 22V7M24 22V15' stroke='%2355e0c2' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <main class="console-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div>
+          <p class="eyebrow">FLOW CONTROL / 03</p>
+          <h1>双路调压 · 三罐协同</h1>
+        </div>
+      </div>
+      <div class="topbar-meta">
+        <div class="run-chip" id="runChip">
+          <span class="status-dot"></span>
+          <span id="runChipText">待机 · 参数可调</span>
+        </div>
+        <div class="clock-block">
+          <span>任务时钟</span>
+          <strong id="missionClock">00:00.0</strong>
+        </div>
+      </div>
+    </header>
+
+    <section class="mission-strip" aria-label="任务概览">
+      <div class="mission-copy">
+        <span class="section-kicker">MISSION 07</span>
+        <p>在 <strong>60.0 s</strong> 内将三个储罐调至目标液位，并保持泵、阀门与管网处于安全包络内。</p>
+      </div>
+      <div class="mission-stats">
+        <div class="mini-stat">
+          <span>达标储罐</span>
+          <strong><b id="tanksReady">0</b><i>/ 3</i></strong>
+        </div>
+        <div class="mini-stat">
+          <span>剩余时间</span>
+          <strong><b id="timeRemaining">60.0</b><i>s</i></strong>
+        </div>
+        <div class="mini-stat">
+          <span>设备风险</span>
+          <strong class="risk-text" id="riskLevel">低</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <article class="panel stage-panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">LIVE SCHEMATIC</span>
+            <h2>管网与流量</h2>
+          </div>
+          <div class="legend" aria-label="图例">
+            <span><i class="legend-line flow"></i>流动</span>
+            <span><i class="legend-line target"></i>目标液位</span>
+            <span><i class="legend-line danger"></i>越限点</span>
+          </div>
+        </div>
+
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="networkCanvas" aria-label="双路流体管网示意图"></canvas>
+          <div class="canvas-hud top-left">
+            <span class="hud-label">分配器</span>
+            <span class="hud-value" id="headerPressure">0.000 MPa</span>
+          </div>
+          <div class="canvas-hud top-right">
+            <span class="hud-label">总流量</span>
+            <span class="hud-value" id="totalFlow">0.0 L/s</span>
+          </div>
+          <div class="fault-callout" id="faultCallout" hidden>
+            <span class="fault-code" id="faultCode">F-00</span>
+            <div>
+              <strong id="faultTitle">安全边界触发</strong>
+              <p id="faultDetail"></p>
+            </div>
+          </div>
+          <div class="replay-badge" id="replayBadge" hidden>
+            <span class="pulse-dot"></span>
+            历史回放
+          </div>
+        </div>
+
+        <div class="timeline-bar">
+          <button class="icon-button" id="timelineBack" type="button" aria-label="上一帧">←</button>
+          <span class="timeline-time" id="timelineCurrent">00:00.0</span>
+          <input id="timelineScrubber" type="range" min="0" max="0" value="0" step="1" aria-label="历史时间轴">
+          <span class="timeline-time muted" id="timelineTotal">00:00.0</span>
+          <button class="icon-button" id="timelineForward" type="button" aria-label="下一帧">→</button>
+          <span class="frame-label" id="frameLabel">固定步长 100 ms</span>
+        </div>
+      </article>
+
+      <aside class="panel control-panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">OPERATOR INPUT</span>
+            <h2>分配控制</h2>
+          </div>
+          <span class="mode-tag" id="modeTag">MANUAL</span>
+        </div>
+
+        <div class="control-body">
+          <div class="control-intro">
+            <span class="control-index">01</span>
+            <p>泵送负载决定扬程与热负荷；阀门开度决定两路流量。关闭阀门时需保持缓慢，避免压力冲击。</p>
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-meta">
+              <label for="loadInput">泵送负载</label>
+              <output id="loadOutput">78%</output>
+            </div>
+            <input id="loadInput" class="range-input range-load" type="range" min="45" max="115" value="78" step="1">
+            <div class="slider-scale"><span>45% 低载</span><span class="limit-mark">100% 上限</span><span>115%</span></div>
+          </div>
+
+          <div class="valve-heading">
+            <span>两路分配阀</span>
+            <span class="valve-total" id="valveTotal">136%</span>
+          </div>
+          <div class="valve-control">
+            <div class="valve-ident"><b>V1</b><span>A 路 · T1 / T2</span><strong id="valveAOutput">72%</strong></div>
+            <input id="valveAInput" class="range-input range-a" type="range" min="0" max="100" value="72" step="1">
+            <div class="valve-flow"><span>实际开度 <b id="valveAActual">72.0%</b></span><span id="valveAFlow">0.0 L/s</span></div>
+          </div>
+          <div class="valve-control">
+            <div class="valve-ident"><b>V2</b><span>B 路 · T3</span><strong id="valveBOutput">64%</strong></div>
+            <input id="valveBInput" class="range-input range-b" type="range" min="0" max="100" value="64" step="1">
+            <div class="valve-flow"><span>实际开度 <b id="valveBActual">64.0%</b></span><span id="valveBFlow">0.0 L/s</span></div>
+          </div>
+
+          <div class="command-row">
+            <button class="primary-button" id="toggleRun" type="button">
+              <span class="button-icon">▶</span><span id="toggleRunText">开始运行</span>
+            </button>
+            <button class="square-button" id="stepButton" type="button" title="推进一个物理步长">
+              <span>单步</span><kbd>+100ms</kbd>
+            </button>
+            <button class="square-button" id="resetButton" type="button" title="恢复全部初始条件">
+              <span>重置</span><kbd>R</kbd>
+            </button>
+          </div>
+          <button class="replay-button" id="replayButton" type="button" disabled>
+            <span class="replay-icon">↺</span>
+            <span>回放本次运行</span>
+            <small id="replayHint">等待轨迹</small>
+          </button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="lower-grid">
+      <article class="panel trend-panel">
+        <div class="panel-head compact">
+          <div>
+            <span class="section-kicker">TREND / FORCE</span>
+            <h2>趋势与受力</h2>
+          </div>
+          <div class="trend-legend">
+            <span><i class="swatch pressure"></i>压力</span>
+            <span><i class="swatch hammer"></i>水锤力</span>
+            <span><i class="swatch temp"></i>温度</span>
+          </div>
+        </div>
+        <div class="trend-wrap">
+          <canvas id="trendCanvas" aria-label="压力、水锤力与温度趋势"></canvas>
+          <div class="trend-empty" id="trendEmpty">运行后将在此绘制趋势</div>
+        </div>
+      </article>
+
+      <article class="panel telemetry-panel">
+        <div class="panel-head compact">
+          <div>
+            <span class="section-kicker">PHYSICAL LIMITS</span>
+            <h2>物理量与边界</h2>
+          </div>
+          <span class="peak-tag">峰值追踪</span>
+        </div>
+        <div class="telemetry-grid" id="telemetryGrid">
+          <div class="metric-card" data-metric="load">
+            <div class="metric-top"><span>驱动负载</span><b id="metricLoad">0.0%</b></div>
+            <div class="limit-bar"><i id="barLoad"></i><em style="left:100%"></em></div>
+            <div class="metric-bottom"><span>0%</span><span>上限 100%</span></div>
+          </div>
+          <div class="metric-card" data-metric="speed">
+            <div class="metric-top"><span>泵转速</span><b id="metricSpeed">0 rpm</b></div>
+            <div class="limit-bar"><i id="barSpeed"></i><em style="left:93.9%"></em></div>
+            <div class="metric-bottom"><span>0 rpm</span><span>上限 1550 rpm</span></div>
+          </div>
+          <div class="metric-card" data-metric="pressure">
+            <div class="metric-top"><span>分配器压力</span><b id="metricPressure">0.000 MPa</b></div>
+            <div class="limit-bar"><i id="barPressure"></i><em style="left:90.5%"></em></div>
+            <div class="metric-bottom"><span>0 MPa</span><span>上限 1.050 MPa</span></div>
+          </div>
+          <div class="metric-card" data-metric="temp">
+            <div class="metric-top"><span>泵体温度</span><b id="metricTemp">38.0 °C</b></div>
+            <div class="limit-bar"><i id="barTemp"></i><em style="left:88.2%"></em></div>
+            <div class="metric-bottom"><span>5 °C</span><span>上限 80 °C</span></div>
+          </div>
+          <div class="metric-card wide" data-metric="hammer">
+            <div class="metric-top"><span>最大水锤冲击</span><b id="metricHammer">0.00 kN</b></div>
+            <div class="limit-bar"><i id="barHammer"></i><em style="left:70%"></em></div>
+            <div class="metric-bottom"><span>0 kN</span><span>上限 1.40 kN</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel report-panel" id="reportPanel">
+        <div class="panel-head compact">
+          <div>
+            <span class="section-kicker">RUN REPORT</span>
+            <h2>运行报告</h2>
+          </div>
+          <button class="text-button" id="exportReport" type="button" disabled>导出</button>
+        </div>
+        <div class="report-empty" id="reportEmpty">
+          <div class="radar-mark" aria-hidden="true"></div>
+          <p>开始运行后记录峰值与首次越限位置。</p>
+        </div>
+        <div class="report-content" id="reportContent" hidden>
+          <div class="report-summary">
+            <span class="report-state" id="reportState">运行中</span>
+            <span id="reportTime">00:00.0</span>
+          </div>
+          <div class="report-peaks" id="reportPeaks"></div>
+          <div class="report-fault" id="reportFault"></div>
+        </div>
+      </article>
+    </section>
+
+    <footer class="footer-bar">
+      <span><b>操作提示</b> 单步固定推进 100 ms；暂停期间修改阀门目标不会改变已完成轨迹。</span>
+      <span class="footer-status"><i></i>物理核心：确定性固定步长</span>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="js/physics.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
