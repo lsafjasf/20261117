@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>玻璃磨边仿真台</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>玻璃磨边仿真台</h1>
+    <div class="clock" id="clockBadge">仿真时钟 0.0s · 空闲</div>
+  </header>
+
+  <main>
+    <section class="panel controls">
+      <h2>磨轮控制</h2>
+      <div class="slider-row">
+        <label>磨轮压力 <span id="pressureVal">50</span> N
+          <small>软限 20–80，硬限 95（越限停机）</small>
+        </label>
+        <input type="range" id="pressure" min="10" max="100" step="1" value="50" />
+      </div>
+      <div class="slider-row">
+        <label>进给速度 <span id="feedVal">15</span> mm/s
+          <small>推荐 5–25，过快边缘粗糙</small>
+        </label>
+        <input type="range" id="feed" min="2" max="30" step="1" value="15" />
+      </div>
+      <div class="slider-row">
+        <label>冷却水量 <span id="coolantVal">6</span> L/min
+          <small>推荐 4–10，不足会烧边</small>
+        </label>
+        <input type="range" id="coolant" min="0" max="12" step="1" value="6" />
+      </div>
+
+      <div class="btn-grid">
+        <button id="btnStart" class="primary">启动</button>
+        <button id="btnPause">暂停</button>
+        <button id="btnStep">单步</button>
+        <button id="btnRestart" class="warn" disabled>故障恢复</button>
+        <button id="btnReset" class="danger">批次重置</button>
+        <button id="btnMute">静音</button>
+      </div>
+
+      <h3>流程验证脚本</h3>
+      <div class="btn-grid">
+        <button data-scenario="normal">正常生产</button>
+        <button data-scenario="limit">参数越限</button>
+        <button data-scenario="shutdown">设备停机</button>
+      </div>
+      <p class="hint">脚本以真实仿真时钟逐 tick 执行，结果与 Node 测试一致。</p>
+      <div id="scenarioStatus" class="scenario-status"></div>
+    </section>
+
+    <section class="panel stage">
+      <canvas id="stage" width="760" height="460"></canvas>
+      <div class="telemetry" id="telemetry"></div>
+    </section>
+
+    <section class="panel data">
+      <h2>批次与缓存</h2>
+      <div id="batchStats" class="stats"></div>
+      <h3>环形遥测缓存（最近 300 条）</h3>
+      <div class="cache-meta" id="cacheMeta"></div>
+      <h3>事件日志（设备启停 / 参数变化 / 批次结果）</h3>
+      <div class="log-wrap">
+        <table id="eventLog">
+          <thead><tr><th>时刻(s)</th><th>类型</th><th>说明</th><th>压力</th><th>进给</th><th>冷却</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="btn-grid">
+        <button id="btnExportJson" class="primary">导出 JSON 报告</button>
+        <button id="btnExportCsv">导出 CSV 事件</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
