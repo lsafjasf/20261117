@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>合成器调音台 · Web Audio 实时分析</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header class="topbar">
+  <h1>合成器调音台</h1>
+  <div class="mode-group" role="group" aria-label="试听状态">
+    <button data-mode="main" class="mode-btn active">主输出</button>
+    <button data-mode="bypass" class="mode-btn">旁路</button>
+    <button data-mode="mute" class="mode-btn">静音</button>
+  </div>
+  <div class="transport">
+    <button id="btn-play">播放</button>
+    <button id="btn-pause">暂停</button>
+    <button id="btn-replay">重播</button>
+    <button id="btn-step">单步</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="panel tuner-panel">
+    <h2>调音 · 三个八度</h2>
+    <div class="tuner-source">
+      <label>输入源
+        <select id="input-source">
+          <option value="sim">模拟麦克风（内部回采）</option>
+          <option value="mic">真实麦克风 (getUserMedia)</option>
+        </select>
+      </label>
+      <label>输入增益 <input id="in-gain" type="range" min="0" max="3" step="0.05" value="1" />
+        <span id="in-gain-val">1.00</span></label>
+      <span id="overload" class="warn hidden">⚠ 增益过高 / 削波误判</span>
+    </div>
+    <canvas id="meter-canvas" width="520" height="150"></canvas>
+    <canvas id="spec-canvas" width="520" height="170"></canvas>
+    <div id="pitch-readout" class="readout">— Hz · 偏差 — 音分</div>
+    <div class="registers">
+      <div class="reg" data-reg="low"><b>低音区</b><span class="reg-state">待校准</span></div>
+      <div class="reg" data-reg="mid"><b>中音区</b><span class="reg-state">待校准</span></div>
+      <div class="reg" data-reg="high"><b>高音区</b><span class="reg-state">待校准</span></div>
+    </div>
+    <div id="tune-complete" class="complete hidden">✓ 三个音区均已校准，调音完成</div>
+  </section>
+
+  <section class="panel engine-panel">
+    <h2>声音参数（全部 Web Audio 实时合成）</h2>
+    <div class="params">
+      <label>波形
+        <select id="p-wave">
+          <option value="sine">sine</option>
+          <option value="square">square</option>
+          <option value="sawtooth">sawtooth</option>
+          <option value="triangle">triangle</option>
+        </select>
+      </label>
+      <label>基础音高(Hz) <input id="p-freq" type="number" min="27.5" max="880" step="0.1" value="110" /></label>
+      <label>声像 L↔R <input id="p-pan" type="range" min="-1" max="1" step="0.05" value="0" /><span id="p-pan-val">0.00</span></label>
+      <label>主增益 <input id="p-gain" type="range" min="0" max="1" step="0.02" value="0.5" /><span id="p-gain-val">0.50</span></label>
+      <label>低/中/高频增益(dB)
+        <input id="p-lows" type="range" min="-24" max="12" step="1" value="0" /><span id="p-lows-val">0</span>
+        <input id="p-mids" type="range" min="-24" max="12" step="1" value="0" /><span id="p-mids-val">0</span>
+        <input id="p-highs" type="range" min="-24" max="12" step="1" value="0" /><span id="p-highs-val">0</span>
+      </label>
+      <label>延迟时间(s) <input id="p-delay" type="range" min="0" max="0.6" step="0.01" value="0.18" /><span id="p-delay-val">0.18</span></label>
+      <label>延迟反馈 <input id="p-fb" type="range" min="0" max="0.85" step="0.01" value="0.3" /><span id="p-fb-val">0.30</span></label>
+      <label>BPM <input id="p-bpm" type="number" min="40" max="240" step="1" value="120" /></label>
+      <label>保持时长(s) <input id="p-hold" type="range" min="0.2" max="3" step="0.1" value="1" /><span id="p-hold-val">1.0</span></label>
+      <label>低音区微调(音分) <input id="d-low" type="range" min="-50" max="50" step="1" value="-14" /><span id="d-low-val">-14</span></label>
+      <label>中音区微调(音分) <input id="d-mid" type="range" min="-50" max="50" step="1" value="9" /><span id="d-mid-val">9</span></label>
+      <label>高音区微调(音分) <input id="d-high" type="range" min="-50" max="50" step="1" value="-6" /><span id="d-high-val">-6</span></label>
+    </div>
+
+    <h3>状态监测</h3>
+    <div class="meters">
+      <div>L 电平 <meter id="level-l" min="0" max="1"></meter> <span id="level-l-val">0.00</span></div>
+      <div>R 电平 <meter id="level-r" min="0" max="1"></meter> <span id="level-r-val">0.00</span></div>
+      <div>声道：<span id="channel-info">stereo</span></div>
+      <div>活动节点：<span id="node-count">0</span></div>
+      <div>节拍位置：<span id="beat-pos">0 / 0</span></div>
+    </div>
+
+    <h3>参数与导出</h3>
+    <div class="io-row">
+      <button id="btn-save">保存参数</button>
+      <button id="btn-load">重载参数</button>
+      <button id="btn-export">导出 WAV</button>
+      <button id="btn-verify">运行验证套件</button>
+    </div>
+    <div id="verify-results" class="verify"></div>
+    <div id="export-compare" class="verify"></div>
+  </section>
+</main>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

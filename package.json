@@ -1,0 +1,27 @@
+{
+  "name": "uid833",
+  "version": "1.0.0",
+  "description": "合成器调音台 Web Audio 应用",
+  "main": "index.html",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsafjasf/20261117.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/lsafjasf/20261117/issues"
+  },
+  "homepage": "https://github.com/lsafjasf/20261117#readme",
+  "dependencies": {
+    "node-web-audio-api": "^2.2.0"
+  }
+}
