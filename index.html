@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071218" />
+    <title>ABYSS / 声呐航路</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23071218'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2378e6dc' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='5' fill='none' stroke='%2378e6dc' opacity='.55'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%2378e6dc'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>
+            <p class="eyebrow">DEEP FIELD UNIT / 07</p>
+            <h1>ABYSS <span>声呐航路</span></h1>
+          </div>
+        </div>
+        <div class="mission-meta">
+          <span class="live-dot"></span>
+          <span>低能见度航道</span>
+          <span class="meta-divider"></span>
+          <span>水深 14.2 m</span>
+          <span class="meta-divider"></span>
+          <span id="mission-clock">T+ 00:00</span>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="sonar-panel" aria-label="声呐航道">
+          <div class="canvas-wrap">
+            <canvas id="sonar-canvas" aria-label="声呐扫描画布"></canvas>
+            <div class="scan-vignette" aria-hidden="true"></div>
+            <div class="stage-top">
+              <div class="coordinate-readout">
+                <span>SECTOR</span>
+                <strong>N-31.84° / E-118.27°</strong>
+              </div>
+              <div class="depth-readout">
+                <span>SONAR RANGE</span>
+                <strong>42 m</strong>
+              </div>
+            </div>
+            <div class="scan-label" id="scan-label" aria-live="polite">
+              <span class="scan-label-wave"></span>
+              <span>待命 · 点击“发射声呐”</span>
+            </div>
+            <div class="tool-dock" aria-label="标记工具">
+              <span class="dock-label">标记</span>
+              <button class="tool active" data-tool="shallow" type="button">
+                <i class="tool-swatch shallow"></i>浅滩
+              </button>
+              <button class="tool" data-tool="rock" type="button">
+                <i class="tool-swatch rock"></i>岩壁
+              </button>
+              <button class="tool" data-tool="debris" type="button">
+                <i class="tool-swatch debris"></i>漂浮物
+              </button>
+              <button class="tool" data-tool="exit" type="button">
+                <i class="tool-swatch exit"></i>出口
+              </button>
+              <span class="dock-hint">选择工具后点击回波</span>
+            </div>
+          </div>
+
+          <div class="resource-strip">
+            <div class="resource">
+              <div class="resource-title"><span>电量</span><strong id="battery-value">100%</strong></div>
+              <div class="meter-track"><div id="battery-meter" class="meter-fill battery"></div></div>
+            </div>
+            <div class="resource">
+              <div class="resource-title"><span>换能器温度</span><strong id="heat-value">18°</strong></div>
+              <div class="meter-track"><div id="heat-meter" class="meter-fill heat"></div></div>
+            </div>
+            <div class="resource">
+              <div class="resource-title"><span>扫描强度</span><strong id="power-value">84 kW</strong></div>
+              <div class="segments" id="power-segments" aria-hidden="true"></div>
+            </div>
+            <div class="resource actions">
+              <button id="scan-button" class="btn btn-primary" type="button">
+                <span class="btn-icon">◉</span>发射声呐 <kbd>SPACE</kbd>
+              </button>
+              <button id="sail-button" class="btn btn-sail" type="button" disabled>
+                驶出航道 <span>→</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="instrument-panel">
+          <section class="panel audio-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">AUDIO TELEMETRY</p>
+                <h2>声学监视台</h2>
+              </div>
+              <span id="audio-state" class="status-pill idle">待机</span>
+            </div>
+            <div class="monitor-modes" role="group" aria-label="试听状态">
+              <button class="monitor active" data-monitor="main" type="button">主输出</button>
+              <button class="monitor" data-monitor="bypass" type="button">旁路</button>
+              <button class="monitor" data-monitor="mute" type="button">静音</button>
+            </div>
+            <div class="level-block">
+              <canvas id="scope-canvas" aria-label="左右声道电平"></canvas>
+              <div class="channel-meters">
+                <div class="channel-meter">
+                  <span>L</span>
+                  <div class="meter-track vertical"><div id="meter-left" class="meter-fill channel"></div></div>
+                  <strong id="level-left">-∞</strong>
+                </div>
+                <div class="channel-meter">
+                  <span>R</span>
+                  <div class="meter-track vertical"><div id="meter-right" class="meter-fill channel"></div></div>
+                  <strong id="level-right">-∞</strong>
+                </div>
+              </div>
+            </div>
+            <div class="audio-stats">
+              <div><span>活动节点</span><strong id="node-count">0</strong></div>
+              <div><span>频段</span><strong id="band-label">—</strong></div>
+              <div><span>节拍</span><strong id="beat-label">80 BPM</strong></div>
+            </div>
+            <div class="transport">
+              <button id="play-button" class="transport-btn" type="button" title="播放/暂停">▶</button>
+              <button id="replay-button" class="transport-btn" type="button" title="重播">↺</button>
+              <button id="step-button" class="transport-btn" type="button" title="单步">+1</button>
+              <div class="transport-position">
+                <span>BEAT</span>
+                <strong id="beat-position">00.0</strong>
+              </div>
+              <button id="export-button" class="btn btn-export" type="button">导出 WAV</button>
+            </div>
+          </section>
+
+          <section class="panel echoes-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="eyebrow">RETURN SIGNALS</p>
+                <h2>回波判读</h2>
+              </div>
+              <span id="echo-count" class="count">0 / 4</span>
+            </div>
+            <div id="echo-list" class="echo-list">
+              <p class="empty-state">尚未捕获回波。<br />发射一次声呐，读取延迟、强度与左右声像。</p>
+            </div>
+          </section>
+
+          <section class="panel params-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="eyebrow">ACOUSTIC PROFILE</p>
+                <h2>参数</h2>
+              </div>
+              <button id="param-toggle" class="text-button" type="button">收起</button>
+            </div>
+            <div id="params-body">
+              <label class="slider-row">
+                <span>主音量</span>
+                <input id="master-volume" type="range" min="0" max="100" value="72" />
+                <output id="master-volume-out">72</output>
+              </label>
+              <label class="slider-row">
+                <span>声像宽度</span>
+                <input id="pan-width" type="range" min="20" max="100" value="82" />
+                <output id="pan-width-out">82</output>
+              </label>
+              <label class="slider-row">
+                <span>回波增益</span>
+                <input id="echo-gain" type="range" min="20" max="100" value="68" />
+                <output id="echo-gain-out">68</output>
+              </label>
+              <label class="slider-row">
+                <span>航速节拍</span>
+                <input id="tempo" type="range" min="60" max="100" value="80" />
+                <output id="tempo-out">80</output>
+              </label>
+              <div class="param-actions">
+                <button id="save-params" class="btn btn-ghost" type="button">保存参数</button>
+                <button id="load-params" class="btn btn-ghost" type="button">重载并播放</button>
+              </div>
+              <p id="param-status" class="mini-status">参数未保存</p>
+            </div>
+          </section>
+
+          <section class="panel verify-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="eyebrow">WAV / QA</p>
+                <h2>离线验收</h2>
+              </div>
+              <span id="verify-badge" class="status-pill">未运行</span>
+            </div>
+            <div class="verify-grid">
+              <div><span>时长</span><strong id="verify-duration">—</strong></div>
+              <div><span>峰值 L / R</span><strong id="verify-peaks">—</strong></div>
+              <div><span>声道</span><strong id="verify-channels">—</strong></div>
+              <div><span>节点残留</span><strong id="verify-nodes">—</strong></div>
+            </div>
+            <div class="verify-actions">
+              <button id="verify-button" class="btn btn-verify" type="button">保存 → 重载 → 双导出比对</button>
+            </div>
+            <p id="verify-detail" class="mini-status">使用同一参数渲染两次 10 秒立体声 WAV，并检测峰值位置与尾音。</p>
+          </section>
+        </aside>
+      </main>
+
+      <footer class="footerbar">
+        <p><span class="footer-strong">目标</span> 标记 3 处障碍与出口，校准后驶出航道。</p>
+        <div class="legend">
+          <span><i class="legend-dot shallow"></i>低频长尾</span>
+          <span><i class="legend-dot rock"></i>高频短促</span>
+          <span><i class="legend-dot debris"></i>中频破碎</span>
+        </div>
+        <p class="audio-note">所有声音由 Web Audio 实时合成 · 无外部音频文件</p>
+      </footer>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="result-modal" class="modal" hidden>
+      <div class="modal-card">
+        <p class="eyebrow">NAVIGATION COMPLETE</p>
+        <h2 id="result-title">航道已贯通</h2>
+        <p id="result-copy">所有回波标记正确，潜航器已安全驶出。</p>
+        <div class="result-stats">
+          <div><span>耗电</span><strong id="result-battery">—</strong></div>
+          <div><span>扫描</span><strong id="result-scans">—</strong></div>
+          <div><span>用时</span><strong id="result-time">—</strong></div>
+        </div>
+        <button id="restart-button" class="btn btn-primary" type="button">重新进入航道</button>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
