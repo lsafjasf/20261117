@@ -1,0 +1,21 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Web Audio 雨声分离台：频段+门限三轨分离，全部声音实时合成",
+  "main": "app.js",
+  "scripts": {
+    "serve": "python3 -m http.server 8731",
+    "verify": "node verify-run.js",
+    "e2e": "node e2e-run.js",
+    "wav": "node wav-export.js",
+    "test": "node verify-run.js && node e2e-run.js && node wav-export.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@playwright/test": "^1.65.1",
+    "playwright-core": "^1.65.1"
+  }
+}

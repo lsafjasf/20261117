@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雨声分离台 · Web Audio 频段门限混音</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%2318202f'/%3E%3Cpath d='M3 11c2-1 3-4 5-4s3 3 5 2' stroke='%234fc3f7' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>雨声分离台 <span class="sub">频段 × 门限 × 三轨分离（全部声音由 Web Audio 实时生成）</span></h1>
+</header>
+
+<section class="transport" id="transport">
+  <div class="btn-group" role="group" aria-label="走带控制">
+    <button id="btnPlay" class="primary">▶ 播放</button>
+    <button id="btnPause">⏸ 暂停</button>
+    <button id="btnStop">⏹ 停止</button>
+    <button id="btnReplay">⟳ 重播</button>
+    <button id="btnStep">⏭ 单步</button>
+  </div>
+  <div class="step-indicator">
+    <span class="label">16 步进</span>
+    <div class="steps" id="stepLights"></div>
+  </div>
+  <div class="btn-group" role="group" aria-label="参数与导出">
+    <button id="btnSave">💾 保存参数</button>
+    <button id="btnLoad">📂 载入参数</button>
+    <button id="btnExport">🌊 导出 WAV</button>
+    <button id="btnVerify">✔ 运行验证</button>
+  </div>
+</section>
+
+<section class="state-bar" id="stateBar">
+  <div class="state-item">试听状态：<strong id="monitorState">主输出</strong></div>
+  <div class="state-item">走带：<strong id="transportState">已停止</strong></div>
+  <div class="state-item">活动节点：<strong id="nodeCount">0</strong></div>
+  <div class="state-item">采样率：<strong id="sampleRate">–</strong></div>
+  <div class="state-item">节拍：<strong id="bpmText">120 BPM</strong>（漂移 <strong id="driftText">–</strong>）</div>
+</section>
+
+<main class="mixer" id="mixer"></main>
+
+<section class="master">
+  <div class="master-panel">
+    <h2>主输出 / 监听</h2>
+    <div class="monitor-buttons">
+      <button data-monitor="master" class="monitor-btn active">主输出</button>
+      <button data-monitor="bypass" class="monitor-btn">旁路</button>
+      <button data-monitor="mute" class="monitor-btn">静音</button>
+    </div>
+    <div class="master-fader">
+      <canvas id="masterFader" width="72" height="220"></canvas>
+      <div class="fader-value" id="masterGainText">0.80</div>
+    </div>
+    <div class="meters">
+      <canvas id="masterMeters" width="120" height="220"></canvas>
+      <div class="meter-labels"><span>L</span><span>R</span></div>
+    </div>
+    <canvas id="masterSpectrum" width="560" height="220"></canvas>
+  </div>
+</section>
+
+<section class="verify-panel" id="verifyPanel">
+  <h2>验证报告</h2>
+  <pre id="verifyReport">点击“运行验证”开始自动化检查（暂停停止、参数重载、WAV 时长/峰值/声道、节点泄漏、尾音、节拍漂移）。</pre>
+</section>
+
+<input type="file" id="paramFile" accept="application/json" hidden>
+<script src="worklets.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
