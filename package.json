@@ -1,0 +1,21 @@
+{
+  "name": "mise-variable-menu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Canvas-based variable restaurant menu editor with responsive columns, validation, undo/redo and PNG/SVG/JSON export.",
+  "scripts": {
+    "start": "node server.js",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "keywords": [
+    "canvas",
+    "menu",
+    "restaurant",
+    "layout"
+  ],
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.65.1"
+  }
+}

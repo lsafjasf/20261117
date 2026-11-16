@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#17211c" />
+    <title>Mise · 可变菜单编排</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>
+            <p class="brand-name">Mise</p>
+            <p class="brand-sub">可变菜单编排</p>
+          </div>
+        </div>
+
+        <div class="topbar-center">
+          <span class="save-state"><i id="saveDot"></i><span id="saveStatus">已自动保存</span></span>
+          <div class="history-group" aria-label="编辑历史">
+            <button class="icon-btn" id="undoBtn" title="撤销 (Ctrl/⌘ Z)" aria-label="撤销">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 4 12l5 5M5 12h8a6 6 0 0 1 6 6"/></svg>
+            </button>
+            <button class="icon-btn" id="redoBtn" title="重做 (Ctrl/⌘ Shift Z)" aria-label="重做">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 7 5 5-5 5m4-5h-8a6 6 0 0 0-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <nav class="top-actions" aria-label="文件操作">
+          <label class="select-wrap sample-wrap">
+            <span>案例</span>
+            <select id="sampleSelect" aria-label="加载示例">
+              <option value="">选择示例</option>
+              <option value="standard">标准 · 八道菜</option>
+              <option value="extreme">压力 · 极端长文本</option>
+              <option value="tiny">压力 · 极小画布</option>
+            </select>
+          </label>
+          <button class="text-btn" id="importBtn">导入 JSON</button>
+          <button class="text-btn" id="reloadBtn">重新载入</button>
+          <button class="text-btn" id="saveBtn">保存</button>
+          <div class="export-wrap">
+            <button class="primary-btn" id="exportBtn">
+              导出
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5M12 4v11M5 20h14"/></svg>
+            </button>
+            <div class="export-menu" id="exportMenu" hidden>
+              <button data-export="png"><b>PNG</b><span>高分辨率预览图</span></button>
+              <button data-export="svg"><b>SVG</b><span>文字与图形保持矢量</span></button>
+              <button data-export="json"><b>版式 JSON</b><span>可重新载入并继续编辑</span></button>
+            </div>
+          </div>
+          <input id="importInput" type="file" accept="application/json,.json" hidden />
+        </nav>
+      </header>
+
+      <main class="main-layout">
+        <aside class="editor-panel" aria-label="菜单编辑">
+          <div class="editor-scroll">
+            <section class="panel-section intro-section">
+              <div class="section-kicker">01 / 餐厅与版式</div>
+              <div class="field-grid two-up">
+                <label class="field">
+                  <span>餐厅名称</span>
+                  <input id="restaurantInput" data-doc="restaurant" autocomplete="off" />
+                </label>
+                <label class="field">
+                  <span>货币符号</span>
+                  <input id="currencyInput" data-doc="currency" autocomplete="off" />
+                </label>
+              </div>
+              <label class="field">
+                <span>菜单主标题</span>
+                <input id="headlineInput" data-doc="headline" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span>副标题</span>
+                <input id="subheadingInput" data-doc="subheading" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span>页脚说明</span>
+                <input id="noteInput" data-doc="note" autocomplete="off" />
+              </label>
+            </section>
+
+            <section class="panel-section">
+              <div class="section-heading">
+                <div>
+                  <div class="section-kicker">02 / 纸张</div>
+                  <h2>画布与安全边距</h2>
+                </div>
+                <span class="section-meta" id="pageMeta">A4 · 1240 × 1754</span>
+              </div>
+              <div class="field-grid three-up">
+                <label class="field span-2">
+                  <span>页面预设</span>
+                  <select id="pagePreset">
+                    <option value="a4-portrait">A4 纵向</option>
+                    <option value="a4-landscape">A4 横向</option>
+                    <option value="a5-portrait">A5 纵向</option>
+                    <option value="square">方形菜单</option>
+                    <option value="custom">自定义尺寸</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>安全边距</span>
+                  <div class="number-unit"><input id="marginInput" type="number" min="8" max="300" step="1" /><span>px</span></div>
+                </label>
+              </div>
+              <div class="field-grid two-up size-fields">
+                <label class="field">
+                  <span>宽度</span>
+                  <div class="number-unit"><input id="widthInput" type="number" min="300" max="2400" step="1" /><span>px</span></div>
+                </label>
+                <label class="field">
+                  <span>高度</span>
+                  <div class="number-unit"><input id="heightInput" type="number" min="320" max="3200" step="1" /><span>px</span></div>
+                </label>
+              </div>
+              <p class="field-help">排版会在安全边距内自动选择两栏或三栏；尺寸过小时会给出可执行的修复提示。</p>
+            </section>
+
+            <section class="panel-section">
+              <div class="section-heading">
+                <div>
+                  <div class="section-kicker">03 / 视觉</div>
+                  <h2>颜色与装饰</h2>
+                </div>
+              </div>
+              <div class="field">
+                <span>强调色</span>
+                <div class="swatch-row" id="accentSwatches" role="group" aria-label="强调色">
+                  <button class="swatch" data-accent="#ad4a32" style="--swatch:#ad4a32" aria-label="陶土红"></button>
+                  <button class="swatch" data-accent="#315a4b" style="--swatch:#315a4b" aria-label="松针绿"></button>
+                  <button class="swatch" data-accent="#2f5674" style="--swatch:#2f5674" aria-label="靛青"></button>
+                  <button class="swatch" data-accent="#8b6234" style="--swatch:#8b6234" aria-label="赭金"></button>
+                  <label class="swatch custom-swatch" title="自定义强调色">
+                    <input id="accentPicker" type="color" value="#ad4a32" aria-label="自定义强调色" />
+                  </label>
+                </div>
+              </div>
+              <div class="field-grid two-up">
+                <label class="field">
+                  <span>装饰图形</span>
+                  <select id="motifSelect">
+                    <option value="arch">同心拱线</option>
+                    <option value="grid">细密网格</option>
+                    <option value="sun">日光放射</option>
+                    <option value="none">无装饰</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>纸张质感</span>
+                  <select id="paperSelect">
+                    <option value="cream">暖米白</option>
+                    <option value="white">洁净白</option>
+                    <option value="sage">鼠尾草</option>
+                    <option value="ink">墨色夜间</option>
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <section class="panel-section items-section">
+              <div class="section-heading items-heading">
+                <div>
+                  <div class="section-kicker">04 / 菜品</div>
+                  <h2>菜单内容 <span class="count-pill" id="itemCount">0</span></h2>
+                </div>
+                <button class="small-btn" id="addItemBtn">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                  添加菜品
+                </button>
+              </div>
+              <div class="item-list" id="itemsList"></div>
+              <button class="add-item-wide" id="addItemWideBtn">
+                <span>＋</span>
+                再添加一道菜
+              </button>
+            </section>
+          </div>
+
+          <div class="validation-dock" id="validationDock">
+            <button class="validation-summary" id="validationToggle" aria-expanded="true">
+              <span class="validation-icon" id="validationIcon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+              </span>
+              <span>
+                <strong id="validationTitle">版式检查通过</strong>
+                <small id="validationSubtitle">安全边距、重叠与裁切均正常</small>
+              </span>
+              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+            </button>
+            <div class="validation-body" id="validationBody">
+              <ul id="validationList"></ul>
+            </div>
+          </div>
+        </aside>
+
+        <section class="preview-panel">
+          <div class="preview-toolbar">
+            <div class="layout-state">
+              <span class="live-dot"></span>
+              <div>
+                <strong id="layoutSummary">自动排版中</strong>
+                <span id="layoutDetail">正在测量文字…</span>
+              </div>
+            </div>
+            <div class="preview-tools">
+              <label class="toggle-label" title="显示或隐藏安全边距">
+                <input id="safeMarginToggle" type="checkbox" />
+                <span class="toggle-track"></span>
+                安全线
+              </label>
+              <div class="zoom-group" aria-label="缩放">
+                <button id="zoomOut" class="zoom-btn" aria-label="缩小">−</button>
+                <button id="zoomLabel" class="zoom-value" title="点击适应窗口">100%</button>
+                <button id="zoomIn" class="zoom-btn" aria-label="放大">＋</button>
+                <button id="fitBtn" class="fit-btn" title="适应窗口">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M8 21H3v-5m13 5h5v-5"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="preview-stage" id="previewStage">
+            <div class="page-shadow" id="pageShadow">
+              <canvas id="menuCanvas" aria-label="菜单排版预览"></canvas>
+              <div class="canvas-outline" aria-hidden="true"></div>
+            </div>
+          </div>
+          <div class="preview-footer">
+            <p><span class="key">⌘/Ctrl Z</span> 撤销 <span class="key">⇧⌘/Ctrl Z</span> 重做</p>
+            <p id="exportHint">导出使用同一排版管线，不重新计算换行。</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+    <div class="modal-backdrop" id="confirmModal" hidden>
+      <div class="confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <span class="modal-kicker">需要确认</span>
+        <h3 id="confirmTitle">放弃未保存的修改？</h3>
+        <p id="confirmText">当前内容与上次保存的版本不同，重新载入会覆盖现在的编辑。</p>
+        <div class="modal-actions">
+          <button class="text-btn" id="confirmCancel">继续编辑</button>
+          <button class="primary-btn danger" id="confirmAccept">放弃并载入</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
