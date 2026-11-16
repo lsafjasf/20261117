@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="潮汐育苗：确定性河口鱼苗放流模拟器，包含观测/真值、临界告警、事件对比与同 seed 复现。"
+    />
+    <title>潮汐育苗 · 河口水域放流控制台</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b2b31'/%3E%3Cpath d='M5 20c5-6 8 5 13 0s7 3 10-1' fill='none' stroke='%2354e0bf' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M12 11c4-3 9-2 11 2-2 4-7 5-11 2l-3 2v-6l3 2z' fill='%2354e0bf'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 44 44" role="img">
+              <path d="M4 25c7-8 12 8 19 0s10 5 17-1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M10 30c5-5 9 4 14-1s8 3 12-1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".55"/>
+              <path d="M20 14c5-4 12-3 15 2-3 5-10 6-15 2l-5 4v-8l5 2z" fill="currentColor" opacity=".9"/>
+              <circle cx="30" cy="15.5" r="1.1" fill="#082b31"/>
+            </svg>
+          </div>
+          <div>
+            <h1>潮汐育苗</h1>
+            <p>河口水域放流控制台</p>
+          </div>
+        </div>
+
+        <div class="seed-control">
+          <label for="seedInput">复现种子</label>
+          <div class="seed-input-row">
+            <input id="seedInput" inputmode="numeric" value="20261117" autocomplete="off" />
+            <button id="applySeedBtn" class="compact-btn" type="button">载入</button>
+          </div>
+        </div>
+
+        <div class="header-weather">
+          <div id="weatherIcon" class="weather-glyph" aria-hidden="true">◒</div>
+          <div>
+            <span class="eyebrow">当前天气</span>
+            <strong id="weatherLabel">晴间多云</strong>
+          </div>
+          <span id="weatherWind" class="weather-wind">风 2.1 m/s</span>
+        </div>
+
+        <div class="mission-clock">
+          <span class="eyebrow">任务时钟</span>
+          <strong id="clockLabel">06:00</strong>
+          <span id="elapsedLabel" class="mono">T+00:00:00</span>
+        </div>
+
+        <div id="alarmSummary" class="alarm-summary normal">
+          <span class="alarm-dot"></span>
+          <div>
+            <span class="eyebrow">综合告警</span>
+            <strong id="alarmText">正常</strong>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <div class="speed-switch" role="group" aria-label="运行速度">
+            <button type="button" data-speed="1" class="active">1×</button>
+            <button type="button" data-speed="4">4×</button>
+          </div>
+          <button id="soundBtn" class="icon-btn" type="button" aria-pressed="false" title="开启环境声音">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>
+              <path class="sound-wave" d="M16 8c1.6 2.3 1.6 5.7 0 8M19 5.5c3 3.7 3 9.3 0 13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <path class="sound-mute" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button id="runToggleBtn" class="primary-btn run-btn" type="button">
+            <span class="pause-glyph" aria-hidden="true">Ⅱ</span>
+            <span id="runToggleText">暂停</span>
+          </button>
+          <button id="resetBtn" class="secondary-btn" type="button">
+            <span aria-hidden="true">↺</span> 重置
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="visual-column">
+          <div id="sceneShell" class="scene-shell">
+            <canvas id="scene" aria-label="河口放流场景：运输船、水流、目标标记与鱼群"></canvas>
+
+            <div class="scene-topbar">
+              <div class="scene-location">
+                <span class="live-dot"></span>
+                <span>东汊河口</span>
+                <span class="scene-divider"></span>
+                <span id="sceneWeather">晴间多云 · 涨潮</span>
+              </div>
+              <div class="scene-readouts">
+                <span>放流点 <strong id="sceneReleaseX">50%</strong></span>
+                <span>闸门 <strong id="sceneGate">1.2 m/s</strong></span>
+              </div>
+            </div>
+
+            <div id="sceneAlert" class="scene-alert" hidden>
+              <span class="alert-beacon"></span>
+              <div>
+                <strong id="sceneAlertTitle">临界事件</strong>
+                <span id="sceneAlertDetail">流速越过临界阈值</span>
+              </div>
+            </div>
+
+            <div class="scene-target-card">
+              <span class="eyebrow">下一目标</span>
+              <strong id="sceneTargetTitle">目标 1 · 过渡水道</strong>
+              <span id="sceneTargetDetail">44% · 3,480 尾</span>
+            </div>
+
+            <div class="release-overlay">
+              <div class="release-overlay-top">
+                <span class="eyebrow">批次放流</span>
+                <span id="releasePercent" class="mono">待命</span>
+              </div>
+              <div class="mini-progress"><span id="releaseProgressBar"></span></div>
+              <div class="release-overlay-bottom">
+                <span id="releaseBatchLabel">第 1 / 3 批</span>
+                <span id="releaseSurvival">目标存活率 ≥ 78%</span>
+              </div>
+            </div>
+
+            <div class="scene-legend">
+              <span><i class="legend-dot target"></i>放流目标</span>
+              <span><i class="legend-dot boat"></i>运输船</span>
+              <span><i class="legend-dot predator"></i>捕食者风险</span>
+              <span><i class="legend-dot sensor"></i>传感器</span>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <article class="metric-card" data-metric="temperature">
+              <div class="metric-head">
+                <span class="metric-name">水温差</span>
+                <span id="alarm-temperature" class="alarm-pill normal">正常</span>
+              </div>
+              <div class="metric-reading">
+                <span id="observed-temperature" class="metric-value">0.20</span>
+                <span class="metric-unit">°C</span>
+              </div>
+              <div class="metric-truth">
+                <span>观测 / 真值</span>
+                <span><b id="actual-temperature">0.20</b><em id="delta-temperature" class="obs-delta">+0.00</em></span>
+              </div>
+              <svg class="sparkline" viewBox="0 0 120 24" preserveAspectRatio="none" aria-hidden="true">
+                <path id="spark-temperature"></path>
+              </svg>
+              <div class="metric-footer"><span>预警 1.8</span><span>临界 3.2</span></div>
+            </article>
+
+            <article class="metric-card" data-metric="waterLevel">
+              <div class="metric-head">
+                <span class="metric-name">水位</span>
+                <span id="alarm-waterLevel" class="alarm-pill normal">正常</span>
+              </div>
+              <div class="metric-reading">
+                <span id="observed-waterLevel" class="metric-value">1.61</span>
+                <span class="metric-unit">m</span>
+              </div>
+              <div class="metric-truth">
+                <span>观测 / 真值</span>
+                <span><b id="actual-waterLevel">1.61</b><em id="delta-waterLevel" class="obs-delta">+0.00</em></span>
+              </div>
+              <svg class="sparkline" viewBox="0 0 120 24" preserveAspectRatio="none" aria-hidden="true">
+                <path id="spark-waterLevel"></path>
+              </svg>
+              <div class="metric-footer"><span>低水位预警 0.95</span><span>临界 0.72</span></div>
+            </article>
+
+            <article class="metric-card" data-metric="flow">
+              <div class="metric-head">
+                <span class="metric-name">流速</span>
+                <span id="alarm-flow" class="alarm-pill normal">正常</span>
+              </div>
+              <div class="metric-reading">
+                <span id="observed-flow" class="metric-value">0.87</span>
+                <span class="metric-unit">m/s</span>
+              </div>
+              <div class="metric-truth">
+                <span>观测 / 真值</span>
+                <span><b id="actual-flow">0.87</b><em id="delta-flow" class="obs-delta">+0.00</em></span>
+              </div>
+              <svg class="sparkline" viewBox="0 0 120 24" preserveAspectRatio="none" aria-hidden="true">
+                <path id="spark-flow"></path>
+              </svg>
+              <div class="metric-footer"><span>预警 1.65</span><span>临界 2.30</span></div>
+            </article>
+
+            <article class="metric-card" data-metric="pollution">
+              <div class="metric-head">
+                <span class="metric-name">污染指数</span>
+                <span id="alarm-pollution" class="alarm-pill normal">正常</span>
+              </div>
+              <div class="metric-reading">
+                <span id="observed-pollution" class="metric-value">14.2</span>
+                <span class="metric-unit">PPM</span>
+              </div>
+              <div class="metric-truth">
+                <span>观测 / 真值</span>
+                <span><b id="actual-pollution">14.2</b><em id="delta-pollution" class="obs-delta">+0.0</em></span>
+              </div>
+              <svg class="sparkline" viewBox="0 0 120 24" preserveAspectRatio="none" aria-hidden="true">
+                <path id="spark-pollution"></path>
+              </svg>
+              <div class="metric-footer"><span>预警 42</span><span>临界 60</span></div>
+            </article>
+
+            <article class="metric-card" data-metric="oxygen">
+              <div class="metric-head">
+                <span class="metric-name">溶解氧</span>
+                <span id="alarm-oxygen" class="alarm-pill normal">正常</span>
+              </div>
+              <div class="metric-reading">
+                <span id="observed-oxygen" class="metric-value">7.82</span>
+                <span class="metric-unit">mg/L</span>
+              </div>
+              <div class="metric-truth">
+                <span>观测 / 真值</span>
+                <span><b id="actual-oxygen">7.82</b><em id="delta-oxygen" class="obs-delta">+0.00</em></span>
+              </div>
+              <svg class="sparkline" viewBox="0 0 120 24" preserveAspectRatio="none" aria-hidden="true">
+                <path id="spark-oxygen"></path>
+              </svg>
+              <div class="metric-footer"><span>低氧预警 6.2</span><span>临界 5.2</span></div>
+            </article>
+
+            <article class="metric-card species-card" data-metric="species">
+              <div class="metric-head">
+                <span class="metric-name">物种数</span>
+                <span id="alarm-species" class="alarm-pill normal">稳定</span>
+              </div>
+              <div class="metric-reading">
+                <span id="observed-species" class="metric-value">16</span>
+                <span class="metric-unit">种</span>
+              </div>
+              <div class="metric-truth">
+                <span>观测 / 真值</span>
+                <span><b id="actual-species">16.0</b><em class="obs-delta">群落</em></span>
+              </div>
+              <svg class="sparkline" viewBox="0 0 120 24" preserveAspectRatio="none" aria-hidden="true">
+                <path id="spark-species"></path>
+              </svg>
+              <div class="metric-footer"><span>灾后跌幅</span><span>持续监测</span></div>
+            </article>
+          </div>
+        </section>
+
+        <aside class="control-column">
+          <section class="panel mission-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">放流任务</span>
+                <h2>三批存活窗口</h2>
+              </div>
+              <span id="missionBadge" class="status-badge">待命</span>
+            </div>
+            <div class="mission-score">
+              <div>
+                <span class="mission-big" id="targetCountLabel">0 / 3</span>
+                <span class="mission-caption">目标批次</span>
+              </div>
+              <div class="survival-target">
+                <span>门槛</span>
+                <strong>78%</strong>
+                <small>每批成活率</small>
+              </div>
+            </div>
+            <div class="batch-track" id="batchTrack">
+              <div class="batch-step" data-batch="0"><span>01</span><i></i><em>待放流</em></div>
+              <div class="batch-step" data-batch="1"><span>02</span><i></i><em>待放流</em></div>
+              <div class="batch-step" data-batch="2"><span>03</span><i></i><em>待放流</em></div>
+            </div>
+            <div class="intervention-box">
+              <span class="eyebrow">当前干预措施</span>
+              <div id="interventionPills" class="intervention-pills">
+                <span>配水 <b>20.2°C</b></span>
+                <span>位置 <b>50%</b></span>
+                <span>闸门 <b>1.2 m/s</b></span>
+              </div>
+            </div>
+            <div id="recoveryStatus" class="recovery-status" hidden>
+              <span class="recovery-ring"></span>
+              <div>
+                <strong>恢复观察进行中</strong>
+                <span id="recoveryCountdown">03:00</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel target-panel">
+            <div class="panel-heading compact">
+              <div>
+                <span class="eyebrow">分布复现</span>
+                <h2>目标位置</h2>
+              </div>
+              <span id="targetRemaining" class="small-chip">3 个目标</span>
+            </div>
+            <div id="targetList" class="target-list">
+              <div class="target-row pending">
+                <span class="target-index">01</span>
+                <div><strong>过渡水道</strong><small>44% · 3,480 尾</small></div>
+                <span class="target-state">待放流</span>
+              </div>
+              <div class="target-row pending">
+                <span class="target-index">02</span>
+                <div><strong>浅滩外缘</strong><small>33% · 3,410 尾</small></div>
+                <span class="target-state">待放流</span>
+              </div>
+              <div class="target-row pending">
+                <span class="target-index">03</span>
+                <div><strong>主槽深水</strong><small>63% · 3,550 尾</small></div>
+                <span class="target-state">待放流</span>
+              </div>
+            </div>
+            <div class="forecast-head">
+              <span class="eyebrow">确定性天气序列</span>
+              <span id="seedFingerprint" class="mono">seed:20261117</span>
+            </div>
+            <div id="weatherForecast" class="weather-forecast"></div>
+          </section>
+
+          <section class="panel control-panel">
+            <div class="panel-heading compact">
+              <div>
+                <span class="eyebrow">实时干预</span>
+                <h2>放流控制</h2>
+              </div>
+              <div class="sensor-tag"><i></i>传感器 20Hz</div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-title">
+                <label for="mixTempRange">水温平衡</label>
+                <output id="mixTempValue" for="mixTempRange">20.2°C</output>
+              </div>
+              <div class="control-context">
+                河口观测 <b id="estuaryObserved">20.35°C</b>
+                <span>放流口 <b id="releaseObserved">20.15°C</b></span>
+              </div>
+              <input id="mixTempRange" class="styled-range temp-range" type="range" min="10" max="26" step="0.1" value="20.2" />
+              <div class="range-labels"><span>10°</span><span>跟随河口</span><span>26°</span></div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-title">
+                <label for="releaseXRange">放流位置</label>
+                <output id="releaseXValue" for="releaseXRange">过渡水道 50%</output>
+              </div>
+              <input id="releaseXRange" class="styled-range zone-range" type="range" min="8" max="92" step="1" value="50" />
+              <div class="zone-scale">
+                <span>浅滩 / 捕食风险</span>
+                <span>主槽 / 深水</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-title">
+                <label for="gateSpeedRange">闸门速度</label>
+                <output id="gateSpeedValue" for="gateSpeedRange">1.2 m/s</output>
+              </div>
+              <input id="gateSpeedRange" class="styled-range gate-range" type="range" min="0.3" max="2.8" step="0.1" value="1.2" />
+              <div class="range-labels"><span>缓流</span><span>拥挤阈值 1.8</span><span>急流</span></div>
+            </div>
+
+            <div class="control-shortcuts">
+              <button id="alignTempBtn" class="text-btn" type="button">跟随当前水温</button>
+              <button id="alignTargetBtn" class="text-btn" type="button">对准下一目标</button>
+            </div>
+
+            <button id="releaseBtn" class="release-btn" type="button">
+              <span class="release-btn-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 3v10m0 0l-4-4m4 4l4-4M4 16c3 2 5 2 8 0s5-2 8 0M4 20c3 2 5 2 8 0s5-2 8 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </span>
+              <span>
+                <strong id="releaseBtnText">开始第 1 批放流</strong>
+                <small id="releaseBtnHint">当前目标 · 过渡水道 44%</small>
+              </span>
+              <span class="release-btn-arrow">→</span>
+            </button>
+            <div id="missionResult" class="mission-result" hidden>
+              <strong id="missionResultTitle">三批放流完成</strong>
+              <span id="missionResultDetail">平均存活率 --</span>
+            </div>
+          </section>
+        </aside>
+      </main>
+
+      <section class="bottom-dock">
+        <article class="panel events-panel">
+          <div class="panel-heading dock-heading">
+            <div>
+              <span class="eyebrow">事件快照</span>
+              <h2>操作前后对比</h2>
+            </div>
+            <span class="small-chip">物种 / 水位 / 污染</span>
+          </div>
+          <div class="comparison-legend">
+            <span>触发时刻</span><span>事件</span><span>物种</span><span>水位</span><span>污染</span>
+          </div>
+          <div id="eventList" class="event-list">
+            <div class="empty-state">
+              <span class="empty-glyph">⌁</span>
+              <p>任务开始后自动记录稳态、临界事件与处置失败。</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel log-panel">
+          <div class="panel-heading dock-heading">
+            <div>
+              <span class="eyebrow">连续记录</span>
+              <h2>运行日志</h2>
+            </div>
+            <span id="logCount" class="small-chip">0 条</span>
+          </div>
+          <div id="logList" class="log-list">
+            <div class="log-empty">等待事件...</div>
+          </div>
+        </article>
+
+        <article class="panel validation-panel">
+          <div class="panel-heading dock-heading">
+            <div>
+              <span class="eyebrow">自动验收</span>
+              <h2>复现与阈值验证</h2>
+            </div>
+            <button id="verifyBtn" class="compact-btn" type="button">重新验证</button>
+          </div>
+          <div id="verificationSummary" class="verification-summary">
+            <span class="verify-spinner"></span>
+            <div><strong>正在运行确定性校验</strong><span>稳态 · 临界 · 失败 · 重开</span></div>
+          </div>
+          <div id="verificationChecks" class="verification-checks"></div>
+          <div id="verificationFootnote" class="verification-footnote">
+            验证使用独立模拟实例，不中断当前任务。
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
