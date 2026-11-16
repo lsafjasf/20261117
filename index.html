@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151816">
+  <title>釉衡 · 陶器浸釉仿真</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">釉</span>
+      <div>
+        <h1>釉衡</h1>
+        <p>GLAZE PROCESS LAB</p>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="header-stat">
+        <span>批次</span>
+        <strong id="batch-id">—</strong>
+      </div>
+      <div class="header-stat">
+        <span>仿真时钟</span>
+        <strong id="sim-clock">00:00.0</strong>
+      </div>
+      <div id="system-status" class="status-chip" data-status="idle">
+        <i></i><span>待机</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="audio-toggle" class="icon-button" type="button" aria-pressed="false" title="开启声音">
+        <span class="sound-icon">♪</span><span class="audio-label">声音</span>
+      </button>
+      <button id="help-toggle" class="icon-button" type="button" title="操作说明">?</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="stage-column">
+      <article class="stage-card">
+        <canvas id="stage" aria-label="陶器浸釉实时仿真画面"></canvas>
+        <div class="stage-overlay top">
+          <div class="phase-badge">
+            <span>当前工序</span>
+            <strong id="phase-label">待开始</strong>
+          </div>
+          <div class="live-meters">
+            <div class="live-meter" id="thickness-meter">
+              <span>釉层厚度</span>
+              <strong id="thickness-live">0.00 <small>mm</small></strong>
+              <div class="meter-track"><i id="thickness-fill"></i><b id="target-window"></b></div>
+            </div>
+            <div class="live-meter liquid-meter">
+              <span>釉池液位</span>
+              <strong id="level-live">100 <small>%</small></strong>
+              <div class="meter-track"><i id="level-fill"></i></div>
+            </div>
+          </div>
+        </div>
+        <div class="stage-overlay bottom">
+          <div class="piece-now">
+            <span class="piece-dot"></span>
+            <div>
+              <small id="piece-kicker">第 1 / 3 件</small>
+              <strong id="piece-name">白瓷杯</strong>
+            </div>
+            <span id="piece-target">目标 0.68 mm</span>
+          </div>
+          <div class="stage-controls">
+            <button id="primary-action" class="primary-button" type="button">开始浸釉</button>
+            <button id="secondary-action" class="secondary-button" type="button" disabled>完成当前件</button>
+          </div>
+        </div>
+      </article>
+
+      <section class="metric-grid" aria-label="实时生产指标">
+        <article class="metric-card">
+          <div class="metric-head"><span>良品</span><i class="metric-icon good"></i></div>
+          <strong id="metric-good">0 <small>/ 3</small></strong>
+          <p id="metric-yield">良品率 —</p>
+        </article>
+        <article class="metric-card">
+          <div class="metric-head"><span>能耗</span><i class="metric-icon energy"></i></div>
+          <strong id="metric-energy">0.000 <small>kWh</small></strong>
+          <p id="metric-power">峰值 0 W</p>
+        </article>
+        <article class="metric-card">
+          <div class="metric-head"><span>釉池余量</span><i class="metric-icon liquid"></i></div>
+          <strong id="metric-level">100 <small>%</small></strong>
+          <p id="metric-volume">18.0 L</p>
+        </article>
+        <article class="metric-card">
+          <div class="metric-head"><span>内存缓存</span><i class="metric-icon cache"></i></div>
+          <strong id="metric-cache">0 <small>帧</small></strong>
+          <p id="metric-cache-time">无快照</p>
+        </article>
+      </section>
+    </section>
+
+    <aside class="side-column">
+      <article class="panel queue-panel">
+        <div class="panel-heading">
+          <div><span>BATCH QUEUE</span><h2>本批陶器</h2></div>
+          <span id="queue-progress" class="tag">0 / 3</span>
+        </div>
+        <div id="piece-queue" class="piece-queue"></div>
+      </article>
+
+      <article class="panel control-panel">
+        <div class="panel-heading">
+          <div><span>PROCESS CONTROL</span><h2>工艺参数</h2></div>
+          <span id="param-lock" class="tag">可调</span>
+        </div>
+
+        <label class="range-control" for="soak-time">
+          <span><b>浸釉时长</b><output id="soak-output">3.2 s</output></span>
+          <input id="soak-time" type="range" min="1" max="9" step="0.1" value="3.2">
+          <small>设定自动提起的浸泡时长</small>
+        </label>
+        <label class="range-control" for="rotation-speed">
+          <span><b>旋转速度</b><output id="rotation-output">32 RPM</output></span>
+          <input id="rotation-speed" type="range" min="0" max="80" step="1" value="32">
+          <small>影响排釉均匀度与电机负载</small>
+        </label>
+        <label class="range-control" for="drip-speed">
+          <span><b>滴釉速度</b><output id="drip-output">0.6 mm/s</output></span>
+          <input id="drip-speed" type="range" min="0" max="3" step="0.1" value="0.6">
+          <small>提起后持续减薄，可随时完成</small>
+        </label>
+
+        <div class="utility-row">
+          <button id="refill-button" class="text-button" type="button">补充釉液 <span>+4%</span></button>
+          <button id="estop-button" class="danger-button" type="button">设备急停</button>
+        </div>
+      </article>
+
+      <article class="panel transport-panel">
+        <div class="transport-buttons">
+          <button id="pause-button" class="transport-button" type="button">
+            <span class="transport-icon pause"></span><span id="pause-label">暂停</span>
+          </button>
+          <button id="step-button" class="transport-button" type="button" disabled>
+            <span class="transport-icon step"></span>单步 +0.1s
+          </button>
+          <button id="reset-button" class="transport-button" type="button">
+            <span class="transport-icon reset"></span>批次重置
+          </button>
+        </div>
+        <p class="transport-note">暂停后仍可检查缓存与事件；恢复时保持当前批次进度。</p>
+      </article>
+    </aside>
+  </main>
+
+  <section class="lower-deck">
+    <article class="panel log-panel">
+      <div class="panel-heading log-heading">
+        <div><span>SHARED CLOCK AUDIT</span><h2>设备与批次记录</h2></div>
+        <div class="panel-actions">
+          <span id="log-count" class="tag">0 条</span>
+          <button id="clear-log-button" class="text-button compact" type="button">清空记录</button>
+        </div>
+      </div>
+      <div class="log-table-wrap">
+        <table class="log-table">
+          <thead><tr><th>时刻</th><th>类型</th><th>设备 / 位置</th><th>事件与当前值</th></tr></thead>
+          <tbody id="event-log"></tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="panel verification-panel">
+      <div class="panel-heading">
+        <div><span>PROCESS VALIDATION</span><h2>三类流程验收</h2></div>
+        <button id="run-validation" class="primary-button small" type="button">运行全部验收</button>
+      </div>
+      <div class="validation-summary">
+        <div><span>综合良品率</span><strong id="validation-yield">—</strong></div>
+        <div><span>异常位置</span><strong id="validation-anomaly">未运行</strong></div>
+        <div><span>停机原因</span><strong id="validation-stop">—</strong></div>
+      </div>
+      <div id="validation-list" class="validation-list">
+        <p class="empty-state">运行验收后，将记录触发时刻、当前数值与恢复结果。</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="export-strip">
+    <div>
+      <span>EXPORT</span>
+      <strong>导出本批次生产报告</strong>
+      <p>包含良品数、良品率、峰值、停机原因、设备日志与三类流程验收。</p>
+    </div>
+    <div class="export-actions">
+      <button id="export-json" class="secondary-button" type="button">导出 JSON</button>
+      <button id="export-csv" class="secondary-button" type="button">导出 CSV</button>
+    </div>
+  </section>
+
+  <dialog id="help-dialog">
+    <button id="help-close" class="dialog-close" type="button" aria-label="关闭">×</button>
+    <span class="eyebrow">HOW TO GLAZE</span>
+    <h2>把三件陶器送入目标区间</h2>
+    <ol>
+      <li>为当前陶器设定浸釉时长、旋转速度与滴釉速度，然后开始浸釉。</li>
+      <li>浸釉结束后设备自动旋转排釉，再进入滴釉。厚度会随液位、转速与滴釉速度变化。</li>
+      <li>厚度进入目标窗口后点击“完成当前件”。过薄记为露底，过厚记为流挂。</li>
+      <li>三件均达到各自目标厚度即批次成功。持续生产会消耗釉液，可补充恢复。</li>
+      <li>暂停只冻结共享时钟；单步精确推进 0.1 秒。页面重开不会读取旧缓存。</li>
+    </ol>
+    <p class="dialog-footnote">声音由 Web Audio 实时合成，电机音随转速变化，液流声随滴釉速度变化。</p>
+  </dialog>
+
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+
+  <script src="js/simulation.js"></script>
+  <script src="js/verification.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
