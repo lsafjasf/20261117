@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三折页编辑器</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header id="toolbar">
+  <span class="brand">三折页编辑器</span>
+  <button id="btn-add-text">＋文字</button>
+  <button id="btn-add-rect">＋矩形</button>
+  <button id="btn-add-ellipse">＋椭圆</button>
+  <span class="sep"></span>
+  <button id="btn-undo" disabled>撤销</button>
+  <button id="btn-redo" disabled>重做</button>
+  <span class="sep"></span>
+  <button id="btn-save">保存</button>
+  <button id="btn-reload">重新载入</button>
+  <span class="sep"></span>
+  <button id="btn-fold-dir">折叠方向: 内折</button>
+  <label class="inline">折角 <input type="range" id="fold-angle" min="0" max="120" value="55"></label>
+  <label class="inline">视图
+    <select id="view-mode">
+      <option value="flat">展开图</option>
+      <option value="folded">折叠透视</option>
+    </select>
+  </label>
+  <label class="inline">缩放 <input type="range" id="zoom" min="40" max="300" value="100"></label>
+  <span class="sep"></span>
+  <button id="btn-export-svg">导出 SVG</button>
+  <button id="btn-export-png">导出 PNG</button>
+  <span class="sep"></span>
+  <button id="btn-case-standard">标准案例</button>
+  <button id="btn-case-extreme">极端案例</button>
+</header>
+<main>
+  <section id="stage-wrap">
+    <canvas id="stage" width="1100" height="800"></canvas>
+    <div id="statusbar">就绪</div>
+  </section>
+  <aside id="sidebar">
+    <h3>属性</h3>
+    <div id="props"><p class="muted">未选中元素。点击画布中的元素进行编辑，拖动可移动。</p></div>
+    <h3>排版检查 <span id="check-summary" class="ok">通过</span></h3>
+    <ul id="violations"></ul>
+    <h3>说明</h3>
+    <p class="muted small">
+      A4 横版三折（297×210mm，每折 99mm），安全边距 5mm。<br>
+      文字越过分页安全区或元素被裁切时<b>阻止导出</b>，并在上方列出修复方法。<br>
+      切换折叠方向只改变预览，不改变元素世界坐标。<br>
+      展开图中拖动元素；折叠透视用于查看折面与投影。
+    </p>
+  </aside>
+</main>
+<script src="js/text.js"></script>
+<script src="js/model.js"></script>
+<script src="js/cases.js"></script>
+<script src="js/render.js"></script>
+<script src="js/exporter.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
