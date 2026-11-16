@@ -1,0 +1,11 @@
+{
+  "name": "crane-lift-sim",
+  "version": "1.0.0",
+  "description": "滑轮组吊装确定性物理模拟（Canvas + 固定步长）",
+  "private": true,
+  "scripts": {
+    "test": "node tests/headless.js && node tests/dom-smoke.js"
+  },
+  "keywords": ["physics", "canvas", "crane", "deterministic", "simulation"],
+  "license": "MIT"
+}
