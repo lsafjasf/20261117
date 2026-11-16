@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Web Audio 多轨时间线编辑器</title>
+<style>
+  :root { --bg:#14171c; --panel:#1d2129; --line:#2c323d; --fg:#cfd8e3; --acc:#4da3ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:13px/1.5 "Segoe UI",system-ui,sans-serif; }
+  header { padding:10px 16px; background:var(--panel); border-bottom:1px solid var(--line); display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  header h1 { font-size:15px; margin:0; font-weight:600; }
+  .group { display:flex; gap:6px; align-items:center; padding:0 10px; border-left:1px solid var(--line); }
+  button { background:#2a3140; color:var(--fg); border:1px solid #3a4356; border-radius:4px; padding:5px 12px; cursor:pointer; font-size:12px; }
+  button:hover { background:#35405a; }
+  button.active { background:var(--acc); color:#0b1220; border-color:var(--acc); }
+  label { font-size:12px; color:#9fb0c3; }
+  input[type=range] { width:110px; }
+  #timelineWrap { padding:12px 16px; }
+  canvas#timeline { width:100%; height:340px; background:#10131a; border:1px solid var(--line); border-radius:6px; display:block; cursor:crosshair; }
+  #statusbar { display:flex; gap:18px; padding:8px 16px; background:var(--panel); border-top:1px solid var(--line); font-family:Consolas,monospace; font-size:12px; flex-wrap:wrap; }
+  .meterBox { display:flex; align-items:center; gap:6px; }
+  canvas.meter { width:120px; height:14px; background:#0c0f14; border:1px solid var(--line); border-radius:3px; }
+  #clipPanel { padding:10px 16px; background:var(--panel); border-top:1px solid var(--line); display:flex; gap:16px; flex-wrap:wrap; align-items:center; min-height:52px; }
+  #clipPanel .fld { display:flex; flex-direction:column; gap:2px; }
+  #verifyOut { padding:10px 16px; font-family:Consolas,monospace; font-size:12px; white-space:pre-wrap; max-height:260px; overflow:auto; background:#0e1116; border-top:1px solid var(--line); }
+  .pass { color:#5fd68a; } .fail { color:#ff6b6b; } .info { color:#8fa3bd; }
+</style>
+</head>
+<body>
+<header>
+  <h1>多轨时间线 · Web Audio 实时合成</h1>
+  <div class="group">
+    <button id="btnPlay">▶ 播放</button>
+    <button id="btnPause">⏸ 暂停</button>
+    <button id="btnReplay">⟲ 重播</button>
+    <button id="btnStep">⏭ 单步</button>
+    <button id="btnStop">⏹ 停止</button>
+  </div>
+  <div class="group">
+    <label>试听:</label>
+    <button id="monMain" class="active">主输出</button>
+    <button id="monBypass">旁路</button>
+    <button id="monMute">静音</button>
+  </div>
+  <div class="group">
+    <button id="btnExport">导出 WAV</button>
+    <button id="btnSave">保存参数</button>
+    <button id="btnReload">重载参数</button>
+    <button id="btnVerify">运行验证</button>
+  </div>
+  <div class="group">
+    <label>主音量 <input type="range" id="masterGain" min="0" max="1.5" step="0.01" value="0.9"></label>
+    <label>步进 <input type="range" id="stepSize" min="0.05" max="1" step="0.05" value="0.25"></label>
+  </div>
+</header>
+<div id="timelineWrap"><canvas id="timeline"></canvas></div>
+<div id="clipPanel"><span class="info">点击片段查看参数;拖动移动;拖上角调交叉淡化;双击添加音量点,Alt+点击删除。</span></div>
+<div id="statusbar">
+  <span>播放头: <b id="stPlayhead">0.00s</b></span>
+  <span>状态: <b id="stState">停止</b></span>
+  <span>声道: <b id="stCh">2 (立体声)</b></span>
+  <span>活动节点: <b id="stNodes">0</b></span>
+  <span class="meterBox">L <canvas id="meterL" class="meter"></canvas></span>
+  <span class="meterBox">R <canvas id="meterR" class="meter"></canvas></span>
+  <span>电平: <b id="stLevel">-∞ dB</b></span>
+</div>
+<div id="verifyOut" class="info">验证输出将显示在这里。</div>
+<script src="js/synths.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/exporter.js"></script>
+<script src="js/timeline.js"></script>
+<script src="js/main.js"></script>
+<script src="js/verify.js"></script>
+</body>
+</html>
