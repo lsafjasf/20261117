@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0e13" />
+  <title>夜行电车 · KINE Studio</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="KINE 工作台">
+        <span class="brand-mark"><i></i><i></i></span>
+        <span class="brand-name">KINE<span>/</span></span>
+      </a>
+      <div class="project-crumb">
+        <span class="eyebrow">ANIMATIC PROJECT</span>
+        <strong>夜行电车 <em>— EP.02 雨停之前</em></strong>
+      </div>
+      <div class="top-clock" aria-label="节目时间码">
+        <span id="headerTimecode">00:00:00:00</span>
+        <small><i class="live-dot"></i> 24 FPS · 统一时钟</small>
+      </div>
+      <div class="top-actions">
+        <span class="save-state" id="saveState"><i></i> 已保存</span>
+        <button class="icon-btn" id="reloadProjectBtn" title="重新载入已保存工程">↻</button>
+        <button class="ghost-btn" id="saveProjectBtn">保存工程</button>
+        <button class="export-btn" id="exportBtn"><span>↗</span> 导出影片</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <nav class="tool-rail" aria-label="绘制工具">
+        <button class="tool active" data-tool="draw" title="画笔 (B)">
+          <span class="tool-glyph">✎</span><small>画笔</small>
+        </button>
+        <button class="tool" data-tool="eraser" title="橡皮 (E)">
+          <span class="tool-glyph">⌫</span><small>橡皮</small>
+        </button>
+        <button class="tool" data-tool="pan" title="手形 (H)">
+          <span class="tool-glyph">✥</span><small>手形</small>
+        </button>
+        <span class="rail-sep"></span>
+        <button class="tool" id="undoBtn" title="撤销 (Ctrl+Z)">
+          <span class="tool-glyph">↶</span><small>撤销</small>
+        </button>
+        <button class="tool" id="redoBtn" title="重做 (Ctrl+Shift+Z)">
+          <span class="tool-glyph">↷</span><small>重做</small>
+        </button>
+        <div class="rail-bottom">
+          <button class="tool" id="helpBtn" title="快捷键">
+            <span class="tool-glyph">?</span><small>帮助</small>
+          </button>
+        </div>
+      </nav>
+
+      <section class="stage-column">
+        <div class="stage-meta">
+          <div class="stage-tabs">
+            <button class="stage-tab active">画面 <kbd>1</kbd></button>
+            <button class="stage-tab" id="safetyTab">安全框</button>
+          </div>
+          <div class="stage-meta-right">
+            <span class="chip"><i class="chip-dot"></i> 线稿显示</span>
+            <span class="zoom-label">适应 <b>▾</b></span>
+          </div>
+        </div>
+        <div class="stage-wrap" id="stageWrap">
+          <div class="stage-glow"></div>
+          <canvas id="stageCanvas" width="960" height="540" aria-label="动画预览和绘制画布"></canvas>
+          <div class="stage-hud top-left">
+            <span id="shotLabel">K-012 / 站台</span>
+            <b id="frameHud">F04 · 2F</b>
+          </div>
+          <div class="stage-hud top-right">
+            <span>REC. 709</span>
+            <b>1920 × 1080</b>
+          </div>
+          <div class="stage-play" id="stagePlayBtn" role="button" tabindex="0" aria-label="播放">▶</div>
+          <div class="trace-legend">
+            <span><i class="trace-a"></i> 路径 A</span>
+            <span><i class="trace-b"></i> 路径 B</span>
+            <span class="draw-hint" id="drawHint">在画布上拖拽补画</span>
+          </div>
+          <div class="stage-time">
+            <b id="stageTimecode">00:00:00:00</b>
+            <span>/ 00:00:09:07</span>
+          </div>
+        </div>
+        <div class="frame-dock">
+          <div class="frame-dock-head">
+            <div>
+              <span class="eyebrow">DRAWING SEQUENCE</span>
+              <strong>帧条 <em>12 张 / 12 fps</em></strong>
+            </div>
+            <div class="frame-dock-actions">
+              <button class="mini-btn" id="prevFrameBtn" aria-label="上一帧">‹</button>
+              <span class="frame-counter" id="frameCounter">04 / 12</span>
+              <button class="mini-btn" id="nextFrameBtn" aria-label="下一帧">›</button>
+              <button class="mini-btn accent" id="addFrameBtn" title="复制当前帧">＋</button>
+            </div>
+          </div>
+          <div class="frame-strip" id="frameStrip"></div>
+        </div>
+      </section>
+
+      <aside class="inspector">
+        <div class="inspector-tabs" role="tablist">
+          <button class="inspector-tab active" data-inspector="brush">笔触</button>
+          <button class="inspector-tab" data-inspector="timing">时值</button>
+          <button class="inspector-tab" data-inspector="checks">诊断 <i id="checkCount">4</i></button>
+        </div>
+        <div class="inspector-body">
+          <section class="inspector-panel active" data-panel="brush">
+            <div class="panel-title">
+              <div><span class="eyebrow">DRAWING LAYERS</span><h2>描摹路径</h2></div>
+              <button class="round-btn" id="clearPathBtn" title="清除当前路径">⌫</button>
+            </div>
+            <div class="path-switch" id="pathSwitch">
+              <button class="active" data-path="A"><i class="trace-a"></i><span>路径 A<small>轮廓线</small></span><b>✓</b></button>
+              <button data-path="B"><i class="trace-b"></i><span>路径 B<small>运动线</small></span><b>✓</b></button>
+            </div>
+            <div class="control-group">
+              <div class="control-label"><span>线条粗细</span><output id="widthOutput">3.0 px</output></div>
+              <input type="range" id="widthSlider" min="1" max="14" step="0.5" value="3" />
+              <div class="range-ticks"><span>1</span><span>7</span><span>14</span></div>
+            </div>
+            <div class="control-group">
+              <div class="control-label"><span>透明度</span><output id="opacityOutput">88%</output></div>
+              <input type="range" id="opacitySlider" min="15" max="100" step="1" value="88" />
+              <div class="range-ticks"><span>15</span><span>58</span><span>100</span></div>
+            </div>
+            <div class="toggle-row">
+              <span>洋葱皮</span>
+              <button class="switch on" id="onionToggle" aria-pressed="true"><i></i></button>
+            </div>
+            <div class="toggle-row">
+              <span>原始动画</span>
+              <button class="switch on" id="baseToggle" aria-pressed="true"><i></i></button>
+            </div>
+            <div class="path-info">
+              <span>当前帧 <b id="pathFrameLabel">F04</b></span>
+              <span><i class="trace-a"></i> <b id="pathACount">0 pts</b></span>
+              <span><i class="trace-b"></i> <b id="pathBCount">0 pts</b></span>
+            </div>
+          </section>
+
+          <section class="inspector-panel" data-panel="timing">
+            <div class="panel-title">
+              <div><span class="eyebrow">SHARED CLOCK</span><h2>节拍与循环</h2></div>
+              <span class="status-badge">24 FPS</span>
+            </div>
+            <div class="toggle-row">
+              <span>循环播放</span>
+              <button class="switch on" id="loopToggle" aria-pressed="true"><i></i></button>
+            </div>
+            <div class="toggle-row">
+              <span>Web Audio 节拍器</span>
+              <button class="switch on" id="metronomeToggle" aria-pressed="true"><i></i></button>
+            </div>
+            <div class="control-group">
+              <div class="control-label"><span>节拍音量</span><output id="volumeOutput">42%</output></div>
+              <input type="range" id="volumeSlider" min="0" max="100" step="1" value="42" />
+            </div>
+            <div class="beat-card">
+              <div class="beat-display" id="beatDisplay">
+                <i></i><i></i><i></i><i></i>
+              </div>
+              <div><span>120 BPM · 4/4</span><small>下一拍 <b id="nextBeatLabel">0.0s</b></small></div>
+            </div>
+            <div class="select-block">
+              <label for="transitionSelect">选中片段转场</label>
+              <select id="transitionSelect">
+                <option value="crossfade">交叉溶解 · 0.30s</option>
+                <option value="dip">黑场过渡 · 0.20s</option>
+                <option value="cut">硬切 · 0.00s</option>
+              </select>
+            </div>
+            <div class="clip-readout" id="clipReadout">
+              <span>入点 <b>00:00:00:10</b></span>
+              <span>出点 <b>00:00:05:03</b></span>
+              <span>时值 <b>5.10s</b></span>
+            </div>
+          </section>
+
+          <section class="inspector-panel" data-panel="checks">
+            <div class="panel-title">
+              <div><span class="eyebrow">PROJECT HEALTH</span><h2>导出自检</h2></div>
+              <span class="status-badge green" id="healthBadge">可导出</span>
+            </div>
+            <div class="check-list" id="checkList"></div>
+            <button class="wide-btn" id="runChecksBtn"><span>⌁</span> 运行音画同步测试</button>
+            <div class="sync-result" id="syncResult">
+              <div class="sync-icon">◎</div>
+              <div><strong>等待测试</strong><span>移动 / 分割 / 转场</span></div>
+            </div>
+            <div class="danger-zone">
+              <span>故障回放</span>
+              <button id="failureToggle">模拟播放失败</button>
+            </div>
+          </section>
+        </div>
+        <div class="inspector-foot">
+          <span><i class="sync-dot"></i> 自动保存开启</span>
+          <button id="openSettingsBtn">工程设置</button>
+        </div>
+      </aside>
+    </main>
+
+    <section class="timeline-panel" id="timelinePanel">
+      <div class="transport">
+        <button class="transport-btn" id="jumpStartBtn" title="回到开头">|◀</button>
+        <button class="transport-btn play" id="playBtn" title="播放 / 暂停">▶</button>
+        <button class="transport-btn" id="jumpEndBtn" title="跳到结尾">▶|</button>
+        <div class="transport-time">
+          <b id="timelineTimecode">00:00:00:00</b>
+          <span id="timelineDuration">/ 00:00:09:07</span>
+        </div>
+        <div class="transport-sep"></div>
+        <button class="transport-chip active" id="loopChip">↻ 循环</button>
+        <button class="transport-chip" id="snapChip">⌁ 吸附节拍</button>
+        <button class="transport-chip" id="metronomeChip"><i></i> 节拍</button>
+        <div class="transport-spacer"></div>
+        <span class="conflict-pill" id="conflictPill"><i>!</i> 无冲突</span>
+        <button class="transport-chip" id="splitBtn">⫶ 分割</button>
+        <button class="transport-chip" id="fitBtn">适应</button>
+      </div>
+      <div class="timeline-main">
+        <div class="track-heads">
+          <div class="ruler-head">
+            <span>MC</span><b id="timelineZoom">100%</b>
+          </div>
+          <div class="track-head video"><i></i><span>V1</span><small>画面</small><b>◉</b></div>
+          <div class="track-head subtitle"><i></i><span>S1</span><small>字幕</small><b>◉</b></div>
+          <div class="track-head drawing"><i></i><span>D1</span><small>动画</small><b>◉</b></div>
+          <div class="track-head audio"><i></i><span>A1</span><small>环境</small><b>◉</b></div>
+          <div class="track-head audio"><i></i><span>A2</span><small>节拍</small><b>◉</b></div>
+        </div>
+        <div class="timeline-scroll" id="timelineScroll">
+          <div class="timeline-content" id="timelineContent">
+            <div class="ruler" id="ruler"></div>
+            <div class="playhead" id="playhead"><b id="playheadLabel">00:00:00:00</b><i></i></div>
+            <div class="track video-track" data-track="video" id="videoTrack"></div>
+            <div class="track subtitle-track" data-track="subtitle" id="subtitleTrack"></div>
+            <div class="track drawing-track" data-track="drawing" id="drawingTrack"></div>
+            <div class="track audio-track" data-track="audio" id="audioTrack"></div>
+            <div class="track beat-track" data-track="beat" id="beatTrack"></div>
+            <div class="conflict-band" id="conflictBand"></div>
+          </div>
+        </div>
+      </div>
+      <footer class="timeline-foot">
+        <span class="foot-note"><i></i> 所有轨道锁定至节目时钟 · 拖动片段会自动吸附</span>
+        <span id="durationCompare">裁切合计：01 5.10s + 02 4.50s − 转场 0.30s = 9.30s</span>
+        <span>⌘S 保存 · Space 播放 · S 分割</span>
+      </footer>
+    </section>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+  <div class="modal-backdrop" id="exportModal" aria-hidden="true">
+    <div class="modal export-modal">
+      <button class="modal-close" id="closeExportBtn" aria-label="关闭">×</button>
+      <span class="eyebrow">MASTER OUTPUT</span>
+      <h2>导出节目影片</h2>
+      <div class="export-summary">
+        <div class="export-poster" id="exportPoster"></div>
+        <div class="export-meta">
+          <strong>夜行电车 — EP.02</strong>
+          <span>WebM · VP9 / Opus · 1920 × 1080</span>
+          <span id="exportRuntime">时长 9.30 秒 · 24 fps · 循环关闭</span>
+        </div>
+      </div>
+      <div class="export-checks">
+        <div><i>✓</i><span>片段无非法重叠</span><b>通过</b></div>
+        <div><i>✓</i><span>音画共同时钟</span><b>0 ms</b></div>
+        <div><i>✓</i><span>首尾黑帧检测</span><b>就绪</b></div>
+      </div>
+      <div class="export-progress" id="exportProgress">
+        <div class="progress-track"><i id="exportProgressBar"></i></div>
+        <span id="exportStatus">渲染前会再次检查所有轨道</span>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost-btn" id="cancelExportBtn">取消</button>
+        <button class="export-btn large" id="startExportBtn">开始导出 <span>↗</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="failureModal" aria-hidden="true">
+    <div class="modal failure-modal">
+      <span class="error-mark">!</span>
+      <span class="eyebrow">PLAYBACK FAILED</span>
+      <h2 id="failureTitle">回放中断</h2>
+      <p id="failureMessage">音频时钟未能启动。工程数据仍然安全，可以重新载入后继续。</p>
+      <div class="failure-detail" id="failureDetail">AUDIO_CONTEXT_UNAVAILABLE · shared-clock:24fps</div>
+      <div class="modal-actions">
+        <button class="ghost-btn" id="failureReloadBtn">重新载入工程</button>
+        <button class="export-btn" id="retryPlaybackBtn">重试回放 <span>↻</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
