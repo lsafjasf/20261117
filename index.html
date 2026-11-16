@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>程序化低多边形茶杯</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>程序化低多边形茶杯</h1>
+    <p class="hint">拖动黄色轮廓点改杯口 / 腰身 / 底足 / 杯高 / 把手；空白处拖动旋转视角，滚轮缩放。</p>
+  </header>
+  <main>
+    <section class="stage">
+      <canvas id="view" width="640" height="480"></canvas>
+      <div id="errorBanner" class="banner hidden" role="alert"></div>
+      <div id="statusLine" class="status"></div>
+    </section>
+    <aside class="panel">
+      <h2>参数</h2>
+      <div id="sliders"></div>
+      <h2>图层</h2>
+      <label><input type="checkbox" id="layerShadow" checked> 阴影层</label>
+      <label><input type="checkbox" id="layerWire"> 线框层</label>
+      <h2>视角与运行</h2>
+      <div class="row">
+        <button id="btnPause">暂停</button>
+        <button id="btnRotate">自动旋转：关</button>
+      </div>
+      <div class="row">
+        <button id="btnDefault">默认画面</button>
+        <button id="btnExtreme">极端画面</button>
+      </div>
+      <h2>保存与导出</h2>
+      <div class="row">
+        <input id="presetName" maxlength="20" placeholder="预设名称">
+        <button id="btnSavePreset">保存预设</button>
+      </div>
+      <select id="presetList" size="3"></select>
+      <div class="row">
+        <button id="btnLoadPreset">读取</button>
+        <button id="btnDeletePreset">删除</button>
+      </div>
+      <div class="row">
+        <button id="btnPNG" class="primary">导出 PNG</button>
+        <button id="btnOBJ" class="primary">导出 OBJ</button>
+      </div>
+    </aside>
+  </main>
+  <script src="js/core/math3d.js"></script>
+  <script src="js/core/params.js"></script>
+  <script src="js/core/geometry.js"></script>
+  <script src="js/core/handle.js"></script>
+  <script src="js/core/mesh.js"></script>
+  <script src="js/core/png.js"></script>
+  <script src="js/core/rasterizer.js"></script>
+  <script src="js/core/scene.js"></script>
+  <script src="js/core/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
