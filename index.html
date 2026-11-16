@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Typo Studio · 实时参数化排版</title>
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="toolbar">
+        <strong>Typo Studio</strong>
+        <button id="btn-save" type="button">保存参数</button>
+        <button id="btn-pause" type="button">暂停</button>
+        <button id="btn-shot" type="button">截图 PNG</button>
+        <button id="btn-svg" type="button">导出 SVG</button>
+        <button id="btn-import" type="button">导入 SVG</button>
+        <input id="file-svg" type="file" accept=".svg,image/svg+xml" hidden />
+        <button id="btn-reset" type="button">重置默认</button>
+        <button id="btn-extreme" type="button">极端预设</button>
+        <span id="save-status" class="status"></span>
+      </header>
+      <main class="workspace">
+        <aside class="panel">
+          <section class="layers">
+            <div class="row between">
+              <h2>图层</h2>
+              <button id="btn-add-layer" type="button">＋ 新建</button>
+            </div>
+            <ol id="layer-list"></ol>
+            <div class="layer-actions">
+              <button id="btn-up" type="button">上移</button>
+              <button id="btn-down" type="button">下移</button>
+              <button id="btn-delete" type="button">删除</button>
+            </div>
+          </section>
+          <section class="controls">
+            <h2>字形参数</h2>
+            <label>图层名<input id="in-name" type="text" maxlength="40" /></label>
+            <label>文本<textarea id="in-text" rows="4" maxlength="500"></textarea></label>
+            <label>颜色<input id="in-color" type="color" value="#1f2933" /></label>
+            <label>字号 <output id="out-fontSize"></output>
+              <input id="in-fontSize" type="range" min="12" max="200" step="1" />
+            </label>
+            <label>字重 <output id="out-weight"></output>
+              <input id="in-weight" type="range" min="100" max="900" step="100" />
+            </label>
+            <label>倾斜 <output id="out-slant"></output>
+              <input id="in-slant" type="range" min="-45" max="45" step="1" />
+            </label>
+            <label>宽度 <output id="out-width"></output>
+              <input id="in-width" type="range" min="0.5" max="2" step="0.01" />
+            </label>
+            <label>拐角圆度 <output id="out-corner"></output>
+              <input id="in-corner" type="range" min="0" max="1" step="0.01" />
+            </label>
+            <label>换行宽度 <output id="out-wrap"></output>
+              <input id="in-wrap" type="range" min="80" max="4000" step="10" />
+            </label>
+          </section>
+        </aside>
+        <section class="stage">
+          <div id="error-banner" class="error-banner hidden" role="alert"></div>
+          <canvas id="canvas" width="1280" height="720"></canvas>
+          <p class="hint">滚轮缩放 · 拖拽平移 · Shift+拖拽旋转 · 状态自动保存，刷新后恢复</p>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
