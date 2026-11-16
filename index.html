@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>药片装瓶线仿真</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>药片装瓶线仿真</h1>
+  <div class="clock">仿真时钟 <span id="clock">0.00 s</span><span id="simState" class="state">运行中</span></div>
+  <div class="hdr-btns">
+    <button id="btnPause">暂停</button>
+    <button id="btnStep">单步</button>
+    <button id="btnReset">批次重置</button>
+    <button id="btnSound">声音:关</button>
+  </div>
+</header>
+<main>
+  <section class="left">
+    <canvas id="cv" width="920" height="540"></canvas>
+  </section>
+  <aside class="right">
+    <fieldset>
+      <legend>药片规格(换规格自动清空缓存)</legend>
+      <div id="specBtns" class="row"></div>
+      <div id="specInfo" class="hint"></div>
+    </fieldset>
+    <fieldset>
+      <legend>设备控制</legend>
+      <div class="dev" id="dev-vib">
+        <button class="toggle">启动</button><span class="name">振动盘</span>
+        <input type="range" min="0" max="100" value="55"><span class="val">55</span>
+      </div>
+      <div class="dev" id="dev-gate">
+        <button class="toggle">启动</button><span class="name">落料闸</span>
+        <input type="range" min="0" max="100" value="50"><span class="val">50</span>
+      </div>
+      <div class="dev" id="dev-conv">
+        <button class="toggle">启动</button><span class="name">瓶体传送</span>
+        <input type="range" min="0" max="100" value="50"><span class="val">50</span>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>故障处理</legend>
+      <div id="faultInfo" class="hint">无故障</div>
+      <button id="btnClearFault" disabled>排除故障</button>
+    </fieldset>
+    <fieldset>
+      <legend>流程验证(自动脚本)</legend>
+      <div class="row">
+        <button data-scn="normal">正常生产</button>
+        <button data-scn="overlimit">参数越限</button>
+        <button data-scn="shutdown">设备停机</button>
+      </div>
+      <div class="row">
+        <button id="btnAllScn">运行全部验证</button>
+        <button id="btnExport">导出报告</button>
+      </div>
+    </fieldset>
+    <fieldset class="logbox">
+      <legend>事件日志</legend>
+      <ul id="log"></ul>
+    </fieldset>
+  </aside>
+</main>
+<section class="bottom">
+  <h2>验证报告</h2>
+  <div id="report">尚未运行验证。点击右侧"运行全部验证"或单项验证。</div>
+</section>
+<script src="sim.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>

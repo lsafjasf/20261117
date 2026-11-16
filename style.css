@@ -1,0 +1,48 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 12px;
+  background: #14181d; color: #d7dde4;
+  font-family: "Segoe UI", "Microsoft YaHei", sans-serif; font-size: 14px;
+}
+header { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+header h1 { font-size: 18px; margin: 0; color: #7fd4a8; }
+.clock { font-variant-numeric: tabular-nums; color: #9fb3c8; }
+.clock .state { margin-left: 10px; padding: 1px 8px; border-radius: 8px; background: #244; }
+.clock .state.paused { background: #6b4b16; }
+.clock .state.fault { background: #7a2323; }
+.hdr-btns { display: flex; gap: 8px; }
+button {
+  background: #2a3440; color: #d7dde4; border: 1px solid #46566a;
+  border-radius: 4px; padding: 5px 12px; cursor: pointer; font-size: 13px;
+}
+button:hover { background: #36445a; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+button.on { background: #1f5c3d; border-color: #3fa66f; }
+button.active { background: #1f5c3d; border-color: #3fa66f; }
+main { display: flex; gap: 12px; margin-top: 10px; align-items: flex-start; }
+.left canvas { background: #0c0f13; border: 1px solid #2c3846; border-radius: 6px; display: block; }
+.right { width: 330px; display: flex; flex-direction: column; gap: 8px; }
+fieldset { border: 1px solid #2c3846; border-radius: 6px; margin: 0; padding: 8px 10px; }
+legend { color: #8fb8d8; font-size: 12px; padding: 0 4px; }
+.row { display: flex; gap: 6px; margin: 4px 0; flex-wrap: wrap; }
+.hint { color: #8a97a5; font-size: 12px; margin-top: 4px; }
+.dev { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
+.dev .name { width: 62px; }
+.dev input[type=range] { flex: 1; }
+.dev .val { width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+.dev .toggle { width: 52px; padding: 4px 0; }
+.logbox ul {
+  list-style: none; margin: 0; padding: 0; height: 220px; overflow-y: auto;
+  font-size: 12px; font-family: Consolas, monospace;
+}
+.logbox li { padding: 2px 4px; border-bottom: 1px solid #1d242d; white-space: pre-wrap; }
+.logbox li.fault { color: #ff8a8a; }
+.logbox li.recover { color: #8fe0a8; }
+.logbox li.batch { color: #8fc3e0; }
+.logbox li.warn { color: #e8c56a; }
+.bottom { margin-top: 12px; }
+.bottom h2 { font-size: 15px; color: #7fd4a8; margin: 0 0 6px; }
+#report { font-size: 13px; }
+#report table { border-collapse: collapse; width: 100%; }
+#report th, #report td { border: 1px solid #2c3846; padding: 4px 8px; text-align: left; }
+#report th { background: #1c2530; color: #8fb8d8; }

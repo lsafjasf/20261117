@@ -1,0 +1,11 @@
+{
+  "name": "tablet-bottling-line",
+  "version": "1.0.0",
+  "private": true,
+  "description": "药片装瓶线仿真:Canvas 渲染、单一仿真时钟、三类流程验证",
+  "scripts": {
+    "test": "node test_sim.js && node smoke_ui.js",
+    "verify": "node verify.js",
+    "start": "npx serve ."
+  }
+}
