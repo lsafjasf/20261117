@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#173b2a" />
+    <title>穹顶之下 · 温室养护实验</title>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 42 42" fill="none">
+              <path d="M21 38V19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M21 25C13 25 8 20 8 12c8 0 13 5 13 13Z" fill="currentColor"/>
+              <path d="M21 20c0-8 5-13 13-13 0 8-5 13-13 13Z" fill="currentColor" opacity=".65"/>
+            </svg>
+          </div>
+          <div>
+            <p class="eyebrow">GREENHOUSE 07 · 循环农业实验</p>
+            <h1>穹顶之下</h1>
+          </div>
+        </div>
+
+        <div class="topbar-meta">
+          <div class="seed-control">
+            <label for="seedInput">实验种子</label>
+            <input id="seedInput" type="text" value="47291" maxlength="16" />
+            <button id="seedApply" class="icon-button" title="应用种子">↻</button>
+          </div>
+          <div class="run-state" id="runState">
+            <span class="live-dot"></span>
+            <div>
+              <b id="runLabel">连续运行</b>
+              <span id="simClock">D01 · 08:00</span>
+            </div>
+          </div>
+          <div class="speed-switch" aria-label="模拟速度">
+            <button data-speed="1">1×</button>
+            <button data-speed="4" class="active">4×</button>
+            <button data-speed="12">12×</button>
+            <button data-speed="24">24×</button>
+          </div>
+          <button id="soundBtn" class="ghost-btn sound-btn" aria-pressed="false">
+            <span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span id="soundLabel">声音</span>
+          </button>
+          <button id="pauseBtn" class="ghost-btn">暂停</button>
+          <button id="resetBtn" class="primary-btn">同种子重开</button>
+        </div>
+      </header>
+
+      <main class="dashboard">
+        <section class="main-column">
+          <article class="panel scene-panel">
+            <div class="panel-heading scene-heading">
+              <div class="heading-left">
+                <span class="section-index">01</span>
+                <div>
+                  <p class="section-kicker">LIVE SECTION</p>
+                  <h2>温室剖面</h2>
+                </div>
+              </div>
+              <div class="weather-now">
+                <span id="weatherIcon" class="weather-icon sun" aria-hidden="true"></span>
+                <div>
+                  <b id="weatherNow">晴朗 · 室外 24.3°C</b>
+                  <span id="nextWeather">明日 多云</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="scene-wrap">
+              <canvas id="greenhouseCanvas" role="img" aria-label="温室三排苗木剖面，显示光斑、喷雾、通风与环境告警"></canvas>
+              <div class="scene-top-tag">
+                <span class="live-pulse"></span>
+                传感器阵列在线
+              </div>
+              <div class="scene-target-tag">
+                <span>目标位置</span>
+                <b id="sceneTargets">A-02 · B-01 · C-03</b>
+              </div>
+              <div id="sceneAlert" class="scene-alert" hidden>
+                <span>!</span>
+                <b id="sceneAlertText">湿度临界</b>
+              </div>
+
+              <div class="device-dock" aria-label="设备控制">
+                <button class="device-control is-on" data-control="lights">
+                  <span class="device-icon lamp-icon" aria-hidden="true"></span>
+                  <span class="device-copy">
+                    <b>补光灯</b>
+                    <small>500 μmol · 1.6 kW</small>
+                  </span>
+                  <span class="toggle-state">ON</span>
+                </button>
+                <button class="device-control" data-control="mist">
+                  <span class="device-icon mist-icon" aria-hidden="true"></span>
+                  <span class="device-copy">
+                    <b>喷雾</b>
+                    <small>增湿 · 0.65 kW</small>
+                  </span>
+                  <span class="toggle-state">OFF</span>
+                </button>
+                <button class="device-control" data-control="fan">
+                  <span class="device-icon fan-icon" aria-hidden="true"></span>
+                  <span class="device-copy">
+                    <b>通风</b>
+                    <small>降湿 · 1.1 kW</small>
+                  </span>
+                  <span class="toggle-state">OFF</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="scene-footer">
+              <div><span>生长日</span><b id="growDay">第 01 天 / 20</b></div>
+              <div><span>今日剩余</span><b id="dayCountdown">16.0 h</b></div>
+              <div><span>天气指纹</span><b id="weatherDigest">—</b></div>
+              <div class="scene-legend">
+                <span><i class="legend-actual"></i>实际</span>
+                <span><i class="legend-observed"></i>观测</span>
+                <span><i class="legend-alert"></i>告警</span>
+              </div>
+            </div>
+
+            <div id="endOverlay" class="end-overlay" hidden>
+              <p>20 DAY REVIEW</p>
+              <h3 id="endTitle">养护验收</h3>
+              <span id="endText"></span>
+              <button id="endReset" class="primary-btn">用同一种子再试</button>
+            </div>
+          </article>
+
+          <section class="metrics-grid" aria-label="环境指标">
+            <article class="metric-card" data-metric="light">
+              <div class="metric-top">
+                <span class="metric-symbol light-symbol"></span>
+                <span class="metric-label">光照</span>
+                <span class="status-chip" id="lightStatus">适宜</span>
+              </div>
+              <div class="metric-value"><b id="lightObserved">—</b><small>μmol/m²s</small></div>
+              <div class="metric-compare">
+                <span>传感器观测</span>
+                <span>实际 <b id="lightActual">—</b></span>
+              </div>
+              <div class="metric-track"><i id="lightTrack"></i></div>
+              <svg id="lightSpark" class="spark" viewBox="0 0 180 30" preserveAspectRatio="none"></svg>
+            </article>
+
+            <article class="metric-card" data-metric="humidity">
+              <div class="metric-top">
+                <span class="metric-symbol humidity-symbol"></span>
+                <span class="metric-label">湿度</span>
+                <span class="status-chip" id="humidityStatus">稳定</span>
+              </div>
+              <div class="metric-value"><b id="humidityObserved">—</b><small>% RH</small></div>
+              <div class="metric-compare">
+                <span>传感器观测</span>
+                <span>实际 <b id="humidityActual">—</b></span>
+              </div>
+              <div class="metric-track"><i id="humidityTrack"></i></div>
+              <svg id="humiditySpark" class="spark" viewBox="0 0 180 30" preserveAspectRatio="none"></svg>
+            </article>
+
+            <article class="metric-card" data-metric="temperature">
+              <div class="metric-top">
+                <span class="metric-symbol temp-symbol"></span>
+                <span class="metric-label">温度</span>
+                <span class="status-chip" id="temperatureStatus">稳定</span>
+              </div>
+              <div class="metric-value"><b id="temperatureObserved">—</b><small>°C</small></div>
+              <div class="metric-compare">
+                <span>传感器观测</span>
+                <span>实际 <b id="temperatureActual">—</b></span>
+              </div>
+              <div class="metric-track"><i id="temperatureTrack"></i></div>
+              <svg id="temperatureSpark" class="spark" viewBox="0 0 180 30" preserveAspectRatio="none"></svg>
+            </article>
+          </section>
+
+          <article class="panel log-panel">
+            <div class="panel-heading log-heading">
+              <div class="heading-left">
+                <span class="section-index">03</span>
+                <div>
+                  <p class="section-kicker">TRACEABLE RECORDS</p>
+                  <h2>运行记录</h2>
+                </div>
+              </div>
+              <div class="log-tools">
+                <span id="logCount">0 条记录</span>
+                <button id="steadyBtn" class="mini-btn">稳态采样</button>
+                <button id="criticalBtn" class="mini-btn danger-ghost">注入临界</button>
+                <button id="failureBtn" class="mini-btn danger-ghost">模拟失败</button>
+              </div>
+            </div>
+            <div class="log-columns">
+              <span>时间 / 事件</span>
+              <span>触发与处置对比</span>
+              <span>结果</span>
+            </div>
+            <div id="logList" class="log-list" aria-live="polite"></div>
+          </article>
+        </section>
+
+        <aside class="side-column">
+          <article class="panel event-panel" id="eventCard">
+            <div class="event-head">
+              <div>
+                <p class="section-kicker" id="eventKicker">SYSTEM NOMINAL</p>
+                <h2 id="eventTitle">环境稳态</h2>
+              </div>
+              <span id="eventBadge" class="event-badge good">正常</span>
+            </div>
+            <div class="event-body">
+              <p id="eventDetail">传感器与执行器无异常，系统正在连续采样。</p>
+              <div class="event-readout">
+                <span>当前触发值</span>
+                <b id="eventValue">—</b>
+              </div>
+              <div id="recoveryPanel" class="recovery-panel" hidden>
+                <div><span id="recoveryText">恢复观察 00:00</span><b id="recoveryPercent">0%</b></div>
+                <div class="recovery-track"><i id="recoveryFill"></i></div>
+                <small id="residualStatus">检查隐藏残留中</small>
+              </div>
+              <button id="eventAction" class="event-action" hidden>启动通风并记录</button>
+            </div>
+            <div class="event-foot">
+              <span id="eventTrigger">最近触发 —</span>
+              <span id="residualChip">残留自检 —</span>
+            </div>
+          </article>
+
+          <article class="panel goal-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="section-kicker">20-DAY TARGET</p>
+                <h2>养护目标</h2>
+              </div>
+              <div class="goal-number"><b id="goalMet">0</b><span>/ 9 株达标</span></div>
+            </div>
+            <div class="goal-progress">
+              <div><span>生长周期</span><b id="goalDay">第 1 天</b></div>
+              <div class="progress-track"><i id="goalProgress"></i></div>
+            </div>
+            <div class="species-list">
+              <div class="species-row" data-row="A">
+                <span class="species-swatch swatch-a"></span>
+                <div class="species-copy">
+                  <b>罗勒</b>
+                  <small id="rowA-env">—</small>
+                </div>
+                <div class="species-stats">
+                  <span><b id="rowA-height">0</b> cm</span>
+                  <span><b id="rowA-health">0</b>% 健康</span>
+                </div>
+                <span class="row-state" id="rowA-status">观测</span>
+              </div>
+              <div class="species-row" data-row="B">
+                <span class="species-swatch swatch-b"></span>
+                <div class="species-copy">
+                  <b>奶油生菜</b>
+                  <small id="rowB-env">—</small>
+                </div>
+                <div class="species-stats">
+                  <span><b id="rowB-height">0</b> cm</span>
+                  <span><b id="rowB-health">0</b>% 健康</span>
+                </div>
+                <span class="row-state" id="rowB-status">观测</span>
+              </div>
+              <div class="species-row" data-row="C">
+                <span class="species-swatch swatch-c"></span>
+                <div class="species-copy">
+                  <b>辣椒</b>
+                  <small id="rowC-env">—</small>
+                </div>
+                <div class="species-stats">
+                  <span><b id="rowC-height">0</b> cm</span>
+                  <span><b id="rowC-health">0</b>% 健康</span>
+                </div>
+                <span class="row-state" id="rowC-status">观测</span>
+              </div>
+            </div>
+            <div class="target-positions">
+              <span>目标位置</span>
+              <b id="targetList">—</b>
+              <span class="seed-repro">SEED 复现</span>
+            </div>
+          </article>
+
+          <article class="panel intervention-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="section-kicker">ACTIVE INTERVENTION</p>
+                <h2>当前干预措施</h2>
+              </div>
+              <span class="power-now"><i></i><b id="powerNow">1.6</b> kW</span>
+            </div>
+            <div class="intervention-statuses">
+              <div id="interventionLights" class="intervention-tag on">
+                <span class="tiny-icon lamp"></span><b>补光</b><small>运行</small>
+              </div>
+              <div id="interventionMist" class="intervention-tag">
+                <span class="tiny-icon mist"></span><b>喷雾</b><small>关闭</small>
+              </div>
+              <div id="interventionFan" class="intervention-tag">
+                <span class="tiny-icon fan"></span><b>通风</b><small>关闭</small>
+              </div>
+            </div>
+            <div class="resource-grid">
+              <div>
+                <span>累计能耗</span>
+                <b><span id="energyKwh">0.0</span> <small>kWh</small></b>
+                <em id="switchEnergy">切换损耗 0.00</em>
+              </div>
+              <div>
+                <span>设备切换</span>
+                <b><span id="switchCount">0</span> <small>次</small></b>
+                <em id="switchWarning">稳定运行</em>
+              </div>
+            </div>
+            <div class="water-row">
+              <div class="water-copy">
+                <span>蓄水池</span>
+                <b><span id="waterLevel">86</span>%</b>
+              </div>
+              <div class="water-track"><i id="waterFill"></i></div>
+              <button id="refillBtn" class="refill-btn" title="补水">+</button>
+            </div>
+            <div class="disease-row">
+              <div>
+                <span>病害负荷</span>
+                <b id="contaminationValue">7.2%</b>
+              </div>
+              <span id="contaminationState" class="status-chip good">清洁</span>
+            </div>
+          </article>
+
+          <article class="panel weather-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="section-kicker">SEEDED WEATHER</p>
+                <h2>种子天气序列</h2>
+              </div>
+              <span class="seed-chip"># <b id="seedCode">—</b></span>
+            </div>
+            <div id="forecastList" class="forecast-list"></div>
+            <div class="repro-note">
+              <span class="repro-icon" aria-hidden="true">⌁</span>
+              <p>同一种子重开时，天气序列与目标分布从初始状态完全复现。</p>
+            </div>
+          </article>
+        </aside>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
