@@ -1,0 +1,147 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #0b1622;
+  color: #dce7f2;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 18px;
+  background: #102337;
+  border-bottom: 1px solid #1d3a55;
+}
+.topbar h1 { font-size: 18px; margin: 0; letter-spacing: 2px; }
+.top-controls button, .replay-bar button, .debug-controls button {
+  background: #1d3a55;
+  color: #dce7f2;
+  border: 1px solid #2c557a;
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin-left: 6px;
+  cursor: pointer;
+}
+.top-controls button:hover, .replay-bar button:hover, .debug-controls button:hover {
+  background: #2c557a;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 14px;
+  padding: 14px;
+}
+.panel {
+  background: #102337;
+  border-radius: 10px;
+  padding: 14px;
+  border: 2px solid transparent;
+}
+.panel-p1 { border-color: #2e7d8f; }
+.panel-p2 { border-color: #8f5e2e; }
+.panel h2 { margin: 0 0 8px; font-size: 15px; }
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+.panel-p1 .badge { background: #16424d; color: #8fd8e6; }
+.panel-p2 .badge { background: #4d3316; color: #e6b98f; }
+.scope { font-size: 12px; color: #93a8bc; margin-bottom: 8px; line-height: 1.5; }
+.keys { font-size: 12px; margin-bottom: 12px; line-height: 2; }
+kbd {
+  background: #0b1622;
+  border: 1px solid #2c557a;
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 2px 7px;
+  margin: 0 3px;
+  font-family: inherit;
+}
+.gauges { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gauge {
+  background: #0b1622;
+  border: 1px solid #1d3a55;
+  border-radius: 8px;
+  padding: 8px;
+}
+.gauge .label { font-size: 11px; color: #8aa3ba; }
+.gauge .value { font-size: 17px; font-weight: 600; margin-top: 2px; }
+.gauge .unit { font-size: 11px; color: #7f95aa; margin-left: 2px; }
+.gauge.warn { border-color: #b87d2b; background: #2a1f10; }
+.gauge.warn .value { color: #f0b95c; }
+.gauge.danger { border-color: #a33b3b; background: #2a1212; }
+.gauge.danger .value { color: #ff7a7a; }
+.gauge.mine { box-shadow: inset 0 0 0 1px rgba(120, 200, 255, 0.35); }
+.idle { margin-top: 12px; font-size: 13px; }
+.idle b { color: #8fd8e6; }
+.ocean-wrap { position: relative; display: flex; justify-content: center; }
+canvas {
+  background: linear-gradient(#0d3b5c 0%, #08263d 45%, #041421 100%);
+  border-radius: 10px;
+  border: 1px solid #1d3a55;
+}
+.mission {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  background: rgba(8, 24, 38, 0.82);
+  border: 1px solid #2c557a;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.mission .done { color: #7ee0a0; }
+.mission .active { color: #f0d27a; }
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: rgba(4, 14, 24, 0.78);
+  border-radius: 10px;
+  font-size: 22px;
+  text-align: center;
+  padding: 20px;
+}
+.overlay small { font-size: 13px; color: #9fb6cb; margin-top: 10px; line-height: 1.7; }
+.replay-bar {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(8, 24, 38, 0.92);
+  border: 1px solid #2c557a;
+  border-radius: 8px;
+  padding: 8px;
+}
+.replay-bar input[type="range"] { flex: 1; }
+.bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 0 14px 18px;
+}
+.debug-controls, .conflict-log {
+  background: #102337;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.dbg-title { font-size: 13px; color: #93a8bc; margin-right: 8px; }
+.conflict-log h3 { margin: 0 0 8px; font-size: 14px; }
+.conflict-log ul { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.8; max-height: 150px; overflow: auto; }
+.conflict-log li.warn { color: #f0b95c; }
+.conflict-log li.danger { color: #ff8a8a; }
+.conflict-log li.info { color: #8fd8e6; }
+.debug-on { outline: 2px dashed #f0b95c; outline-offset: 2px; }
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; }
+}

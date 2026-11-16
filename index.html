@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>潜水钟 · 双人协作</title>
+  <link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>潜水钟协作任务</h1>
+    <div class="top-controls">
+      <button id="btn-pause" type="button">暂停 (P)</button>
+      <button id="btn-restart" type="button">重开 (R)</button>
+      <button id="btn-debug" type="button">单人调试 (D)</button>
+      <button id="btn-replay" type="button">回放 (F2)</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel panel-p1" id="panel-p1">
+      <h2><span class="badge">玩家一 · 升降压载</span></h2>
+      <div class="scope">可操作：压载注水 / 排水（深度与升降）</div>
+      <div class="keys">
+        <kbd>W</kbd> 排水上浮
+        <kbd>S</kbd> 注水下潜
+      </div>
+      <div class="gauges" id="gauges-p1"></div>
+      <div class="idle">输入倒计时 <b id="idle-p1">30.0</b> s</div>
+    </section>
+
+    <section class="ocean-wrap">
+      <canvas id="canvas" width="560" height="720"></canvas>
+      <div class="mission" id="mission"></div>
+      <div class="overlay" id="overlay" hidden></div>
+      <div class="replay-bar" id="replay-bar" hidden>
+        <button id="rp-play" type="button">播放</button>
+        <input id="rp-scrub" type="range" min="0" max="0" value="0" />
+        <span id="rp-label">0 / 0</span>
+        <button id="rp-export" type="button">导出 JSON</button>
+        <button id="rp-close" type="button">关闭</button>
+      </div>
+    </section>
+
+    <section class="panel panel-p2" id="panel-p2">
+      <h2><span class="badge">玩家二 · 供气与缆绳</span></h2>
+      <div class="scope">可操作：供气阀门、脐带缆绳、取样确认</div>
+      <div class="keys">
+        <kbd>←</kbd><kbd>→</kbd> 供气
+        <kbd>↑</kbd> 放缆 <kbd>↓</kbd> 收缆
+        <kbd>Enter</kbd> 取样
+      </div>
+      <div class="gauges" id="gauges-p2"></div>
+      <div class="idle">输入倒计时 <b id="idle-p2">30.0</b> s</div>
+    </section>
+  </main>
+
+  <section class="bottom">
+    <div class="debug-controls">
+      <span class="dbg-title">调试 / 保护演练</span>
+      <button id="btn-disconnect-p1" type="button">模拟 P1 断开</button>
+      <button id="btn-disconnect-p2" type="button">模拟 P2 断开</button>
+      <button id="btn-reconnect" type="button">重连保护侧</button>
+      <button id="btn-drive-p1" type="button">托管 P1</button>
+      <button id="btn-drive-p2" type="button">托管 P2</button>
+    </div>
+    <div class="conflict-log">
+      <h3>冲突时刻 / 任务记录</h3>
+      <ul id="conflict-list"></ul>
+    </div>
+  </section>
+
+  <script src="src/config.js"></script>
+  <script src="src/engine.js"></script>
+  <script src="src/renderer.js"></script>
+  <script src="src/autopilot.js"></script>
+  <script src="src/replay.js"></script>
+  <script src="src/main.js"></script>
+</body>
+</html>
