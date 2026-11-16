@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#081a18">
+  <title>河狸水位调度站</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23cbdc71'/%3E%3Ccircle cx='16' cy='15' r='8' fill='%23563e2a'/%3E%3Ccircle cx='13' cy='14' r='1.3' fill='%23f4d78a'/%3E%3Ccircle cx='19' cy='14' r='1.3' fill='%23f4d78a'/%3E%3Crect x='15' y='19' width='2' height='4' rx='1' fill='%23f1e4b8'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <span class="beaver-ear left"></span>
+          <span class="beaver-ear right"></span>
+          <span class="beaver-face"></span>
+          <span class="beaver-tooth"></span>
+        </div>
+        <div>
+          <p class="eyebrow">WETLAND FIELD STATION · 07</p>
+          <h1>河狸水位调度站</h1>
+        </div>
+      </div>
+
+      <div class="run-context">
+        <div class="weather-chip" id="weatherChip">
+          <span class="weather-icon" id="weatherIcon">☁</span>
+          <span>
+            <strong id="weatherLabel">多云</strong>
+            <small id="weatherDetail">来水平稳</small>
+          </span>
+        </div>
+        <div class="clock-block">
+          <span class="eyebrow">模拟日程</span>
+          <strong id="dayClock">第 1 天 · 06:00</strong>
+          <small id="remainingTime">距验收 9.8 天</small>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <label class="seed-field">
+          <span>SEED</span>
+          <input id="seedInput" type="number" min="1" max="99999999" value="82417" aria-label="随机种子">
+        </label>
+        <button class="icon-button" id="soundButton" type="button" title="开启环境声" aria-label="开启环境声">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9v6h4l5 4V5L9 9H5Zm12.5 3a4.5 4.5 0 0 0-2-3.74v7.48A4.5 4.5 0 0 0 17.5 12Z"/></svg>
+        </button>
+        <button class="reset-button" id="topResetButton" type="button" title="同 seed 重开">
+          <span aria-hidden="true">↺</span>
+          <b>重置</b>
+        </button>
+        <button class="primary-button" id="pauseButton" type="button">
+          <span class="pause-glyph" aria-hidden="true"></span>
+          <span id="pauseLabel">暂停</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="left-column">
+        <article class="scene-card">
+          <canvas id="wetlandCanvas" aria-label="湿地、河狸坝、道路与鸟巢的实时场景"></canvas>
+          <div class="scene-topline">
+            <span class="live-pill"><span class="live-dot"></span>LIVE MODEL</span>
+            <span class="scene-note" id="sensorNote">传感器时滞 1.8 秒</span>
+          </div>
+          <div class="scene-legend">
+            <span><i class="legend-line actual"></i>实际水位</span>
+            <span><i class="legend-line observed"></i>观测水位</span>
+            <span><i class="legend-dot target"></i>保护目标</span>
+          </div>
+          <div class="scene-alert" id="sceneAlert">
+            <span class="alert-symbol">!</span>
+            <span>
+              <strong id="sceneAlertTitle">系统平稳</strong>
+              <small id="sceneAlertDetail">两类生境均在安全范围</small>
+            </span>
+          </div>
+          <div class="scene-footer">
+            <div class="intervention-summary">
+              <span class="label">当前干预</span>
+              <strong id="interventionSummary">溢流口 34% · 木桩 36%</strong>
+            </div>
+            <div class="target-summary">
+              <span class="label">保护目标</span>
+              <strong id="targetSummary">6 / 6 在位</strong>
+            </div>
+            <div class="speed-control" role="group" aria-label="模拟速度">
+              <button type="button" data-speed="1" class="active">1×</button>
+              <button type="button" data-speed="2">2×</button>
+              <button type="button" data-speed="4">4×</button>
+              <button type="button" data-speed="8">8×</button>
+            </div>
+          </div>
+        </article>
+
+        <div class="lower-grid">
+          <article class="panel chart-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">CONTINUOUS RECORD</p>
+                <h2>水位连续记录</h2>
+              </div>
+              <span class="window-label">最近 48 秒</span>
+            </div>
+            <canvas id="historyChart" aria-label="实际与观测水位历史曲线"></canvas>
+            <div class="chart-axis-labels" aria-hidden="true">
+              <span>4.58 m 道路</span>
+              <span>4.43 m 巢穴</span>
+              <span>4.30 m 注意</span>
+            </div>
+          </article>
+
+          <article class="panel log-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">TRIGGER LOG</p>
+                <h2>事件与触发时刻</h2>
+              </div>
+              <button class="text-button" id="exportButton" type="button">导出记录</button>
+            </div>
+            <div class="log-list" id="logList" aria-live="polite"></div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="right-column">
+        <article class="panel alert-panel" id="alertPanel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="eyebrow">ALERT STATE</p>
+              <h2>告警状态</h2>
+            </div>
+            <span class="status-badge" id="alertBadge">正常</span>
+          </div>
+          <div class="alert-body">
+            <div class="alert-figure">
+              <span class="alert-caption">实际水位</span>
+              <strong id="actualLevel">4.12 <small>m</small></strong>
+              <span class="delta-note" id="levelTrend">↗ +0.002 m/s</span>
+            </div>
+            <div class="alert-gauge" aria-hidden="true">
+              <div class="gauge-track">
+                <span class="gauge-safe"></span>
+                <span class="gauge-watch"></span>
+                <span class="gauge-critical"></span>
+                <i id="actualMarker" class="gauge-marker actual-marker"></i>
+                <i id="observedMarker" class="gauge-marker observed-marker"></i>
+              </div>
+              <div class="gauge-scale"><span>3.9</span><span>4.3</span><span>4.7</span></div>
+            </div>
+          </div>
+          <div class="alert-compare">
+            <div>
+              <span>观测状态</span>
+              <strong id="observedAlert">正常</strong>
+            </div>
+            <div>
+              <span>传感器读数</span>
+              <strong id="observedLevel">4.10 m · −1.8s</strong>
+            </div>
+            <div>
+              <span>距巢穴临界</span>
+              <strong id="thresholdMargin">+0.31 m</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel metrics-panel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="eyebrow">ENVIRONMENT</p>
+              <h2>环境指标</h2>
+            </div>
+            <span class="data-mode">观测 / 实际</span>
+          </div>
+          <div class="metric-grid">
+            <div class="metric-row header-row"><span>指标</span><span>观测</span><span>实际</span></div>
+            <div class="metric-row">
+              <span class="metric-name"><i class="metric-icon flow"></i>流量</span>
+              <span id="flowObserved">6.3</span>
+              <strong id="flowActual">6.4 <small>m³/s</small></strong>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name"><i class="metric-icon turbidity"></i>浊度</span>
+              <span id="turbidityObserved">8.4</span>
+              <strong id="turbidityActual">8.1 <small>NTU</small></strong>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name"><i class="metric-icon oxygen"></i>溶解氧</span>
+              <span id="oxygenObserved">8.9</span>
+              <strong id="oxygenActual">9.0 <small>mg/L</small></strong>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name"><i class="metric-icon rain"></i>降雨</span>
+              <span id="rainObserved">0.0</span>
+              <strong id="rainActual">0.1 <small>mm/h</small></strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel targets-panel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="eyebrow">PROTECTED HABITATS</p>
+              <h2>两类生境</h2>
+            </div>
+            <span class="target-count" id="targetCount">6 / 6</span>
+          </div>
+          <div class="habitat-list">
+            <div class="habitat-item" id="birdHabitat">
+              <div class="habitat-icon bird" aria-hidden="true">◒</div>
+              <div class="habitat-copy">
+                <strong>浅水鸟巢生境</strong>
+                <span id="birdHabitatDetail">水深 0.30 m · 4 巢安全</span>
+              </div>
+              <span class="mini-status">安全</span>
+            </div>
+            <div class="habitat-item" id="beaverHabitat">
+              <div class="habitat-icon lodge" aria-hidden="true">⌂</div>
+              <div class="habitat-copy">
+                <strong>河狸池塘生境</strong>
+                <span id="beaverHabitatDetail">池塘连通 · 2 巢安全</span>
+              </div>
+              <span class="mini-status">安全</span>
+            </div>
+            <div class="habitat-item" id="roadHabitat">
+              <div class="habitat-icon road" aria-hidden="true">═</div>
+              <div class="habitat-copy">
+                <strong>东岸巡护道路</strong>
+                <span id="roadDetail">净空 0.55 m · 可通行</span>
+              </div>
+              <span class="mini-status">安全</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel control-panel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="eyebrow">INTERVENTION</p>
+              <h2>调度干预</h2>
+            </div>
+            <span class="draft-state" id="draftState">已同步</span>
+          </div>
+          <div class="control-block">
+            <div class="control-label">
+              <span>人工溢流口开度</span>
+              <strong id="spillwayValue">34%</strong>
+            </div>
+            <input id="spillwaySlider" type="range" min="0" max="100" value="34" aria-label="人工溢流口开度">
+            <div class="range-hints"><span>保持蓄水</span><span>快速泄流</span></div>
+          </div>
+          <div class="control-block">
+            <div class="control-label">
+              <span>木桩护岸强度</span>
+              <strong id="stakeValue">36%</strong>
+            </div>
+            <input id="stakeSlider" type="range" min="0" max="100" value="36" aria-label="木桩护岸强度">
+            <div class="range-hints"><span>自然岸线</span><span>稳固道路</span></div>
+          </div>
+          <button class="apply-button" id="applyButton" type="button">
+            <span>应用调度</span>
+            <small id="applyHint">调整后生效</small>
+          </button>
+          <div class="control-footnote" id="beaverActivity">
+            <span class="beaver-status-dot"></span>
+            河狸活动平稳，预计 2.4 天后修补坝体
+          </div>
+        </article>
+
+        <article class="panel audit-panel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="eyebrow">RUN VALIDATION</p>
+              <h2>验收记录</h2>
+            </div>
+            <button class="text-button" id="resetButton" type="button">同 seed 重开</button>
+          </div>
+          <div class="audit-list">
+            <div class="audit-item" id="auditSteady">
+              <span class="audit-check">○</span>
+              <div><strong>稳态</strong><small>等待连续安全窗口</small></div>
+              <time>—</time>
+            </div>
+            <div class="audit-item" id="auditCritical">
+              <span class="audit-check">○</span>
+              <div><strong>临界阈值</strong><small>等待越限事件</small></div>
+              <time>—</time>
+            </div>
+            <div class="audit-item" id="auditFailure">
+              <span class="audit-check">○</span>
+              <div><strong>处置失败</strong><small>等待处置评估</small></div>
+              <time>—</time>
+            </div>
+            <div class="audit-item" id="auditRepro">
+              <span class="audit-check">○</span>
+              <div><strong>同 seed 复现</strong><small id="reproDetail">重开后自动核对</small></div>
+              <time>—</time>
+            </div>
+            <div class="audit-item" id="auditRecovery">
+              <span class="audit-check">○</span>
+              <div><strong>恢复观察</strong><small id="recoveryDetail">固定观察 12 秒</small></div>
+              <time>—</time>
+            </div>
+          </div>
+          <div class="comparison-card" id="comparisonCard">
+            <div class="comparison-head">
+              <span>最近处置前后对比</span>
+              <small id="comparisonTime">尚未执行</small>
+            </div>
+            <div class="comparison-grid">
+              <div><span>水位</span><strong id="compareLevel">— → —</strong></div>
+              <div><span>在位目标</span><strong id="compareTargets">— → —</strong></div>
+              <div><span>浊度</span><strong id="compareTurbidity">— → —</strong></div>
+            </div>
+          </div>
+          <div class="button-row">
+            <button class="secondary-button" id="newSeedButton" type="button">换 seed</button>
+            <button class="secondary-button" id="auditButton" type="button">自检演示</button>
+          </div>
+        </article>
+      </aside>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
