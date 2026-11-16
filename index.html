@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0c1716">
+  <title>流序 · 车站人流密度场</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2384e6bd'/%3E%3Cpath d='M6 21c4 0 5-10 10-10s6 10 10 10M6 25c4 0 5-10 10-10s6 10 10 10' fill='none' stroke='%230c1716' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="流序车站密度场">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M5 22.5c4.8 0 5.6-13 10.4-13s5.6 13 11.6 13"/><path d="M5 26c4.8 0 5.6-13 10.4-13s5.6 13 11.6 13" class="brand-mark-soft"/></svg>
+        </span>
+        <span class="brand-copy">
+          <strong>流序 <i>FLOWFIELD</i></strong>
+          <small>STATION CROWD INTELLIGENCE</small>
+        </span>
+      </a>
+
+      <nav class="dataset-tabs" id="datasetTabs" aria-label="采样数据集"></nav>
+
+      <div class="top-meta">
+        <span class="live-indicator"><i></i> LIVE MODEL</span>
+        <button class="icon-button" id="auditButton" type="button" title="查看采样校验记录">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span>采样校验</span>
+        </button>
+        <div class="version-stamp">
+          <small>DATA VERSION</small>
+          <strong id="topVersion">VER —</strong>
+        </div>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="panel left-panel" aria-label="数据与筛选">
+        <div class="panel-heading">
+          <div>
+            <span class="eyebrow">DATA / FILTER</span>
+            <h2>数据与筛选</h2>
+          </div>
+          <span class="mini-badge">AUTO</span>
+        </div>
+
+        <section class="filter-section dataset-section">
+          <div class="section-label"><span>采样数据集</span><small>3 GROUPS</small></div>
+          <div class="dataset-list" id="datasetList"></div>
+        </section>
+
+        <section class="filter-section">
+          <div class="section-label">
+            <span>时间窗口</span>
+            <small id="windowDuration">60 MIN</small>
+          </div>
+          <div class="window-options" id="windowOptions"></div>
+          <button class="restore-button" id="restoreWindow" type="button" disabled>
+            <span>↶</span>
+            <span id="restoreLabel">返回上一窗口</span>
+          </button>
+          <p class="section-hint">每个窗口独立保留区域选择与播放位置</p>
+        </section>
+
+        <section class="filter-section compact-section">
+          <div class="section-label"><span>流向</span><small>DIRECTION</small></div>
+          <div class="segmented" id="directionControl" role="group" aria-label="流向筛选">
+            <button class="active" data-direction="all" type="button">全部</button>
+            <button data-direction="in" type="button">进站</button>
+            <button data-direction="out" type="button">出站</button>
+          </div>
+        </section>
+
+        <section class="filter-section compact-section">
+          <div class="section-label"><span>区域视图</span><small>SPACE</small></div>
+          <div class="segmented view-segment" id="viewControl" role="group" aria-label="区域视图">
+            <button class="active" data-view="all" type="button">全站</button>
+            <button data-view="entrance" type="button">出入口</button>
+            <button data-view="passage" type="button">通道</button>
+          </div>
+        </section>
+
+        <section class="filter-section area-section">
+          <div class="section-label">
+            <span>区域筛选</span>
+            <small id="areaCount">7 / 7</small>
+          </div>
+          <div class="area-actions">
+            <button id="selectAllAreas" type="button">全选</button>
+            <button id="clearAreas" type="button">清空</button>
+          </div>
+          <div class="area-chips" id="areaChips"></div>
+        </section>
+
+        <section class="quality-card" id="qualityCard">
+          <div class="quality-title">
+            <span><i></i> 数据质量</span>
+            <button id="qualityDetailButton" type="button">详情 ↗</button>
+          </div>
+          <div class="quality-steps">
+            <div><small>原始</small><strong id="qualityRaw">—</strong></div>
+            <i>→</i>
+            <div><small>去重</small><strong id="qualityDuplicate">—</strong></div>
+            <i>→</i>
+            <div><small>补缺</small><strong id="qualityImputed">—</strong></div>
+            <i>→</i>
+            <div><small>聚合</small><strong id="qualityAggregated">—</strong></div>
+          </div>
+          <div class="quality-footer">
+            <span id="qualityGaps">0 缺口残留</span>
+            <code id="qualityVersion">#—</code>
+          </div>
+        </section>
+
+        <button class="reset-button" id="resetFilters" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          重置当前筛选
+        </button>
+      </aside>
+
+      <section class="center-column">
+        <div class="filter-summary" id="filterSummary" aria-live="polite">
+          <div class="summary-label">
+            <span class="summary-pulse"></span>
+            当前筛选
+          </div>
+          <div class="summary-chips" id="filterChips"></div>
+          <div class="summary-version"><span>同步版本</span><strong id="summaryVersion">—</strong></div>
+        </div>
+
+        <article class="map-card">
+          <header class="card-header map-card-header">
+            <div>
+              <span class="eyebrow">STATION PLAN / DENSITY FIELD</span>
+              <h1>车站密度场 <sup>B2</sup></h1>
+            </div>
+            <div class="map-readout">
+              <div class="readout-item">
+                <small>当前截面</small>
+                <strong id="mapClock">08:35</strong>
+              </div>
+              <div class="readout-item">
+                <small>区域均值</small>
+                <strong id="mapDensity">— <em>p/m²</em></strong>
+              </div>
+              <div class="density-legend" aria-label="密度颜色图例">
+                <span>0</span>
+                <i></i>
+                <span id="legendMax">8</span>
+              </div>
+            </div>
+          </header>
+
+          <div class="map-stage" id="mapStage">
+            <canvas id="mapCanvas" role="img" aria-label="车站平面与实时人流密度场"></canvas>
+            <div class="map-stage-labels">
+              <span class="floor-tag">B2 · 站厅层</span>
+              <span class="scale-tag"><i></i> 5 m</span>
+            </div>
+            <div class="map-tooltip" id="mapTooltip" hidden></div>
+            <div class="empty-state map-empty" id="mapEmpty" hidden>
+              <span class="empty-icon">∅</span>
+              <strong>当前筛选无区域</strong>
+              <p>选择至少一个区域后，密度场才会生成。</p>
+            </div>
+          </div>
+
+          <div class="timeline">
+            <button class="play-button" id="playButton" type="button" aria-label="播放时间轴">
+              <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+              <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+            </button>
+            <div class="timeline-main">
+              <div class="timeline-meta">
+                <strong id="timelineClock">08:35</strong>
+                <span id="timelineCaption">窗口均值 · 5 min</span>
+                <span class="timeline-window" id="timelineWindow">08:00 – 09:00</span>
+              </div>
+              <input id="timeSlider" type="range" min="0" max="11" step="1" value="7" aria-label="播放时间">
+              <div class="timeline-ticks">
+                <span id="timelineStart">08:00</span>
+                <span>08:15</span>
+                <span>08:30</span>
+                <span>08:45</span>
+                <span id="timelineEnd">09:00</span>
+              </div>
+            </div>
+            <button class="speed-button" id="speedButton" type="button" aria-label="切换播放速度">1×</button>
+          </div>
+        </article>
+
+        <article class="trend-card">
+          <header class="trend-header">
+            <div>
+              <span class="eyebrow">DENSITY CURVE</span>
+              <h3>窗口密度趋势</h3>
+            </div>
+            <div class="trend-stats">
+              <span>统计口径 <strong>5 min 均值 · p/m²</strong></span>
+              <span>峰值 <strong id="chartPeak">—</strong></span>
+              <span>异常阈值 <strong id="chartThreshold">—</strong></span>
+            </div>
+          </header>
+          <div class="trend-stage" id="trendStage">
+            <canvas id="trendCanvas" role="img" aria-label="当前筛选下的密度趋势曲线"></canvas>
+            <div class="chart-empty" id="chartEmpty" hidden>暂无曲线 · 当前筛选为空</div>
+          </div>
+        </article>
+      </section>
+
+      <aside class="panel right-panel" aria-label="统计与导出">
+        <div class="panel-heading right-heading">
+          <div>
+            <span class="eyebrow">LIVE SNAPSHOT</span>
+            <h2>当前快照</h2>
+          </div>
+          <span class="status-pill" id="snapshotStatus">正常</span>
+        </div>
+
+        <section class="snapshot-card">
+          <div class="snapshot-time">
+            <div>
+              <small>2026.11.17 · 周二</small>
+              <strong id="snapshotTime">08:35</strong>
+            </div>
+            <span id="snapshotZoneCount">7 区域</span>
+          </div>
+          <div class="gauge-row">
+            <div class="density-gauge" id="densityGauge">
+              <div><strong id="gaugeValue">—</strong><small>p/m²</small></div>
+            </div>
+            <div class="gauge-copy">
+              <span>当前筛选区域均值</span>
+              <strong id="gaugeLabel">—</strong>
+              <small id="gaugeScope">按 5 min 聚合</small>
+            </div>
+          </div>
+          <div class="snapshot-metrics">
+            <div><span>进站流率</span><strong id="metricIn">—</strong><small>人 / min</small></div>
+            <div><span>出站流率</span><strong id="metricOut">—</strong><small>人 / min</small></div>
+            <div><span>窗口客流</span><strong id="metricFlow">—</strong><small>人</small></div>
+            <div><span>峰值时段</span><strong id="metricPeak">—</strong><small id="metricPeakValue">—</small></div>
+          </div>
+        </section>
+
+        <section class="list-card">
+          <div class="list-heading">
+            <div><span class="eyebrow">HOTSPOTS</span><h3>热点区域</h3></div>
+            <span id="hotspotCount">0</span>
+          </div>
+          <p class="list-scope">按当前时刻密度降序 · 同源快照</p>
+          <div class="hotspot-list" id="hotspotList"></div>
+        </section>
+
+        <section class="list-card alert-card">
+          <div class="list-heading">
+            <div><span class="eyebrow">THRESHOLD WATCH</span><h3>异常密度</h3></div>
+            <span class="alert-count" id="anomalyCount">0</span>
+          </div>
+          <p class="list-scope">窗口内 ≥ <strong id="anomalyThreshold">—</strong> p/m² 的具体区域</p>
+          <div class="anomaly-list" id="anomalyList"></div>
+        </section>
+
+        <section class="export-card">
+          <div class="export-heading">
+            <div><span class="eyebrow">EXPORT CENTER</span><h3>导出当前视图</h3></div>
+            <span class="sync-dot">同版本</span>
+          </div>
+          <div class="export-actions">
+            <button class="primary-export" id="exportPng" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+              导出图 + 统计
+              <small>PNG</small>
+            </button>
+            <button class="secondary-export" id="exportCsv" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>
+              CSV 统计
+            </button>
+          </div>
+          <div class="export-log-heading">
+            <span>导出日志</span>
+            <small id="exportLogVersion">VER —</small>
+          </div>
+          <div class="export-log" id="exportLog">
+            <div class="log-empty">尚未导出。文件名将包含数据版本与时间窗口。</div>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog class="audit-dialog" id="auditDialog">
+    <div class="dialog-head">
+      <div>
+        <span class="eyebrow">PIPELINE AUDIT</span>
+        <h2>采样链路校验</h2>
+      </div>
+      <button class="dialog-close" id="closeAudit" type="button" aria-label="关闭">×</button>
+    </div>
+    <p class="dialog-intro">校验由当前内置采样实时计算：去重键为「区域 + 时刻」，缺失值按同区域时间邻点线性插值，聚合粒度为 5 分钟。</p>
+    <div class="audit-content" id="auditContent"></div>
+    <div class="dialog-foot">
+      <span>每次重绘均复用同一版本快照，不以预设值覆盖图形。</span>
+      <button id="closeAuditBottom" type="button">完成</button>
+    </div>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
