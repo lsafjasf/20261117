@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>纸片剪影街景 · 日落视差</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="layout">
+    <section class="stage">
+      <canvas id="scene" aria-label="多层纸片剪影街景，拖动可改变视点"></canvas>
+      <div id="pauseBadge" class="pause-badge" hidden>已暂停</div>
+      <div id="errorBanner" class="error-banner" role="alert" hidden></div>
+      <div class="hint">拖动画面移动视点 · 滚轮缩放 · 日落颜色随水平视点变化</div>
+    </section>
+
+    <aside class="panel">
+      <h1>纸片街景控制台</h1>
+      <form id="paramForm">
+        <label>随机种子
+          <input name="seed" type="number" data-type="int" />
+        </label>
+        <label>纸片层数 (2–6)
+          <input name="layerCount" type="number" min="2" max="6" step="1" data-type="int" />
+        </label>
+        <label>建筑密度
+          <input name="buildingDensity" type="range" min="0" max="1" step="0.01" />
+          <output></output>
+        </label>
+        <label>亮窗比例
+          <input name="windowLitRatio" type="range" min="0" max="1" step="0.01" />
+          <output></output>
+        </label>
+        <label>窗洞光束投影
+          <input name="lightBeams" type="checkbox" />
+        </label>
+        <label>日落色相 (0–360)
+          <input name="sunsetHue" type="range" min="0" max="360" step="1" />
+          <output></output>
+        </label>
+        <label>太阳大小
+          <input name="sunSize" type="range" min="0" max="1" step="0.01" />
+          <output></output>
+        </label>
+        <label>视差强度
+          <input name="parallaxStrength" type="range" min="0" max="2" step="0.01" />
+          <output></output>
+        </label>
+        <label>缩放 (0.5–2.5)
+          <input name="zoom" type="range" min="0.5" max="2.5" step="0.01" />
+          <output></output>
+        </label>
+        <label>环境声音量
+          <input name="masterVolume" type="range" min="0" max="1" step="0.01" />
+          <output></output>
+        </label>
+
+        <div class="button-row">
+          <button type="button" id="applyBtn">应用参数</button>
+          <button type="button" id="saveBtn" class="primary">保存参数</button>
+        </div>
+        <div class="button-row">
+          <button type="button" id="resetViewBtn">视角归中</button>
+          <button type="button" id="pauseBtn">暂停</button>
+        </div>
+        <div class="button-row">
+          <button type="button" id="audioBtn">环境声：关</button>
+          <button type="button" id="shotBtn" class="primary">导出 PNG</button>
+        </div>
+      </form>
+
+      <section class="json-box">
+        <h2>参数 JSON</h2>
+        <textarea id="jsonInput" rows="5" spellcheck="false"></textarea>
+        <div class="button-row">
+          <button type="button" id="jsonApplyBtn">应用 JSON</button>
+          <button type="button" id="jsonFillBtn">填入当前参数</button>
+        </div>
+      </section>
+
+      <section class="stats">
+        <h2>场景统计</h2>
+        <ul id="statsList"></ul>
+        <p id="statusLine" class="status"></p>
+      </section>
+    </aside>
+  </main>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
