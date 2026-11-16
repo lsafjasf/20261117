@@ -1,0 +1,107 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b1220;
+  --panel: #131c2e;
+  --line: #24324d;
+  --text: #e6edf7;
+  --muted: #8aa0c0;
+  --accent: #4cc2ff;
+  --danger: #ff5d8f;
+  --ok: #3ddc97;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.topbar h1 { font-size: 18px; margin: 0; }
+.transport { display: flex; gap: 8px; align-items: center; }
+.readout {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  min-width: 96px;
+}
+
+button {
+  background: #1d2b45;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+button:hover { border-color: var(--accent); }
+button.toggle.on { border-color: var(--ok); color: var(--ok); }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 18px;
+  padding: 18px 20px;
+}
+
+.stage canvas {
+  width: 100%;
+  max-width: 720px;
+  background: #101827;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  cursor: grab;
+}
+.stage canvas:active { cursor: grabbing; }
+.stage-actions, .project-actions, .timeline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.hint { color: var(--muted); font-size: 13px; }
+#shape-text {
+  width: 100%;
+  max-width: 360px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #0f1828;
+  color: var(--text);
+}
+
+.sidebar {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  max-height: calc(100vh - 110px);
+  overflow: auto;
+}
+.sidebar h2 { font-size: 14px; margin: 16px 0 6px; color: var(--muted); }
+.validation {
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 13px;
+  border: 1px solid var(--line);
+}
+.validation.ok { border-color: var(--ok); }
+.validation.bad { border-color: var(--danger); color: var(--danger); }
+.event-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  max-height: 260px;
+  overflow: auto;
+}
+.event-list li { margin-bottom: 3px; color: var(--muted); }

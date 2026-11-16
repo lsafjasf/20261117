@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>时间线画布工作室</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>时间线画布工作室 · 单一时间基准</h1>
+    <div class="transport">
+      <span class="readout" id="clock-readout">t=0ms</span>
+      <button id="btn-play">播放</button>
+      <button id="btn-pause">暂停</button>
+      <button id="btn-loop" class="toggle">循环</button>
+      <button id="btn-restart">回到入点</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="stage">
+      <canvas id="stage" width="640" height="360"></canvas>
+
+      <div class="stage-actions">
+        <button id="btn-add-shape">添加图形</button>
+        <button id="btn-sound">触发声音事件</button>
+        <button id="btn-record">开始录制视频</button>
+      </div>
+
+      <input id="shape-text" placeholder="为选中图形输入文字（自动记录为输入事件）" />
+      <p class="hint">在画布上拖动图形会记录拖动事件；声音事件会同时触发图形脉冲，便于核验音画对齐。</p>
+
+      <h2 class="hint">时间线编辑（节目 / 画面 / 音频共用同一时钟）</h2>
+      <div class="timeline-actions">
+        <button id="btn-move">移动片段 C</button>
+        <button id="btn-split">分割片段 B</button>
+        <button id="btn-transition">添加 250ms 转场</button>
+        <button id="btn-seek-in">设为入点</button>
+        <button id="btn-seek-out">设为出点</button>
+      </div>
+      <div id="timeline-view"></div>
+
+      <h2 class="hint">工程与导出</h2>
+      <div class="project-actions">
+        <button id="btn-save">保存工程 JSON</button>
+        <button id="btn-reload">重新载入工程</button>
+        <button id="btn-export">离线校验并导出</button>
+      </div>
+      <p class="hint" id="export-message"></p>
+    </section>
+
+    <aside class="sidebar">
+      <h2>导出前校验</h2>
+      <div id="validation" class="validation ok">尚未校验</div>
+      <h2>失败回放</h2>
+      <div id="replay-report" class="hint">无失败事件</div>
+      <h2>事件流（按时间顺序）</h2>
+      <ol class="event-list" id="event-list"></ol>
+    </aside>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

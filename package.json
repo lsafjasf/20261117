@@ -1,0 +1,14 @@
+{
+  "name": "timeline-canvas-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Canvas dynamic-graphics editor with a single shared timebase: event recording/replay, timeline move/split/transition, overlap validation and A/V export.",
+  "scripts": {
+  "test": "node test/run-tests.mjs",
+  "serve": "node tools/serve.mjs"
+  },
+  "engines": {
+  "node": ">=20"
+  }
+}
