@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#061922" />
+    <title>双人深潜 · 蓝洞取景</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23061b23'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='%2363e4cf' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%2363e4cf'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <span></span>
+        </div>
+        <div>
+          <p class="eyebrow">TWO-PERSON DIVE / 02</p>
+          <h1>蓝洞取景 <span>BLUE HOLE FRAME</span></h1>
+        </div>
+      </div>
+      <div class="topbar-status">
+        <span class="signal" id="linkSignal"><i></i> 双人链路</span>
+        <span class="run-badge" id="runBadge">待下潜</span>
+        <span class="clock" id="topClock">01:30</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="console pilot-console" id="pilotConsole" aria-label="玩家一 领航员控制台">
+        <div class="console-head">
+          <div class="role-glyph">A</div>
+          <div>
+            <p class="role-kicker">PLAYER 01 / MOVE</p>
+            <h2>领航员 <span>PILOT</span></h2>
+          </div>
+          <span class="link-dot online" id="pilotLink" title="链路正常"></span>
+        </div>
+        <p class="role-duty">控制共享相机的游动方向与拍摄距离。不能触发快门。</p>
+
+        <div class="key-cluster" aria-label="领航员键位">
+          <div class="key-grid">
+            <span></span><kbd>W</kbd><span></span>
+            <kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>
+          </div>
+          <div class="key-notes">
+            <p><kbd>W A S D</kbd> 靠近 / 侧移 / 后退</p>
+            <p><kbd>Shift</kbd> 短时加速</p>
+          </div>
+        </div>
+
+        <div class="range-card">
+          <div class="range-title">
+            <span>构图距离</span><strong id="pilotDistance">-- m</strong>
+          </div>
+          <div class="range-track">
+            <span class="range-ideal" id="pilotIdealZone"></span>
+            <span class="range-needle" id="pilotNeedle"></span>
+          </div>
+          <div class="range-labels"><span>过近</span><span>理想区</span><span>过远</span></div>
+        </div>
+
+        <div class="role-status" id="pilotStatus">等待下潜指令</div>
+        <div class="mirror">
+          <p class="mirror-title">共享仪表镜像 <span>LIVE</span></p>
+          <div class="mirror-grid">
+            <div><span>倒计时</span><strong data-sync="time">01:30</strong></div>
+            <div><span>浊度</span><strong data-sync="turbidity">18%</strong></div>
+            <div><span>电量</span><strong data-sync="battery">100%</strong></div>
+            <div><span>剩余底片</span><strong data-sync="shots">6</strong></div>
+          </div>
+          <div class="task-line"><span>任务记录</span><strong data-sync="objective">0 / 3 目标</strong></div>
+        </div>
+        <button class="sim-link" data-disconnect="pilot" type="button">模拟 A 侧断线</button>
+      </aside>
+
+      <section class="stage-column">
+        <div class="mission-bar">
+          <div class="mission-title">
+            <span class="live-dot"></span>
+            <p>当前任务 <strong id="missionName">珊瑚台 · 群鱼穿行</strong></p>
+          </div>
+          <div class="targets" id="targetCards" aria-label="三个目标照片"></div>
+        </div>
+
+        <div class="canvas-shell" id="canvasShell">
+          <canvas id="scene" width="960" height="620" aria-label="水下相机取景画面"></canvas>
+          <div class="hud-top">
+            <div class="hud-chip"><span>水深</span><strong id="depthReadout">18.4 m</strong></div>
+            <div class="hud-chip warning" id="turbidityChip"><span>水体浊度</span><strong id="turbidityReadout">18%</strong></div>
+            <div class="hud-chip"><span>鱼群安定</span><strong id="calmReadout">稳定</strong></div>
+          </div>
+          <div class="lamp-readout">
+            <span class="lamp-icon" id="lampIcon"></span>
+            <div>
+              <small>摄影灯</small>
+              <strong id="lampReadout">OFF</strong>
+            </div>
+            <div class="lamp-meter"><i id="lampMeter"></i></div>
+          </div>
+          <div class="frame-edge" aria-hidden="true"></div>
+          <div class="compose-tip" id="composeTip">让目标进入取景框，摄影灯对准主体</div>
+
+          <div class="stage-toast" id="stageToast" role="status" aria-live="polite"></div>
+
+          <div class="start-overlay" id="startOverlay">
+            <div class="start-card">
+              <p class="eyebrow">MISSION BRIEF / 90 SEC</p>
+              <h2>一人领航，一人掌镜</h2>
+              <p>共享同一台水下相机。领航员用 <kbd>WASD</kbd> 构图并维持距离；摄影师用方向键控制灯光、<kbd>Enter</kbd> 快门。强光会惊散鱼群，所有动作都会抬高浊度。</p>
+              <div class="start-roles">
+                <div><b>A</b><span>游动 · 距离<br /><kbd>WASD</kbd></span></div>
+                <div class="start-divider"><i></i></div>
+                <div><b>B</b><span>灯光 · 快门<br /><kbd>↑↓←→</kbd> <kbd>Enter</kbd></span></div>
+              </div>
+              <button class="primary" id="startButton" type="button">开始下潜 <span>01:30</span></button>
+              <p class="microcopy">暂停 <kbd>P</kbd> · 重开 <kbd>R</kbd> · 单人调试 <kbd>Tab</kbd></p>
+            </div>
+          </div>
+
+          <div class="pause-overlay" id="pauseOverlay" hidden>
+            <div>
+              <p class="eyebrow">SHARED TIMER FROZEN</p>
+              <h2>已暂停</h2>
+              <p>倒计时、电量与浊度均已冻结，两侧操作同时锁定。</p>
+              <button class="primary" id="resumeButton" type="button">继续下潜 <span>P</span></button>
+            </div>
+          </div>
+
+          <div class="protect-overlay" id="protectOverlay" hidden>
+            <div class="protect-card">
+              <span class="protect-icon">!</span>
+              <p class="eyebrow">LINK PROTECTION ACTIVE</p>
+              <h2 id="protectTitle">A 侧链路中断</h2>
+              <p id="protectCopy">共享计时与资源已冻结。恢复链路后，两侧仪表会从同一快照继续。</p>
+              <button class="primary" id="reconnectButton" type="button">恢复双人链路</button>
+            </div>
+          </div>
+
+          <div class="result-overlay" id="resultOverlay" hidden>
+            <div class="result-card">
+              <p class="eyebrow" id="resultKicker">MISSION COMPLETE</p>
+              <h2 id="resultTitle">三帧到手</h2>
+              <p id="resultCopy">你们在浑浊前守住了距离与柔光。</p>
+              <div class="result-stats" id="resultStats"></div>
+              <div class="result-actions">
+                <button class="primary" id="restartResultButton" type="button">重新下潜</button>
+                <button class="ghost" id="reviewReplayButton" type="button">查看本局回放</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="tool-group">
+            <button class="tool" id="pauseButton" type="button"><span>Ⅱ</span> 暂停 <kbd>P</kbd></button>
+            <button class="tool" id="restartButton" type="button"><span>↻</span> 重开 <kbd>R</kbd></button>
+          </div>
+          <div class="tool-group">
+            <button class="tool solo-tool" id="soloButton" type="button"><span>⌁</span> 单人调试 <kbd>Tab</kbd></button>
+            <button class="tool" id="saveReplayButton" type="button"><span>↓</span> 保存回放</button>
+          </div>
+          <p class="toolbar-note" id="modeNote">双人正式模式 · 键位隔离已开启</p>
+        </div>
+      </section>
+
+      <aside class="console photo-console" id="photoConsole" aria-label="玩家二 摄影师控制台">
+        <div class="console-head">
+          <div class="role-glyph">B</div>
+          <div>
+            <p class="role-kicker">PLAYER 02 / LIGHT + SHUTTER</p>
+            <h2>摄影师 <span>PHOTOGRAPHER</span></h2>
+          </div>
+          <span class="link-dot online" id="photoLink" title="链路正常"></span>
+        </div>
+        <p class="role-duty">调整灯光方向与柔光强度，完成快门。不能移动相机。</p>
+
+        <div class="key-cluster" aria-label="摄影师键位">
+          <div class="arrow-grid">
+            <span></span><kbd>↑</kbd><span></span>
+            <kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd>
+          </div>
+          <div class="key-notes">
+            <p><kbd>↑ ↓</kbd> 灯光明暗</p>
+            <p><kbd>← →</kbd> 调整光束</p>
+            <p><kbd>Enter</kbd> 快门</p>
+          </div>
+        </div>
+
+        <div class="light-card">
+          <div class="light-title"><span>推荐柔光</span><strong id="lightHint">28–70%</strong></div>
+          <div class="light-track">
+            <span class="light-ideal" id="lightIdealZone"></span>
+            <span class="light-needle" id="lightNeedle"></span>
+          </div>
+          <div class="light-scale"><span>0</span><span>100</span></div>
+        </div>
+
+        <div class="role-status" id="photoStatus">等待下潜指令</div>
+        <div class="shutter-card">
+          <div><span>可用底片</span><strong data-sync="shots">6</strong></div>
+          <button id="shutterButton" class="shutter" type="button" aria-label="按下快门">SHUTTER <kbd>Enter</kbd></button>
+        </div>
+        <div class="mirror">
+          <p class="mirror-title">共享仪表镜像 <span>LIVE</span></p>
+          <div class="mirror-grid">
+            <div><span>倒计时</span><strong data-sync="time">01:30</strong></div>
+            <div><span>浊度</span><strong data-sync="turbidity">18%</strong></div>
+            <div><span>电量</span><strong data-sync="battery">100%</strong></div>
+            <div><span>剩余底片</span><strong data-sync="shots">6</strong></div>
+          </div>
+          <div class="task-line"><span>任务记录</span><strong data-sync="objective">0 / 3 目标</strong></div>
+        </div>
+        <button class="sim-link" data-disconnect="photo" type="button">模拟 B 侧断线</button>
+      </aside>
+    </main>
+
+    <section class="debrief" id="debrief">
+      <div class="debrief-head">
+        <div>
+          <p class="eyebrow">MISSION RECORD / REPLAY</p>
+          <h2>双人操作回放</h2>
+        </div>
+        <div class="replay-actions">
+          <button class="ghost small" id="replayToggle" type="button">▶ 回放</button>
+          <select id="replaySpeed" aria-label="回放速度">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+          </select>
+          <span class="rec-badge"><i></i> REC</span>
+        </div>
+      </div>
+
+      <div class="replay-grid">
+        <div class="timeline-card">
+          <div class="timeline-meta">
+            <span id="replayTime">00:00.0 / 00:00.0</span>
+            <span id="replayPhase">实时录制</span>
+          </div>
+          <input id="replayScrubber" type="range" min="0" max="0" step="0.1" value="0" aria-label="回放时间轴" />
+          <div class="timeline-legend">
+            <span><i class="a"></i>A 领航</span>
+            <span><i class="b"></i>B 摄影</span>
+            <span><i class="c"></i>冲突</span>
+            <span><i class="s"></i>成功快门</span>
+          </div>
+          <div class="timeline" id="timelineEvents" aria-label="操作时间轴"></div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-head">
+            <span>输入 / 事件</span>
+            <button class="text-button" id="filterConflicts" type="button">只看冲突</button>
+          </div>
+          <div class="event-list" id="eventList">
+            <p class="empty-state">下潜后，两侧输入会实时记录在这里。</p>
+          </div>
+        </div>
+
+        <div class="sync-card">
+          <div class="sync-head">
+            <span>共享状态校验</span>
+            <strong id="syncVerdict">等待记录</strong>
+          </div>
+          <div class="sync-rows" id="syncRows">
+            <div><span>仪表镜像</span><b>—</b></div>
+            <div><span>共享资源</span><b>—</b></div>
+            <div><span>倒计时</span><b>—</b></div>
+            <div><span>任务记录</span><b>—</b></div>
+          </div>
+          <p class="sync-note" id="syncNote">成功、单侧失误与恢复会写入同一条回放记录。</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>BLUE HOLE FRAME · SHARED CAMERA PROTOCOL</span>
+      <span>两副键盘 / 同一台相机 / 各自 50% 控制权</span>
+    </footer>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
