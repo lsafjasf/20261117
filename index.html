@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0f14">
+  <title>GEARLAB · 三齿轮传动仿真台</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <span class="mark-ring"></span>
+          <span class="mark-tooth mark-tooth-a"></span>
+          <span class="mark-tooth mark-tooth-b"></span>
+          <span class="mark-tooth mark-tooth-c"></span>
+          <span class="mark-core"></span>
+        </div>
+        <div>
+          <div class="brand-name">GEARLAB <span>/ 03</span></div>
+          <div class="brand-sub">三齿轮传动仿真台</div>
+        </div>
+      </div>
+
+      <div class="status-cluster">
+        <div class="status-pill" id="statusPill" data-state="idle">
+          <span class="status-dot"></span>
+          <span id="statusText">系统就绪</span>
+        </div>
+        <div class="header-chip">
+          <span class="chip-key">内核</span>
+          <span>固定步长 <b>25 ms</b></span>
+        </div>
+        <div class="header-chip clock-chip">
+          <span class="chip-key">仿真时间</span>
+          <span id="simClock">0.000 s</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="main-column" aria-label="仿真主视图">
+        <article class="panel stage-panel">
+          <header class="panel-heading stage-heading">
+            <div>
+              <div class="eyebrow"><span>01</span> TRANSMISSION STAGE</div>
+              <h1>三齿轮传动链</h1>
+            </div>
+            <div class="stage-targets">
+              <div class="target-readout">
+                <span class="target-label">目标输出</span>
+                <strong id="targetOutput">240</strong>
+                <span class="unit">rpm</span>
+              </div>
+              <div class="target-readout actual-readout">
+                <span class="target-label">实际输出</span>
+                <strong id="actualOutput">--</strong>
+                <span class="unit">rpm</span>
+              </div>
+            </div>
+          </header>
+
+          <div class="stage-wrap" id="stageWrap">
+            <canvas id="gearCanvas" aria-label="三齿轮啮合、旋转方向与轴距的实时示意图"></canvas>
+            <div class="stage-corner stage-corner-left">
+              <span class="legend-line cyan"></span> 旋转方向
+              <span class="legend-line amber"></span> 啮合点
+            </div>
+            <div class="stage-corner stage-corner-right" id="goalReadout">
+              <span class="goal-dot"></span>
+              <span id="goalStatus">等待启动</span>
+            </div>
+            <div class="fault-overlay" id="faultOverlay" hidden>
+              <div class="fault-kicker">UNSAFE STOP</div>
+              <div class="fault-title" id="faultOverlayTitle">安全边界触发</div>
+              <div class="fault-meta" id="faultOverlayMeta">--</div>
+            </div>
+          </div>
+
+          <div class="gear-telemetry" id="gearTelemetry">
+            <div class="gear-stat" data-gear="a">
+              <div class="gear-stat-head">
+                <span class="gear-letter gear-letter-a">A</span>
+                <span class="gear-role">主动轮</span>
+                <span class="direction-tag" id="dirA">顺时针</span>
+              </div>
+              <div class="gear-rpm"><strong id="rpmA">320.0</strong><span>rpm</span></div>
+              <div class="gear-detail"><span id="omegaA">33.51 rad/s</span><span id="teethReadA">z 30</span></div>
+            </div>
+            <div class="gear-stat" data-gear="b">
+              <div class="gear-stat-head">
+                <span class="gear-letter gear-letter-b">B</span>
+                <span class="gear-role">惰轮</span>
+                <span class="direction-tag" id="dirB">逆时针</span>
+              </div>
+              <div class="gear-rpm"><strong id="rpmB">266.7</strong><span>rpm</span></div>
+              <div class="gear-detail"><span id="omegaB">27.93 rad/s</span><span id="teethReadB">z 36</span></div>
+            </div>
+            <div class="gear-stat" data-gear="c">
+              <div class="gear-stat-head">
+                <span class="gear-letter gear-letter-c">C</span>
+                <span class="gear-role">输出轮</span>
+                <span class="direction-tag" id="dirC">顺时针</span>
+              </div>
+              <div class="gear-rpm"><strong id="rpmC">240.0</strong><span>rpm</span></div>
+              <div class="gear-detail"><span id="omegaC">25.13 rad/s</span><span id="teethReadC">z 40</span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel trend-panel">
+          <header class="panel-heading trend-heading">
+            <div>
+              <div class="eyebrow"><span>02</span> TELEMETRY</div>
+              <h2>热力趋势与回放</h2>
+            </div>
+            <div class="trend-legend">
+              <span><i class="legend-dot amber"></i>最高轮温 <b id="legendTemp">26.0°C</b></span>
+              <span><i class="legend-dot cyan"></i>接触力 <b id="legendForce">0.00 kN</b></span>
+            </div>
+          </header>
+          <div class="trend-wrap">
+            <canvas id="trendCanvas" aria-label="轮温和接触力随时间变化的趋势图"></canvas>
+            <div class="trend-empty" id="trendEmpty">启动仿真后记录确定性轨迹</div>
+          </div>
+          <footer class="trend-footer">
+            <div class="replay-track">
+              <span class="replay-time" id="replayTime">t 0.000 s</span>
+              <div class="replay-rail"><span id="replayFill"></span><i id="replayCursor"></i></div>
+              <span class="replay-end" id="replayEnd">t 0.000 s</span>
+            </div>
+            <span class="checksum" id="checksumBadge">轨迹校验 --</span>
+          </footer>
+        </article>
+      </section>
+
+      <aside class="side-column" aria-label="仿真控制与边界">
+        <article class="panel control-panel">
+          <header class="panel-heading compact">
+            <div>
+              <div class="eyebrow"><span>03</span> CONTROL</div>
+              <h2>运行条件</h2>
+            </div>
+            <span class="edit-lock" id="editLock">可编辑</span>
+          </header>
+
+          <div class="field">
+            <div class="field-top">
+              <label for="speedRange">主动轮转速</label>
+              <output class="field-value" id="speedValue">320 <small>rpm</small></output>
+            </div>
+            <input id="speedRange" type="range" min="40" max="1500" step="10" value="320">
+            <div class="field-scale"><span>40</span><span class="safe-range">安全 80–1200</span><span>1500</span></div>
+          </div>
+          <div class="field">
+            <div class="field-top">
+              <label for="loadRange">负载扭矩</label>
+              <output class="field-value" id="loadValue">6.0 <small>N·m</small></output>
+            </div>
+            <input id="loadRange" type="range" min="0" max="24" step="0.5" value="6">
+            <div class="field-scale"><span>0</span><span class="safe-range">安全 0.5–16.0</span><span>24</span></div>
+          </div>
+          <div class="field">
+            <div class="field-top">
+              <label for="pressureRange">润滑压力</label>
+              <output class="field-value" id="pressureValue">0.42 <small>MPa</small></output>
+            </div>
+            <input id="pressureRange" type="range" min="0.05" max="0.80" step="0.01" value="0.42">
+            <div class="field-scale"><span>0.05</span><span class="safe-range">安全 0.18–0.65</span><span>0.80</span></div>
+          </div>
+          <div class="field">
+            <div class="field-top">
+              <label for="gapRange">安装轴距间隙</label>
+              <output class="field-value" id="gapValue">+0.25 <small>mm</small></output>
+            </div>
+            <input id="gapRange" type="range" min="-0.80" max="1.00" step="0.05" value="0.25">
+            <div class="field-scale"><span>−0.80</span><span class="safe-range">推荐 −0.60–+0.80</span><span>+1.00</span></div>
+          </div>
+        </article>
+
+        <article class="panel gear-select-panel">
+          <header class="panel-heading compact">
+            <div>
+              <div class="eyebrow"><span>04</span> GEAR SET</div>
+              <h2>齿轮选型</h2>
+            </div>
+            <span class="module-tag">模数 M2</span>
+          </header>
+          <div class="gear-picker-list">
+            <div class="gear-picker">
+              <span class="gear-letter gear-letter-a">A</span>
+              <div class="picker-copy"><b>主动轮</b><small>驱动端</small></div>
+              <label for="teethA">齿数</label>
+              <select id="teethA">
+                <option>18</option><option>20</option><option>24</option>
+                <option selected>30</option><option>36</option>
+                <option>40</option><option>48</option>
+              </select>
+            </div>
+            <div class="gear-picker">
+              <span class="gear-letter gear-letter-b">B</span>
+              <div class="picker-copy"><b>惰轮</b><small>中间轴</small></div>
+              <label for="teethB">齿数</label>
+              <select id="teethB">
+                <option>18</option><option>20</option><option>24</option>
+                <option>30</option><option selected>36</option><option>40</option>
+                <option>48</option>
+              </select>
+            </div>
+            <div class="gear-picker">
+              <span class="gear-letter gear-letter-c">C</span>
+              <div class="picker-copy"><b>输出轮</b><small>负载端</small></div>
+              <label for="teethC">齿数</label>
+              <select id="teethC">
+                <option>18</option><option>20</option><option>24</option>
+                <option>30</option><option>36</option><option selected>40</option>
+                <option>48</option>
+              </select>
+            </div>
+          </div>
+          <div class="ratio-strip">
+            <div><span>理论速比</span><strong id="ratioReadout">1 : 0.750</strong></div>
+            <div><span>输出方向</span><strong id="directionReadout">与 A 同向</strong></div>
+            <div class="mesh-state" id="meshState"><span></span>齿数配合正常</div>
+          </div>
+        </article>
+
+        <article class="panel safety-panel">
+          <header class="panel-heading compact">
+            <div>
+              <div class="eyebrow"><span>05</span> SAFETY ENVELOPE</div>
+              <h2>实时安全边界</h2>
+            </div>
+            <span class="boundary-tag" id="boundaryTag">全部正常</span>
+          </header>
+          <div class="limit-grid" id="limitGrid">
+            <div class="limit-item" data-limit="speed">
+              <div class="limit-head"><span class="limit-led"></span><span>主动轮转速</span><b id="limitSpeedActual">320</b></div>
+              <div class="limit-bound">80–1200 rpm</div>
+              <div class="limit-bar"><span id="limitSpeedBar"></span></div>
+            </div>
+            <div class="limit-item" data-limit="load">
+              <div class="limit-head"><span class="limit-led"></span><span>负载扭矩</span><b id="limitLoadActual">6.0</b></div>
+              <div class="limit-bound">0.5–16.0 N·m</div>
+              <div class="limit-bar"><span id="limitLoadBar"></span></div>
+            </div>
+            <div class="limit-item" data-limit="pressure">
+              <div class="limit-head"><span class="limit-led"></span><span>润滑压力</span><b id="limitPressureActual">0.42</b></div>
+              <div class="limit-bound">0.18–0.65 MPa</div>
+              <div class="limit-bar"><span id="limitPressureBar"></span></div>
+            </div>
+            <div class="limit-item" data-limit="temp">
+              <div class="limit-head"><span class="limit-led"></span><span>最高轮温</span><b id="limitTempActual">26.0</b></div>
+              <div class="limit-bound">≤ 95.0 °C</div>
+              <div class="limit-bar"><span id="limitTempBar"></span></div>
+            </div>
+          </div>
+          <div class="first-fault" id="firstFault" hidden>
+            <span class="fault-cross">!</span>
+            <div><small>首次越限</small><b id="firstFaultText">--</b></div>
+          </div>
+        </article>
+
+        <div class="target-config">
+          <label for="targetRpm">目标输出转速</label>
+          <div class="target-input">
+            <input id="targetRpm" type="number" min="20" max="800" step="5" value="240">
+            <span>rpm</span>
+          </div>
+          <span class="tolerance">容差 ±3%</span>
+        </div>
+
+        <div class="action-dock">
+          <button class="btn btn-primary" id="btnRun" type="button">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4.5 15 10l-9 5.5z"/></svg>
+            <span>启动仿真</span>
+          </button>
+          <button class="btn btn-secondary" id="btnPause" type="button" disabled>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4h3v12H6zm5 0h3v12h-3z"/></svg>
+            <span>暂停</span>
+          </button>
+          <button class="btn btn-secondary" id="btnStep" type="button">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4.5 13 10l-8 5.5zM14 4h2v12h-2z"/></svg>
+            <span>单步 25 ms</span>
+          </button>
+          <button class="btn btn-secondary" id="btnReplay" type="button" disabled>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.2 6.2V2.8l4.1 2.3A7 7 0 1 1 3 11h2a5 5 0 1 0 2.5-4.3z"/></svg>
+            <span>回放</span>
+          </button>
+          <button class="btn btn-ghost" id="btnReset" type="button">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.4 9A6 6 0 1 1 5 13.3l1.6-1.2A4 4 0 1 0 6 8.7L8.4 11H2.8V5.4z"/></svg>
+            <span>重置</span>
+          </button>
+          <button class="btn btn-ghost report-btn" id="btnReport" type="button" disabled>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2.5h8l3 3v12H5zm7 1.7V6h1.8zM7 9h7v1.4H7zm0 3h7v1.4H7z"/></svg>
+            <span>最终报告</span>
+          </button>
+        </div>
+        <div class="run-note" id="runNote">
+          调整条件后启动；暂停与单步均由同一物理内核推进。
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="reportModal" hidden>
+    <div class="report-dialog" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+      <header class="report-dialog-head">
+        <div>
+          <div class="eyebrow">FINAL RUN REPORT</div>
+          <h2 id="reportTitle">最终运行报告</h2>
+        </div>
+        <button class="icon-btn" id="btnCloseReport" type="button" aria-label="关闭报告">×</button>
+      </header>
+      <div class="report-body" id="reportBody"></div>
+      <footer class="report-actions">
+        <button class="btn btn-secondary" id="btnReportReplay" type="button">回放本次过程</button>
+        <button class="btn btn-primary" id="btnReportReset" type="button">重置并关闭</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
